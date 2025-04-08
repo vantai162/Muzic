@@ -1,4 +1,4 @@
-package com.example.muzic.ui;
+package com.example.muzic;
 
 public class Song {
     private int id;
