@@ -5,10 +5,13 @@ public class Song {
     private String title;
 
     private String youtubeUrl;
-    public Song(int _id,String _title,String _URL){
-        id = _id;
-        title = _title;
-        youtubeUrl = _URL;
+    private String imageUrl;
+
+    public Song(int id, String title, String youtubeUrl, String imageUrl) {
+        this.id = id;
+        this.title = title;
+        this.youtubeUrl = youtubeUrl;
+        this.imageUrl = imageUrl;
     }
 
     public int getId() {
@@ -33,5 +36,14 @@ public class Song {
 
     public void setYoutubeUrl(String youtubeUrl) {
         this.youtubeUrl = youtubeUrl;
+    }
+
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }

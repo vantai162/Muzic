@@ -15,10 +15,13 @@
         <TextView
             android:text="Recently Played"
             android:textColor="#FFFFFF"
-            android:textSize="18sp"
+            android:textSize="20sp"
             android:layout_marginBottom="8dp"
+            android:layout_marginTop="50dp"
+            android:layout_marginLeft="10dp"
             android:layout_height="wrap_content"
-            android:layout_width="match_parent" />
+            android:layout_width="match_parent"
+            android:textStyle="bold"/>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvRecentlyPlayed"
@@ -35,6 +38,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:text="Playlist"
+            android:layout_marginLeft="10dp"
             android:textColor="#FFFFFF"
             android:textSize="20sp"
             android:textStyle="bold" />
@@ -43,6 +47,8 @@
             android:id="@+id/rvPlaylistGrid"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:nestedScrollingEnabled="false"/>
+            android:padding="8dp"
+            android:clipToPadding="false"
+            tools:listitem="@layout/item_playlist"/>
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

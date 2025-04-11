@@ -10,8 +10,10 @@
         android:id="@+id/img_song"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:src="@drawable/search_24px"
-        android:layout_marginEnd="12dp" />
+        android:layout_marginEnd="12dp"
+        android:layout_gravity="center_vertical"
+        android:scaleType="centerCrop"
+         />
 
     <LinearLayout
         android:layout_width="0dp"
@@ -25,7 +27,9 @@
             android:layout_height="wrap_content"
             android:text="Song Title"
             android:textColor="#FFFFFF"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            android:maxLines="1"
+            android:ellipsize="end" />
 
         <TextView
             android:id="@+id/tv_song_artist"
@@ -33,6 +37,8 @@
             android:layout_height="wrap_content"
             android:text="Artist"
             android:textColor="#AAAAAA"
-            android:textSize="14sp" />
+            android:textSize="14sp"
+            android:maxLines="1"
+            android:ellipsize="end" />
     </LinearLayout>
 </LinearLayout>
