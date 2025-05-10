@@ -1,0 +1,54 @@
+
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="#24293E"
+    tools:context=".ui.home.HomeFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Recently Played -->
+        <TextView
+            android:text="Recently Played"
+            android:textColor="#FFFFFF"
+            android:textSize="20sp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginTop="50dp"
+            android:layout_marginLeft="10dp"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:textStyle="bold"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvRecentlyPlayed"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:overScrollMode="never"
+            android:nestedScrollingEnabled="false"/>
+
+        <!-- Playlist -->
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:text="Playlist"
+            android:layout_marginLeft="10dp"
+            android:textColor="#FFFFFF"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvPlaylistGrid"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:clipToPadding="false"
+            tools:listitem="@layout/item_playlist"/>
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>
