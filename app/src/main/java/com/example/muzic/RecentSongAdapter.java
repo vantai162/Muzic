@@ -9,16 +9,20 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
-import com.example.muzic.ui.PlaySongActivity;
 
 import java.util.List;
 
 public class RecentSongAdapter extends RecyclerView.Adapter<RecentSongAdapter.ViewHolder> {
-
+    public interface OnSongClickListener {
+        void onSongClick(Song song);
+    }
+    private OnSongClickListener listener;
     private Context context;
     private List<Song> recentSongs;
 
@@ -26,7 +30,11 @@ public class RecentSongAdapter extends RecyclerView.Adapter<RecentSongAdapter.Vi
         this.context = context;
         this.recentSongs = recentSongs;
     }
-
+    public RecentSongAdapter(Context context, List<Song> songs, OnSongClickListener listener) {
+        this.context = context;
+        this.recentSongs = songs;
+        this.listener = listener;
+    }
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -50,11 +58,16 @@ public class RecentSongAdapter extends RecyclerView.Adapter<RecentSongAdapter.Vi
                 .transform(new RoundedCorners(16))
                 .into(holder.imageView);
         holder.itemView.setOnClickListener(v -> {
-            Intent intent = new Intent(context, PlaySongActivity.class);
-            intent.putExtra("song_title", song.getTitle());
-            intent.putExtra("song_image_url", song.getImageUrl());
-            context.startActivity(intent);
-
+            //Intent intent = new Intent(context, PlaySongActivity.class);
+            //intent.putExtra("song_title", song.getTitle());
+            //intent.putExtra("song_image_url", song.getImageUrl());
+            //context.startActivity(intent);
+            PlaySongBottomSheet bottomSheet = new PlaySongBottomSheet(song);
+            FragmentManager fragmentManager = ((AppCompatActivity) context).getSupportFragmentManager();
+            bottomSheet.show(fragmentManager, bottomSheet.getTag());
+            if (listener != null) {
+                listener.onSongClick(song);
+            }
         });
     }
 

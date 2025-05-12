@@ -1,27 +1,14 @@
-package com.example.muzic.ui;
+package com.example.muzic;
 
-import android.graphics.Bitmap;
-import android.graphics.RenderEffect;
-import android.graphics.Shader;
-import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
-import com.bumptech.glide.request.target.CustomTarget;
-import com.bumptech.glide.request.transition.Transition;
-import com.example.muzic.R;
 
 import jp.wasabeef.glide.transformations.BlurTransformation;
 
