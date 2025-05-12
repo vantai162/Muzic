@@ -1,7 +1,18 @@
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    //alias(libs.plugins.compose.compiler)
+    //alias(libs.plugins.navigation.safeargs)
+    //alias(libs.plugins.ksp)
+    //alias(libs.plugins.aboutlibraries)
 }
 
+kotlin {
+    jvmToolchain(17) // or appropriate version
+    compilerOptions {
+        freeCompilerArgs.add("-Xwhen-guards")
+    }
+}
 android {
     namespace 'com.example.muzic'
     compileSdk 35
@@ -32,20 +43,21 @@ android {
 }
 
 dependencies {
-
     implementation libs.appcompat
     implementation libs.material
     implementation libs.constraintlayout
     implementation libs.lifecycle.livedata.ktx
     implementation libs.lifecycle.viewmodel.ktx
-    implementation libs.navigation.fragment
-    implementation libs.navigation.ui
-    implementation libs.activity
+    implementation libs.navigation.fragment.ktx
+    implementation libs.navigation.ui.ktx
+    //implementation libs.navigation.fragment
+    //implementation libs.navigation.ui
+    //implementation libs.activity
     testImplementation libs.junit
-    androidTestImplementation libs.ext.junit
+    //androidTestImplementation libs.ext.junit
     androidTestImplementation libs.espresso.core
     implementation 'com.github.bumptech.glide:glide:4.16.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.16.0'
     implementation 'jp.wasabeef:glide-transformations:4.3.0'
-
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.0"
 }
