@@ -37,7 +37,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
-            android:text="Playlist"
+            android:text="Your Playlist"
             android:layout_marginLeft="10dp"
             android:textColor="#FFFFFF"
             android:textSize="20sp"
@@ -50,5 +50,7 @@
             android:padding="8dp"
             android:clipToPadding="false"
             tools:listitem="@layout/item_playlist"/>
+
     </LinearLayout>
+    
 </androidx.core.widget.NestedScrollView>
