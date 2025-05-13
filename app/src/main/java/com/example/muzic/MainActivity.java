@@ -8,6 +8,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.example.muzic.object.Song;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -27,6 +28,8 @@ public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
     private View miniPlayer;
+    private Song currentSong;
+    private PlaySongBottomSheet playSongBottomSheet;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,10 +51,19 @@ public class MainActivity extends AppCompatActivity {
         miniPlayer = findViewById(R.id.mini_player_container);
         miniPlayer.setVisibility(View.GONE); // Ẩn lúc đầu
 
-    }
-    public void showMiniPlayer(String title, String artist, String imageUrl) {
-        miniPlayer.setVisibility(View.VISIBLE);
+        //su kien neu click vao miniplayer se hien len lai fragment nowplaying
+        miniPlayer.setOnClickListener(v -> {
+            if (currentSong != null) {
+                playSongBottomSheet = new PlaySongBottomSheet(currentSong);
+                playSongBottomSheet.show(getSupportFragmentManager(), playSongBottomSheet.getTag());
+            }
+        });
 
+    }
+    public void showMiniPlayer(String title, String artist, String imageUrl,Song song) {
+        miniPlayer.setVisibility(View.VISIBLE);
+        currentSong = song;
+        //hien thi miniplayer
         TextView tvTitle = miniPlayer.findViewById(R.id.tv_title_mini);
         TextView tvArtist = miniPlayer.findViewById(R.id.tv_artist_mini);
         ImageView imgThumb = miniPlayer.findViewById(R.id.img_thumb_mini);
