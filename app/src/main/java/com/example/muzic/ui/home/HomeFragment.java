@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.example.muzic.MainActivity;
 import com.example.muzic.Playlist;
 import com.example.muzic.PlaylistAdapter;
 import com.example.muzic.R;
@@ -56,7 +57,14 @@ public class HomeFragment extends Fragment {
                 new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
         binding.rvPlaylistGrid.setAdapter(adapter);
 
-        RecentSongAdapter recentAdapter = new RecentSongAdapter(requireContext(), happySongs);
+        RecentSongAdapter recentAdapter = new RecentSongAdapter(requireContext(), happySongs, song -> {
+            // Gọi showMiniPlayer từ MainActivity
+            ((MainActivity) requireActivity()).showMiniPlayer(
+                song.getTitle(),
+                "Unknown Artist", // Hoặc song.getArtist() nếu bạn có dữ liệu artist
+                song.getImageUrl() // Lấy ảnh từ URL bài hát
+            );
+        });
         binding.rvRecentlyPlayed.setLayoutManager(
                 new LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false));
         binding.rvRecentlyPlayed.setAdapter(recentAdapter);
