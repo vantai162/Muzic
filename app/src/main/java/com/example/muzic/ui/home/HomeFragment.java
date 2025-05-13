@@ -61,7 +61,8 @@ public class HomeFragment extends Fragment {
             ((MainActivity) requireActivity()).showMiniPlayer(
                 song.getTitle(),
                 "Unknown Artist", // Hoặc song.getArtist() nếu bạn có dữ liệu artist
-                song.getImageUrl() // Lấy ảnh từ URL bài hát
+                song.getImageUrl(), // Lấy ảnh từ URL bài hát,
+                song
             );
         });
         binding.rvRecentlyPlayed.setLayoutManager(

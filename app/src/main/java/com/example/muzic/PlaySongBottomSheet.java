@@ -57,7 +57,7 @@ public class PlaySongBottomSheet extends BottomSheetDialogFragment {
 
         int blurRadius = 50; // độ mờ
 
-        RequestOptions requestOptions = new RequestOptions()
+        RequestOptions requestOptions = new RequestOptions() //lam mo cai anh bai hat
             .transform(new BlurTransformation(blurRadius));
 
         Glide.with(this)
