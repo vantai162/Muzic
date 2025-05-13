@@ -1,4 +1,4 @@
-package com.example.muzic;
+package com.example.muzic.object;
 
 public class Song {
     private int id;

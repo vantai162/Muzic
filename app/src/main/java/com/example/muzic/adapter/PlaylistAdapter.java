@@ -1,4 +1,4 @@
-package com.example.muzic;
+package com.example.muzic.adapter;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -9,6 +9,9 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.muzic.object.Playlist;
+import com.example.muzic.R;
 
 import java.util.List;
 

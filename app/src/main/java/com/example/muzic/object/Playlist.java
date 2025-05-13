@@ -1,4 +1,4 @@
-package com.example.muzic;
+package com.example.muzic.object;
 
 import java.util.List;
 

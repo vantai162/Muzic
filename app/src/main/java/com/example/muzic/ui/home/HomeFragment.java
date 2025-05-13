@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -12,11 +11,11 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.muzic.MainActivity;
-import com.example.muzic.Playlist;
-import com.example.muzic.PlaylistAdapter;
+import com.example.muzic.object.Playlist;
+import com.example.muzic.adapter.PlaylistAdapter;
 import com.example.muzic.R;
-import com.example.muzic.RecentSongAdapter;
-import com.example.muzic.Song;
+import com.example.muzic.adapter.RecentSongAdapter;
+import com.example.muzic.object.Song;
 import com.example.muzic.databinding.FragmentHomeBinding;
 
 import java.util.ArrayList;
