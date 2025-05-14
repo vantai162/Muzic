@@ -47,7 +47,7 @@ public class HomeFragment extends Fragment {
 
 
 
-        playlistList.add(new Playlist("Sad Songs", sadSongs, R.drawable.img_sad));
+        playlistList.add(new Playlist("Favorite Songs", sadSongs, R.drawable.img_sad));
         playlistList.add(new Playlist("Happy Songs", happySongs, R.drawable.awkward_seal_ft));
 
         // Gắn adapter
