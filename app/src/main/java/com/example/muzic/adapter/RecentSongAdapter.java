@@ -60,11 +60,7 @@ public class RecentSongAdapter extends RecyclerView.Adapter<RecentSongAdapter.Vi
                 .transform(new RoundedCorners(16))
                 .into(holder.imageView);
         holder.itemView.setOnClickListener(v -> {
-            //Intent intent = new Intent(context, PlaySongActivity.class);
-            //intent.putExtra("song_title", song.getTitle());
-            //intent.putExtra("song_image_url", song.getImageUrl());
-            //context.startActivity(intent);
-            PlaySongBottomSheet bottomSheet = new PlaySongBottomSheet(song);
+            PlaySongBottomSheet bottomSheet = new PlaySongBottomSheet();
             FragmentManager fragmentManager = ((AppCompatActivity) context).getSupportFragmentManager();
             bottomSheet.show(fragmentManager, bottomSheet.getTag());
             if (listener != null) {
