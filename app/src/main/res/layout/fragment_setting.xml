@@ -5,10 +5,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#24293E"
-    tools:context=".ui.notifications.NotificationsFragment">
+    tools:context=".ui.setting.SettingFragment">
 
     <TextView
-        android:id="@+id/text_notifications"
+        android:id="@+id/text_setting"
         android:layout_width="match_parent"
         android:textColor="#FFFFFF"
         android:backgroundTint="#24293E"

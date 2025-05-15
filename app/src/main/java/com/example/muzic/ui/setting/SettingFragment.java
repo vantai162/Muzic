@@ -1,4 +1,4 @@
-package com.example.muzic.ui.notifications;
+package com.example.muzic.ui.setting;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -10,21 +10,21 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.example.muzic.databinding.FragmentNotificationsBinding;
+import com.example.muzic.databinding.FragmentSettingBinding;
 
-public class NotificationsFragment extends Fragment {
+public class SettingFragment extends Fragment {
 
-    private FragmentNotificationsBinding binding;
+    private FragmentSettingBinding binding;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        NotificationsViewModel notificationsViewModel =
-                new ViewModelProvider(this).get(NotificationsViewModel.class);
+        SettingViewModel notificationsViewModel =
+                new ViewModelProvider(this).get(SettingViewModel.class);
 
-        binding = FragmentNotificationsBinding.inflate(inflater, container, false);
+        binding = FragmentSettingBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
-        final TextView textView = binding.textNotifications;
+        final TextView textView = binding.textSetting;
         notificationsViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
         return root;
     }
