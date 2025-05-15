@@ -9,6 +9,8 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.example.muzic.object.Song;
+import com.example.muzic.player.PlayerManager;
+import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -24,7 +26,7 @@ import com.example.muzic.databinding.ActivityMainBinding;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements PlayerManager.PlayerUIListener {
 
     private ActivityMainBinding binding;
     private View miniPlayer;
@@ -36,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
+        PlayerManager.setPlayerUIListener(this);
         BottomNavigationView navView = findViewById(R.id.nav_view);
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
@@ -54,8 +56,20 @@ public class MainActivity extends AppCompatActivity {
         //su kien neu click vao miniplayer se hien len lai fragment nowplaying
         miniPlayer.setOnClickListener(v -> {
             if (currentSong != null) {
-                playSongBottomSheet = new PlaySongBottomSheet(currentSong);
-                playSongBottomSheet.show(getSupportFragmentManager(), playSongBottomSheet.getTag());
+                if (playSongBottomSheet == null || !playSongBottomSheet.isVisible()) {
+                    playSongBottomSheet = new PlaySongBottomSheet(); // không truyền song
+                    playSongBottomSheet.show(getSupportFragmentManager(), "PlaySongBottomSheet");
+
+                }
+            }
+        });
+        //nut play/pause cua miniplayer
+        ImageView btnPause = miniPlayer.findViewById(R.id.btn_pause_mini);
+        btnPause.setOnClickListener(v -> {
+            if (PlayerManager.isPlaying()) {
+                PlayerManager.pause();
+            } else {
+                PlayerManager.resume();
             }
         });
 
@@ -75,4 +89,22 @@ public class MainActivity extends AppCompatActivity {
             .placeholder(R.drawable.baseline_music_note_24) // ảnh mặc định khi đang load
             .into(imgThumb);
     }
+    protected void onDestroy() {
+        super.onDestroy();
+        PlayerManager.release();
+    }
+    @Override
+    public void onPlayStateChanged(boolean isPlaying) {
+        ImageView btnPause = miniPlayer.findViewById(R.id.btn_pause_mini);
+        btnPause.setImageResource(isPlaying
+            ? R.drawable.baseline_pause_24
+            : R.drawable.baseline_play_arrow_24);
+
+    }
+
+    @Override
+    public void onTrackChanged(Song song) {
+        showMiniPlayer(song.getTitle(), song.getArtist(), song.getImageUrl(), song);
+    }
+
 }

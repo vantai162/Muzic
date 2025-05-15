@@ -11,15 +11,21 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.muzic.MainActivity;
+import com.example.muzic.api.ApiClient;
 import com.example.muzic.object.Playlist;
 import com.example.muzic.adapter.PlaylistAdapter;
 import com.example.muzic.R;
 import com.example.muzic.adapter.RecentSongAdapter;
 import com.example.muzic.object.Song;
 import com.example.muzic.databinding.FragmentHomeBinding;
+import com.example.muzic.player.PlayerManager;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class HomeFragment extends Fragment {
 
@@ -35,7 +41,7 @@ public class HomeFragment extends Fragment {
 
         //final TextView textView = binding.textHome;
         //homeViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
-        List<Playlist> playlistList = new ArrayList<>();
+        /*List<Playlist> playlistList = new ArrayList<>();
         List<Song> sadSongs = new ArrayList<>();
         List<Song> happySongs = new ArrayList<>();
         sadSongs.add(new Song(1, "Buồn ơi là buồn", "https://youtube.com/song1", "https://picsum.photos/200"));
@@ -47,7 +53,7 @@ public class HomeFragment extends Fragment {
 
 
 
-        playlistList.add(new Playlist("Sad Songs", sadSongs, R.drawable.img_sad));
+        playlistList.add(new Playlist("Favorite Songs", sadSongs, R.drawable.img_sad));
         playlistList.add(new Playlist("Happy Songs", happySongs, R.drawable.awkward_seal_ft));
 
         // Gắn adapter
@@ -67,6 +73,62 @@ public class HomeFragment extends Fragment {
         });
         binding.rvRecentlyPlayed.setLayoutManager(
                 new LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false));
+        binding.rvRecentlyPlayed.setAdapter(recentAdapter); */
+
+        /*ApiClient.getApiService().getAllSongs().enqueue(new Callback<List<Song>>() {
+            @Override
+            public void onResponse(Call<List<Song>> call, Response<List<Song>> response) {
+                if (response.isSuccessful()) {
+                    List<Song> songList = response.body();
+                    RecentSongAdapter recentAdapter = new RecentSongAdapter(requireContext(), songList, song -> {
+                        ((MainActivity) requireActivity()).showMiniPlayer(
+                            song.getTitle(),
+                            "Unknown Artist",
+                            song.getImageUrl(),
+                            song
+                        );
+                        PlayerManager.play(requireContext(), song.getYoutubeUrl());
+                    });
+                    binding.rvRecentlyPlayed.setLayoutManager(
+                        new LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false));
+                    binding.rvRecentlyPlayed.setAdapter(recentAdapter);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Song>> call, Throwable t) {
+                t.printStackTrace();
+            }
+        });*/
+        List<Song> testSongs = new ArrayList<>();
+        testSongs.add(new Song(
+            1,
+            "Test Song - SoundHelix",
+            "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",  // <-- Link MP3
+            "https://picsum.photos/200",
+            "Someone"
+        ));
+        testSongs.add(new Song(
+            2,
+            "Test Song - Local",
+            "rawresource://test",  // <-- Link MP3
+            "https://img.youtube.com/vi/zCODla5q-ps/maxresdefault.jpg",
+            "Someone"
+        ));
+
+// Gắn adapter với bài hát test
+        RecentSongAdapter recentAdapter = new RecentSongAdapter(requireContext(), testSongs, song -> {
+            ((MainActivity) requireActivity()).showMiniPlayer(
+                song.getTitle(),
+                "Test Artist",
+                song.getImageUrl(),
+                song
+            );
+            // Gọi phát nhạc
+            PlayerManager.play(requireContext(), song);
+        });
+        binding.rvRecentlyPlayed.setLayoutManager(
+            new LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false));
         binding.rvRecentlyPlayed.setAdapter(recentAdapter);
         return root;
 

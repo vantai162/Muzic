@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     //alias(libs.plugins.compose.compiler)
-    //alias(libs.plugins.navigation.safeargs)
+   // alias(libs.plugins.navigation.safeargs)
     //alias(libs.plugins.ksp)
     //alias(libs.plugins.aboutlibraries)
 }
@@ -19,7 +19,7 @@ android {
 
     defaultConfig {
         applicationId "com.example.muzic"
-        minSdk 24
+        minSdk 26
         targetSdk 35
         versionCode 1
         versionName "1.0"
@@ -50,6 +50,18 @@ dependencies {
     implementation libs.lifecycle.viewmodel.ktx
     implementation libs.navigation.fragment.ktx
     implementation libs.navigation.ui.ktx
+    implementation libs.androidx.room.common.jvm
+    implementation libs.androidx.sqlite.android
+    implementation libs.androidx.media3.common.ktx
+    implementation libs.ui.text.android
+    implementation project(':kotlinYtmusicScraper')
+    implementation libs.androidx.runtime.android
+    implementation project(':lyricsProviders')
+    implementation libs.androidx.media3.datasource
+    implementation libs.media3.exoplayer
+    implementation libs.media3.datasource.okhttp
+    implementation libs.work.runtime.ktx
+    implementation libs.media3.session
     //implementation libs.navigation.fragment
     //implementation libs.navigation.ui
     //implementation libs.activity
@@ -60,4 +72,9 @@ dependencies {
     annotationProcessor 'com.github.bumptech.glide:compiler:4.16.0'
     implementation 'jp.wasabeef:glide-transformations:4.3.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.0"
+    implementation 'com.google.code.gson:gson:2.10.1'
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+    implementation 'com.google.android.exoplayer:exoplayer:2.19.1'
+
 }
