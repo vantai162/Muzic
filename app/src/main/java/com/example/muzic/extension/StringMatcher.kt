@@ -1,4 +1,4 @@
-package com.maxrave.simpmusic.extension
+package com.example.muzic.extension
 
 import android.util.Log
 

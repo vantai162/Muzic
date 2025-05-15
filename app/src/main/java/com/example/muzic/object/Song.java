@@ -6,12 +6,14 @@ public class Song {
 
     private String youtubeUrl;
     private String imageUrl;
+    private String artist;
 
-    public Song(int id, String title, String youtubeUrl, String imageUrl) {
+    public Song(int id, String title, String youtubeUrl, String imageUrl,String artist) {
         this.id = id;
         this.title = title;
         this.youtubeUrl = youtubeUrl;
         this.imageUrl = imageUrl;
+        this.artist = artist;
     }
 
     public int getId() {
@@ -45,5 +47,13 @@ public class Song {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public String getArtist() {
+        return artist;
+    }
+
+    public void setArtist(String artist) {
+        this.artist = artist;
     }
 }

@@ -1,5 +1,5 @@
-package com.example.muzic.extension
-
+/*package com.example.muzic.extension
+//Bạn đã chia sẻ một tệp mở rộng (extension) rất lớn và toàn diện cho ứng dụng nghe nhạc Android – chứa rất nhiều hàm mở rộng (extension functions) để chuyển đổi giữa các mô hình dữ liệu như Track, SongEntity, MediaItem, PlaylistEntity, v.v.
 import android.app.ActivityManager
 import android.app.Service
 import android.content.Context
@@ -1002,4 +1002,4 @@ fun markdownToHtml(markdown: String): Spanned {
     val html = HtmlGenerator(src, parsedTree, flavour).generateHtml()
     Log.w("markdownToHtml", html)
     return Html.fromHtml(html, Html.FROM_HTML_MODE_COMPACT)
-}
+}*/
