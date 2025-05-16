@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.facebook.shimmer.ShimmerFrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/shimmer">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/background"
+        android:paddingVertical="@dimen/_8sdp">
+
+        <TextView
+            android:id="@+id/position"
+            android:layout_width="@dimen/_30sdp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:padding="@dimen/_6sdp"
+            android:text="01"
+            android:textColor="@color/textMain"
+            android:textSize="@dimen/_12ssp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/coverImage"
+            android:layout_width="@dimen/_30sdp"
+            android:layout_height="@dimen/_30sdp"
+            android:layout_marginStart="@dimen/_4sdp"
+            android:background="@color/textSec"
+            app:layout_constraintBottom_toBottomOf="@id/position"
+            app:layout_constraintStart_toEndOf="@id/position"
+            app:layout_constraintTop_toTopOf="@id/position" />
+
+        <LinearLayout
+            android:id="@+id/coverTitle"
+            android:layout_width="0dp"
+            android:layout_height="20dp"
+            android:layout_marginStart="@dimen/_6sdp"
+            android:background="@color/textSec"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toStartOf="@id/more"
+            app:layout_constraintStart_toEndOf="@id/coverImage"
+            app:layout_constraintTop_toTopOf="@id/coverImage" />
+
+        <LinearLayout
+            android:id="@+id/coverPlayed"
+            android:layout_width="100dp"
+            android:layout_height="20dp"
+            android:layout_marginTop="4dp"
+            android:background="@color/textSec"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="@+id/coverImage"
+            app:layout_constraintStart_toStartOf="@id/coverTitle"
+            app:layout_constraintTop_toBottomOf="@id/coverTitle" />
+
+        <ImageView
+            android:id="@+id/more"
+            android:layout_width="@dimen/_30sdp"
+            android:layout_height="@dimen/_30sdp"
+            android:padding="@dimen/_6sdp"
+            android:src="@drawable/more_vert_24px"
+            app:layout_constraintBottom_toBottomOf="@id/position"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/position" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+</com.facebook.shimmer.ShimmerFrameLayout>
