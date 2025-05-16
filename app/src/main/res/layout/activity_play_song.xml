@@ -2,6 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="#2C2F48">
 
     <!-- Ảnh nền mờ -->
@@ -25,19 +26,23 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="60dp"
+        android:paddingTop="0dp"
+        android:paddingBottom="60dp"
+        android:paddingLeft="60dp"
+        android:paddingRight="60dp"
         android:gravity="center_horizontal">
 
 
         <!-- Ảnh bài hát -->
-        <ImageView
+        <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/img_song_play"
             android:layout_width="300dp"
-            android:layout_height="300dp"
+            android:layout_height="450dp"
             android:scaleType="centerCrop"
             android:background="@drawable/rounded_corner"
             android:clipToOutline="true"
-            android:outlineProvider="background"/>
+            android:outlineProvider="background"
+            app:shapeAppearanceOverlay="@style/RoundedCornerImageView"/>
 
         <!-- Tên bài hát -->
         <TextView
