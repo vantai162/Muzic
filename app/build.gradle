@@ -1,0 +1,88 @@
+plugins {
+    alias(libs.plugins.android.application)
+}
+
+android {
+    namespace 'com.example.muzic'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId "com.example.muzic"
+        minSdk 24
+        targetSdk 35
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    buildFeatures {
+        viewBinding true
+    }
+
+    viewBinding {
+        enabled true
+    }
+}
+
+dependencies {
+
+    implementation libs.appcompat
+    implementation libs.material
+    implementation libs.activity
+    implementation libs.constraintlayout
+    testImplementation libs.junit
+    androidTestImplementation libs.ext.junit
+    androidTestImplementation libs.espresso.core
+
+    //FOR LAYOUT DIMENSIONS
+    implementation libs.ssp.android
+    implementation libs.sdp.android
+
+    //FOR APIs REQUEST AND RESPONSE PARSING
+    implementation libs.gson
+    implementation libs.okhttp
+
+    //FOR SHIMMERING LAYOUT (LOADING LAYOUT)
+    implementation libs.shimmer
+
+    //PULL TO REFRESH LAYOUT
+    implementation libs.swiperefreshlayout
+
+    // MediaSessionCompat and related media classes
+    implementation libs.media
+
+    //IMAGE LOADING LIBRARIES
+    implementation libs.glide
+    annotationProcessor libs.compiler
+    implementation libs.picasso
+
+    //IOS STYLE OVERSCROLL EFFECT
+    implementation libs.overscroll.decor.android
+
+    implementation libs.core
+
+    implementation libs.palette
+
+    //TRACK PLAYER / AUDIO PLAYER
+    implementation libs.bundles.media3Exoplayer
+
+    //Animated Sliding Drawer
+    implementation libs.slidingrootnav
+
+    // PAGING LIBRARY FOR RECYCLERVIEW
+    implementation libs.paginate
+
+    //AudioFile Utility
+    implementation libs.ffmpegandroid
+
+}

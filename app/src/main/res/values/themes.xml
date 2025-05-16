@@ -1,0 +1,52 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.SaavnMp3" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Customize your light theme here. -->
+        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:statusBarColor">@color/background</item>
+        <item name="android:navigationBarColor">@color/background</item>
+        <item name="android:windowLightNavigationBar">true</item>
+
+        <!-- Light theme colors -->
+        <item name="colorPrimary">@color/spotify_green</item>
+        <item name="colorPrimaryVariant">@color/spotify_light_green</item>
+        <item name="colorOnPrimary">@color/text_light</item>
+
+        <item name="android:colorBackground">@color/background_light</item>
+        <item name="colorOnBackground">@color/text_dark</item>
+
+        <item name="colorSurface">#fff</item>
+        <item name="colorOnSurface">@color/text_dark</item>
+
+        <item name="colorAccent">@color/spotify_green</item>
+
+        <!-- Text colors -->
+        <item name="android:textColor">@color/text_dark</item>
+        <item name="android:textColorSecondary">@color/text_secondary_light</item>
+
+        <!-- Divider -->
+        <item name="android:divider">@color/divider_light</item>
+
+        <item name="android:icon">@mipmap/ic_launcher</item>
+        <item name="android:roundIcon" tools:ignore="NewApi">@mipmap/ic_launcher_round</item>
+
+    </style>
+
+    <style name="Theme.SaavnMp3" parent="Base.Theme.SaavnMp3" />
+
+    <style name="ShapeAppearanceOverlay.App.CornerSize100Percent" parent="">
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <style name="TransparentText">
+        <item name="android:textColor">#00000000</item>
+    </style>
+
+    <style name="CustomTheme" parent="Base.Theme.SaavnMp3">
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:windowTranslucentStatus">false</item>
+        <item name="android:statusBarColor">#00000000</item>
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
+</resources>
