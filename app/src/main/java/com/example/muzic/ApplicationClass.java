@@ -5,59 +5,21 @@ package com.example.muzic;
 
 import android.app.Activity;
 import android.app.Application;
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.content.Intent;
-import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
-import android.net.Uri;
-import android.os.Build;
 import android.support.v4.media.session.MediaSessionCompat;
-import android.util.Log;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.OptIn;
-import androidx.appcompat.app.AppCompatDelegate;
-import androidx.media.app.NotificationCompat;
-import androidx.media3.common.MediaItem;
-import androidx.media3.common.Player;
-import androidx.media3.common.util.UnstableApi;
-import androidx.media3.common.util.Util;
-import androidx.media3.database.DatabaseProvider;
-import androidx.media3.database.ExoDatabaseProvider;
-import androidx.media3.datasource.DataSource;
-import androidx.media3.datasource.DefaultHttpDataSource;
-import androidx.media3.datasource.FileDataSource;
-import androidx.media3.datasource.cache.CacheDataSource;
-import androidx.media3.datasource.cache.CacheEvictor;
-import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor;
-import androidx.media3.datasource.cache.SimpleCache;
 import androidx.media3.exoplayer.ExoPlayer;
-import androidx.media3.exoplayer.source.DefaultMediaSourceFactory;
-import androidx.media3.exoplayer.source.ProgressiveMediaSource;
-import androidx.palette.graphics.Palette;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.target.CustomTarget;
-import com.bumptech.glide.request.transition.Transition;
 import com.example.muzic.records.TrackResponse;
-import com.google.gson.Gson;
 //import com.example.muzic.activities.MusicOverviewActivity;
 //import com.example.muzic.activities.SettingsActivity;
-import com.example.muzic.network.ApiManager;
 //import com.example.muzic.network.TrackManager;
-import com.example.muzic.network.utility.RequestNetwork;
 //import com.example.muzic.services.NotificationReceiver;
 import com.example.muzic.utils.MediaPlayerUtil;
 //import com.example.muzic.utils.SharedPreferenceManager;
 //import com.example.muzic.utils.TrackCacheHelper;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 public class ApplicationClass extends Application {
