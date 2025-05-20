@@ -9,11 +9,13 @@ import androidx.media3.common.MediaItem;
 
 import com.example.muzic.R;
 import com.example.muzic.adapter.PopularUserAdapter;
+import com.example.muzic.adapter.TrendingPlaylistAdapter;
 import com.example.muzic.adapter.TrendingTracksAdapter;
 import com.example.muzic.databinding.ActivityMainBinding;
 import com.example.muzic.model.AudiusTrackResponse;
 import com.example.muzic.network.AudiusApiClient;
 import com.example.muzic.network.AudiusApiService;
+import com.example.muzic.records.PlaylistResponse;
 import com.example.muzic.records.Track;
 import com.example.muzic.records.User;
 import com.yarolegovich.slidingrootnav.SlidingRootNav;
@@ -38,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
     private ExoPlayer exoPlayer;
     private TrendingTracksAdapter trendingTracksAdapter;
     private PopularUserAdapter popularUserAdapter;
+    private TrendingPlaylistAdapter trendingPlaylistAdapter;
     private ActivityMainBinding binding;
     private SlidingRootNav slidingRootNavBuilder;
     @Override
@@ -88,7 +91,12 @@ public class MainActivity extends AppCompatActivity {
         binding.popularArtistsRecyclerView.setAdapter(popularUserAdapter);
 
 
-
+        // RecyclerView: Popular Playlists
+        binding.popularPlaylistRecyclerView.setLayoutManager(
+                new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        );
+        trendingPlaylistAdapter = new TrendingPlaylistAdapter(this, new ArrayList<>());
+        binding.popularPlaylistRecyclerView.setAdapter(trendingPlaylistAdapter);
 
         // Gọi API
         AudiusApiService apiService = AudiusApiClient.getInstance();
@@ -121,6 +129,25 @@ public class MainActivity extends AppCompatActivity {
                 Log.e(TAG, "API Call Failed: " + t.getMessage());
             }
         });
+
+        // Gọi API lấy danh sách trending playlists
+        Call<PlaylistResponse> playlistCall = apiService.getTrendingPlaylists(10);
+        playlistCall.enqueue(new Callback<PlaylistResponse>() {
+            @Override
+            public void onResponse(Call<PlaylistResponse> call, Response<PlaylistResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    trendingPlaylistAdapter.setPlaylists(response.body().data());
+                } else {
+                    Log.e(TAG, "Playlist API Error: " + response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<PlaylistResponse> call, Throwable t) {
+                Log.e(TAG, "Playlist API Call Failed: " + t.getMessage());
+            }
+        });
+
     }
 
 
@@ -131,6 +158,8 @@ public class MainActivity extends AppCompatActivity {
             exoPlayer.release();
         }
     }
+
+
 
     /*private void onDrawerItemsClicked() {
         slidingRootNavBuilder.getLayout().findViewById(R.id.settings).setOnClickListener(v -> {

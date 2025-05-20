@@ -153,7 +153,7 @@
                 </LinearLayout>
 
                 <LinearLayout
-                    android:id="@+id/__popular_albums_section"
+                    android:id="@+id/__popular_playlists_section"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/_8sdp"
@@ -166,12 +166,12 @@
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/avenir_next_bold"
                         android:includeFontPadding="false"
-                        android:text="Popular albums"
+                        android:text="Popular playlists"
                         android:textColor="@color/textMain"
                         android:textSize="@dimen/_16ssp" />
 
                     <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/popular_albums_recycler_view"
+                        android:id="@+id/popular_playlist_recycler_view"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
@@ -189,7 +189,7 @@
                     android:layout_marginTop="@dimen/_8sdp"
                     android:orientation="vertical"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/__popular_albums_section">
+                    app:layout_constraintTop_toBottomOf="@+id/__popular_playlists_section">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -212,39 +212,6 @@
 
                 </LinearLayout>
 
-                <LinearLayout
-                    android:id="@+id/__popular_playlists_section"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/_8sdp"
-                    android:layout_marginBottom="@dimen/_50sdp"
-                    android:elevation="@dimen/_8sdp"
-                    android:orientation="vertical"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/saved_libraries_section">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/avenir_next_bold"
-                        android:includeFontPadding="false"
-                        android:text="Popular playlists"
-                        android:textColor="@color/textMain"
-                        android:textSize="@dimen/_16ssp" />
-
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/playlist_recycler_view"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/_12sdp"
-                        android:overScrollMode="never"
-                        android:scrollbars="none"
-                        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-                        app:spanCount="2"
-                        tools:itemCount="10"
-                        tools:listitem="@layout/activity_main_playlist_item" />
-
-                </LinearLayout>
 
                 <androidx.constraintlayout.widget.Barrier
                     android:id="@+id/barrier"
