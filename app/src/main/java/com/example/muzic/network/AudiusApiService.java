@@ -2,6 +2,7 @@ package com.example.muzic.network;
 
 import com.example.muzic.model.AudiusTrackResponse;
 import com.example.muzic.model.AudiusUserResponse;
+import com.example.muzic.records.PlaylistResponse;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -18,4 +19,8 @@ public interface AudiusApiService {
     Call<AudiusTrackResponse> getTrendingTracks(@Query("limit") int limit);
     @GET("/v1/tracks/stream/{id}")
     Call<ResponseBody> streamTrack(@Path("id") String trackId);
+    @GET("v1/playlists/trending")
+    Call<PlaylistResponse> getTrendingPlaylists(
+            @Query("limit") int limit
+    );
 }
