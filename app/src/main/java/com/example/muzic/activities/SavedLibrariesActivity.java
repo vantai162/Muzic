@@ -3,7 +3,7 @@
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;SavedLibrariesActivity;
+import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -14,7 +14,7 @@ import com.example.muzic.R;
 import com.example.muzic.adapters.SavedLibrariesAdapter;
 import com.example.muzic.databinding.ActivitySavedLibrariesBinding;
 import com.example.muzic.databinding.AddNewLibraryBottomSheetBinding;
-import com.example.muzic.records.sharedpref.SavedLibraries;
+import com.example.muzic.records.sharedpref.SavedLibrariesAudius;
 import com.example.muzic.utils.SharedPreferenceManager;
 
 import java.text.SimpleDateFormat;
@@ -26,7 +26,7 @@ import me.everything.android.ui.overscroll.OverScrollDecoratorHelper;
 public class SavedLibrariesActivity extends AppCompatActivity {
 
     ActivitySavedLibrariesBinding binding;
-    SavedLibraries savedLibraries;
+    SavedLibrariesAudius savedLibraries;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,7 +55,7 @@ public class SavedLibrariesActivity extends AppCompatActivity {
 
                 final String currentTime = String.valueOf(System.currentTimeMillis());
 
-                SavedLibraries.Library library = new SavedLibraries.Library(
+                SavedLibrariesAudius.Library library = new SavedLibrariesAudius.Library(
                         "#"+currentTime,
                         true,
                         false,

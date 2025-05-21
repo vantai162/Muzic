@@ -1,7 +1,7 @@
 package com.example.muzic.network;
 
-import com.example.muzic.model.AudiusTrackResponse;
-import com.example.muzic.model.AudiusUserResponse;
+import com.example.muzic.records.AudiusTrackResponse;
+import com.example.muzic.records.AudiusUserResponse;
 import com.example.muzic.records.PlaylistResponse;
 
 import okhttp3.ResponseBody;

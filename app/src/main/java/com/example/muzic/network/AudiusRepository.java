@@ -1,6 +1,6 @@
 package com.example.muzic.network;
 
-import com.example.muzic.model.AudiusTrackResponse;
+import com.example.muzic.records.AudiusTrackResponse;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
