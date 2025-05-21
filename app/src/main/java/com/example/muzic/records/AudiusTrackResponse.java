@@ -1,7 +1,5 @@
-package com.example.muzic.model;
+package com.example.muzic.records;
 
-
-import com.example.muzic.records.Track;
 
 import java.util.List;
 

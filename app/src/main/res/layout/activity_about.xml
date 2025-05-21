@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    tools:context=".activities.AboutActivity"
+    android:background="@color/background">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:title="About Us"
+        app:navigationIcon="@drawable/round_arrow_back_24"
+        app:titleTextColor="@color/textMain" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:overScrollMode="never"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/_12sdp"
+            android:orientation="vertical">
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="@android:color/transparent"
+                app:strokeColor="@color/textSec"
+                app:strokeWidth="0.4dp"
+                app:contentPaddingTop="@dimen/_12sdp"
+                app:contentPaddingBottom="@dimen/_12sdp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="@dimen/_8sdp">
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="@dimen/_35sdp"
+                            android:layout_height="@dimen/_35sdp"
+                            app:cardBackgroundColor="@android:color/transparent"
+                            app:strokeWidth="0.1dp"
+                            app:cardCornerRadius="@dimen/_8sdp">
+
+                            <ImageView
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:importantForAccessibility="no"
+                                android:src="@drawable/icon" />
+
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:layout_marginStart="@dimen/_8sdp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/app_name"
+                                android:textStyle="bold"
+                                android:textColor="@color/textMain"
+                                android:textSize="@dimen/_18ssp" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="A simple music player inspired by spotify and developed using the unofficial JioSaavn API. Has an lot of features like Search for an Artist, Song, Playlist, Albums. Not just search this app also provides you functionality to play the songs and view the artist info and much more."
+                                android:textColor="@color/textSec" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <com.example.muzic.utils.customview.BottomSheetItemView
+                        android:id="@+id/versionTxt"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:title="Version - 1.0 "
+                        android:src="@drawable/round_info_outline_24"
+                        app:srcPadding="@dimen/_4sdp"
+                        android:layout_marginTop="@dimen/_4sdp" />
+
+
+                    <com.example.muzic.utils.customview.BottomSheetItemView
+                        android:id="@+id/rate"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:title="Rate us"
+                        android:src="@drawable/star_24px"
+                        app:srcPadding="@dimen/_2sdp" />
+
+                    <com.example.muzic.utils.customview.BottomSheetItemView
+                        android:id="@+id/source_code"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:title="Source code"
+                        android:src="@drawable/github"
+                        app:srcPadding="@dimen/_4sdp" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="@android:color/transparent"
+                app:strokeColor="@color/textSec"
+                app:strokeWidth="0.4dp"
+                app:contentPaddingTop="@dimen/_12sdp"
+                app:contentPaddingBottom="@dimen/_12sdp"
+                android:layout_marginVertical="@dimen/_12sdp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Community"
+                        android:textSize="@dimen/_12sdp"
+                        android:textColor="@color/textMain"
+                        android:textStyle="bold"
+                        android:layout_marginStart="@dimen/_8sdp" />
+
+                    <com.example.muzic.utils.customview.BottomSheetItemView
+                        android:id="@+id/instagram"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:title="Instagram"
+                        android:src="@drawable/instagram"
+                        app:srcPadding="@dimen/_4sdp"
+                        android:layout_marginTop="@dimen/_4sdp" />
+
+
+                    <com.example.muzic.utils.customview.BottomSheetItemView
+                        android:id="@+id/discord"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:title="Discord"
+                        android:src="@drawable/discord"
+                        app:srcPadding="@dimen/_4sdp" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="@android:color/transparent"
+                app:strokeColor="@color/textSec"
+                app:strokeWidth="0.4dp"
+                app:contentPaddingTop="@dimen/_12sdp"
+                app:contentPaddingBottom="@dimen/_12sdp"
+                android:layout_marginBottom="@dimen/_12sdp">
+
+                <LinearLayout
+                    android:id="@+id/layout_contributors"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Contributers"
+                        android:textSize="@dimen/_12sdp"
+                        android:textColor="@color/textMain"
+                        android:textStyle="bold"
+                        android:layout_marginStart="@dimen/_8sdp" />
+
+                    <com.example.muzic.utils.customview.BottomSheetItemView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:title="vantai162"
+                        tools:visibility="visible"
+                        android:visibility="gone"
+                        android:src="@drawable/baseline_person_24"
+                        app:srcPadding="@dimen/_4sdp"
+                        android:layout_marginTop="@dimen/_4sdp" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="@android:color/transparent"
+                app:strokeColor="@color/textSec"
+                app:strokeWidth="0.4dp"
+                app:contentPadding="@dimen/_12sdp"
+                android:layout_marginBottom="@dimen/_12sdp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="@dimen/_35sdp"
+                        android:layout_height="@dimen/_35sdp"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/round_menu_book_24"
+                        android:padding="@dimen/_6sdp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/_8sdp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/app_name"
+                            android:textSize="@dimen/_12sdp"
+                            android:textColor="@color/textMain"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/app_license"
+                            android:textColor="@color/textSec" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

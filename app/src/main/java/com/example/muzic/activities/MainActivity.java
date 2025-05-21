@@ -12,7 +12,7 @@ import com.example.muzic.adapter.PopularUserAdapter;
 import com.example.muzic.adapter.TrendingPlaylistAdapter;
 import com.example.muzic.adapter.TrendingTracksAdapter;
 import com.example.muzic.databinding.ActivityMainBinding;
-import com.example.muzic.model.AudiusTrackResponse;
+import com.example.muzic.records.AudiusTrackResponse;
 import com.example.muzic.network.AudiusApiClient;
 import com.example.muzic.network.AudiusApiService;
 import com.example.muzic.records.PlaylistResponse;
@@ -23,7 +23,6 @@ import com.yarolegovich.slidingrootnav.SlidingRootNavBuilder;
 
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -168,15 +167,15 @@ public class MainActivity extends AppCompatActivity {
         });
 
         slidingRootNavBuilder.getLayout().findViewById(R.id.logo).setOnClickListener(view -> slidingRootNavBuilder.closeMenu());
-        /*
-        slidingRootNavBuilder.getLayout().findViewById(R.id.library).setOnClickListener(view -> {
+
+        /*slidingRootNavBuilder.getLayout().findViewById(R.id.library).setOnClickListener(view -> {
             startActivity(new Intent(MainActivity.this, SavedLibrariesActivity.class));
             slidingRootNavBuilder.closeMenu();
-        });
+        });*/
 
         slidingRootNavBuilder.getLayout().findViewById(R.id.about).setOnClickListener(view -> {
             startActivity(new Intent(MainActivity.this, AboutActivity.class));
             slidingRootNavBuilder.closeMenu();
-        });*/
+        });
     }
 }

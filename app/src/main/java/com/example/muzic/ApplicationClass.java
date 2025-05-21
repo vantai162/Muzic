@@ -10,7 +10,6 @@ import android.support.v4.media.session.MediaSessionCompat;
 
 import androidx.media3.exoplayer.ExoPlayer;
 
-import com.example.muzic.records.TrackResponse;
 //import com.example.muzic.activities.MusicOverviewActivity;
 //import com.example.muzic.activities.SettingsActivity;
 //import com.example.muzic.network.TrackManager;
@@ -29,7 +28,7 @@ public class ApplicationClass extends Application {
     public static final String ACTION_PREV = "prev";
     public static final String ACTION_PLAY = "play";
     public static final MediaPlayerUtil mediaPlayerUtil = MediaPlayerUtil.getInstance();
-    public static TrackResponse CURRENT_TRACK = null;
+    //public static TrackResponse CURRENT_TRACK = null;
 
     public static ExoPlayer player;
     public static String TRACK_QUALITY = "320kbps";
