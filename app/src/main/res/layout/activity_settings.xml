@@ -128,6 +128,32 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:text="Interface"
+                android:paddingHorizontal="@dimen/_12sdp"
+                android:paddingVertical="@dimen/_4sdp"
+                android:textColor="@color/textMain"
+                android:fontFamily="@font/avenir_next_bold"
+                android:textStyle="bold"
+                android:textSize="@dimen/_14sdp" />
+
+            <com.example.muzic.utils.customview.MaterialCustomSwitch
+                android:id="@+id/blur_player_background"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:textHead="Blur player background"
+                app:textOff="Blurring the background of the now playing screen effect."
+                app:textOn="Blurring the background of the now playing screen effect."
+                app:checked="true" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.2dp"
+                android:layout_marginVertical="@dimen/_8sdp"
+                android:background="@color/textSec" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:text="Other"
                 android:paddingHorizontal="@dimen/_12sdp"
                 android:paddingVertical="@dimen/_4sdp"
