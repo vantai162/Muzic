@@ -10,4 +10,18 @@
         <item name="android:background">@android:color/transparent</item>
     </style>
 
+    <style name="ToggleButtonStyle" parent="Widget.Material3.Button">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:minWidth">72dp</item>
+        <item name="shapeAppearanceOverlay">@style/ToggleShape</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="backgroundTint">@color/selector_toggle_background</item>
+        <item name="rippleColor">#66FFFFFF</item> <!-- hiệu ứng ripple nhẹ -->
+    </style>
+
+    <style name="ToggleShape" parent="">
+        <item name="cornerSize">50%</item> <!-- Bo tròn hoàn toàn -->
+    </style>
+
 </resources>
