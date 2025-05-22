@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <color name="background">@color/background_light</color>
-    <color name="textMain">@color/text_dark</color>
-    <color name="textSec">@color/text_secondary_dark</color>
-    <color name="buttonBackground">@color/button_light</color>
-    <color name="dividerBackground">@color/divider_dark</color>
-    <color name="green">@color/spotify_light_green</color>
+    <!-- Material Design colors -->
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
 
     <!-- Primary colors -->
     <color name="spotify_green">#1DB954</color> <!-- Spotify Green -->
@@ -29,6 +30,7 @@
     <!-- Divider and accent colors -->
     <color name="divider_light">#E6E6E6</color>
     <color name="divider_dark">#333333</color>
+    <color name="gray">#FF808080</color>
 
     <!-- Button colors -->
     <color name="button_dark">#1DB954</color>
@@ -38,4 +40,11 @@
     <color name="gray_400">#FFBDBDBD</color>
     <color name="gray_600">#FF757575</color>
 
+    <!-- Theme colors (references to above colors) -->
+    <color name="background">@color/background_light</color>
+    <color name="textMain">@color/text_dark</color>
+    <color name="textSec">@color/text_secondary_dark</color>
+    <color name="buttonBackground">@color/button_light</color>
+    <color name="dividerBackground">@color/divider_dark</color>
+    <color name="green">@color/spotify_light_green</color>
 </resources>

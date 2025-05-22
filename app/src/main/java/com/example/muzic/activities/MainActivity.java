@@ -3,26 +3,29 @@ package com.example.muzic.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.media3.common.MediaItem;
+import androidx.media3.exoplayer.ExoPlayer;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.muzic.R;
 import com.example.muzic.adapter.PopularUserAdapter;
 import com.example.muzic.adapter.TrendingPlaylistAdapter;
 import com.example.muzic.adapter.TrendingTracksAdapter;
 import com.example.muzic.databinding.ActivityMainBinding;
-import com.example.muzic.records.AudiusTrackResponse;
+import com.example.muzic.databinding.PlayBarBinding;
+import com.example.muzic.model.TrackData;
 import com.example.muzic.network.AudiusApiClient;
 import com.example.muzic.network.AudiusApiService;
+import com.example.muzic.records.AudiusTrackResponse;
 import com.example.muzic.records.PlaylistResponse;
 import com.example.muzic.records.Track;
 import com.example.muzic.records.User;
+import com.squareup.picasso.Picasso;
 import com.yarolegovich.slidingrootnav.SlidingRootNav;
 import com.yarolegovich.slidingrootnav.SlidingRootNavBuilder;
-
-import androidx.media3.exoplayer.ExoPlayer;
-import androidx.recyclerview.widget.LinearLayoutManager;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -30,30 +33,33 @@ import java.util.List;
 import java.util.Set;
 
 import retrofit2.Call;
-import retrofit2.Response;
 import retrofit2.Callback;
-
+import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "AudiusAPI";
-    private ExoPlayer exoPlayer;
+    private ExoPlayer player;
     private TrendingTracksAdapter trendingTracksAdapter;
     private PopularUserAdapter popularUserAdapter;
     private TrendingPlaylistAdapter trendingPlaylistAdapter;
     private ActivityMainBinding binding;
+    private PlayBarBinding playBarBinding;
     private SlidingRootNav slidingRootNavBuilder;
+    private TrackData currentTrack;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // Khởi tạo ExoPlayer
-        exoPlayer = new ExoPlayer.Builder(this).build();
+        // Initialize play bar binding
+        playBarBinding = PlayBarBinding.bind(binding.playBar.getRoot());
 
+        // Initialize ExoPlayer
+        player = new ExoPlayer.Builder(this).build();
 
-
-        //Cau hinh thanh 3 dau gach ngang ben trai goc tren
+        // Setup navigation drawer
         slidingRootNavBuilder = new SlidingRootNavBuilder(this)
                 .withMenuLayout(R.layout.main_drawer_layout)
                 .withContentClickableWhenMenuOpened(false)
@@ -62,53 +68,138 @@ public class MainActivity extends AppCompatActivity {
         binding.profileIcon.setOnClickListener(view -> slidingRootNavBuilder.openMenu(true));
         onDrawerItemsClicked();
 
+        // Setup RecyclerViews
+        setupRecyclerViews();
+        
+        // Load data
+        loadTrendingTracks();
+        
+        // Setup play bar click listener
+        binding.playBarBackground.setOnClickListener(v -> {
+            if (currentTrack != null) {
+                Intent intent = new Intent(this, MusicOverviewActivity.class);
+                intent.putExtra("track", currentTrack);
+                intent.putExtra("isPlaying", player.isPlaying());
+                startActivity(intent);
+                overridePendingTransition(R.anim.slide_up, R.anim.no_animation);
+            }
+        });
 
-        // Cấu hình RecyclerView theo chiều ngang
+        // Setup play bar controls
+        binding.playBarPlayPauseIcon.setOnClickListener(v -> togglePlayPause());
+        binding.playBarPrevIcon.setOnClickListener(v -> playPreviousTrack());
+        binding.playBarNextIcon.setOnClickListener(v -> playNextTrack());
+    }
+
+    private void setupRecyclerViews() {
+        // Trending Tracks
         binding.popularSongsRecyclerView.setLayoutManager(
                 new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         );
         trendingTracksAdapter = new TrendingTracksAdapter(this, track -> {
-            String streamUrl = "https://api.audius.co/v1/tracks/" + track.id() + "/stream";
-            MediaItem mediaItem = MediaItem.fromUri(streamUrl);
-            exoPlayer.setMediaItem(mediaItem);
-            exoPlayer.prepare();
-            exoPlayer.play();
-            //xu ly phat nhac
-            Log.d(TAG, "Playing: " + track.title() + " - By: " + track.user().name());
+            playTrack(track);
         });
         binding.popularSongsRecyclerView.setAdapter(trendingTracksAdapter);
 
-
-        // RecyclerView: Popular Users
+        // Popular Users
         binding.popularArtistsRecyclerView.setLayoutManager(
                 new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         );
         popularUserAdapter = new PopularUserAdapter(this, new ArrayList<>(), user -> {
             Log.d(TAG, "User clicked: " + user.name());
-            // TODO: Mở trang UserDetailActivity nếu bạn có
         });
         binding.popularArtistsRecyclerView.setAdapter(popularUserAdapter);
 
-
-        // RecyclerView: Popular Playlists
+        // Popular Playlists
         binding.popularPlaylistRecyclerView.setLayoutManager(
                 new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         );
         trendingPlaylistAdapter = new TrendingPlaylistAdapter(this, new ArrayList<>());
         binding.popularPlaylistRecyclerView.setAdapter(trendingPlaylistAdapter);
+    }
 
-        // Gọi API
+    private void playTrack(Track track) {
+        // Convert Track to TrackData and handle type conversion
+        currentTrack = new TrackData();
+        currentTrack.id = track.id();
+        currentTrack.title = track.title();
+        
+        // Convert Artwork
+        currentTrack.artwork = new com.example.muzic.model.Artwork();
+        if (track.artwork() != null) {
+            currentTrack.artwork._150x150 = track.artwork().x150();
+            currentTrack.artwork._480x480 = track.artwork().x480();
+            currentTrack.artwork._1000x1000 = track.artwork().x1000();
+        }
+        
+        // Convert User
+        currentTrack.user = new com.example.muzic.model.User();
+        currentTrack.user.name = track.user().name();
+        currentTrack.user.id = track.user().id();
+        currentTrack.duration = track.duration();
+
+        // Update play bar UI
+        binding.playBarBackground.setVisibility(View.VISIBLE);
+        binding.playBarMusicTitle.setText(track.title());
+        binding.playBarMusicDesc.setText(track.user().name());
+        if (track.artwork() != null && track.artwork().x480() != null) {
+            Picasso.get().load(track.artwork().x480()).into(binding.playBarCoverImage);
+        }
+
+        // Play the track
+        String streamUrl = "https://discoveryprovider2.audius.co/v1/tracks/" + track.id() + "/stream";
+        MediaItem mediaItem = MediaItem.fromUri(streamUrl);
+        player.setMediaItem(mediaItem);
+        player.prepare();
+        player.play();
+        binding.playBarPlayPauseIcon.setImageResource(R.drawable.baseline_pause_24);
+        binding.playBarPlayPauseIcon.setRotation(0);
+    }
+
+    private void togglePlayPause() {
+        if (player.isPlaying()) {
+            player.pause();
+            binding.playBarPlayPauseIcon.setImageResource(R.drawable.play_arrow_24px);
+            binding.playBarPlayPauseIcon.setRotation(0);
+        } else {
+            player.play();
+            binding.playBarPlayPauseIcon.setImageResource(R.drawable.baseline_pause_24);
+            binding.playBarPlayPauseIcon.setRotation(0);
+        }
+    }
+
+    private void playPreviousTrack() {
+        // Get current track index from adapter
+        int currentIndex = trendingTracksAdapter.getCurrentTrackIndex();
+        if (currentIndex > 0) {
+            Track previousTrack = trendingTracksAdapter.getTrack(currentIndex - 1);
+            playTrack(previousTrack);
+            trendingTracksAdapter.setCurrentTrackIndex(currentIndex - 1);
+        }
+    }
+
+    private void playNextTrack() {
+        // Get current track index from adapter
+        int currentIndex = trendingTracksAdapter.getCurrentTrackIndex();
+        if (currentIndex < trendingTracksAdapter.getItemCount() - 1) {
+            Track nextTrack = trendingTracksAdapter.getTrack(currentIndex + 1);
+            playTrack(nextTrack);
+            trendingTracksAdapter.setCurrentTrackIndex(currentIndex + 1);
+        }
+    }
+
+    private void loadTrendingTracks() {
         AudiusApiService apiService = AudiusApiClient.getInstance();
         Call<AudiusTrackResponse> call = apiService.getTrendingTracks(10);
-
 
         call.enqueue(new Callback<AudiusTrackResponse>() {
             @Override
             public void onResponse(Call<AudiusTrackResponse> call, Response<AudiusTrackResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     List<Track> tracks = response.body().data();
-                    trendingTracksAdapter.setTracks(tracks); // ⬅️ Cập nhật dữ liệu adapter
-                    // Lấy user duy nhất từ track
+                    trendingTracksAdapter.setTracks(tracks);
+
+                    // Get unique users for popular artists
                     Set<String> seenIds = new HashSet<>();
                     List<User> uniqueUsers = new ArrayList<>();
                     for (Track track : tracks) {
@@ -117,9 +208,7 @@ public class MainActivity extends AppCompatActivity {
                             uniqueUsers.add(user);
                         }
                     }
-                    popularUserAdapter.setUsers(uniqueUsers); // Cap nhat du lieu adapter user
-                } else {
-                    Log.e(TAG, "API Error: " + response.message());
+                    popularUserAdapter.setUsers(uniqueUsers);
                 }
             }
 
@@ -129,15 +218,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // Gọi API lấy danh sách trending playlists
+        // Load trending playlists
         Call<PlaylistResponse> playlistCall = apiService.getTrendingPlaylists(10);
         playlistCall.enqueue(new Callback<PlaylistResponse>() {
             @Override
             public void onResponse(Call<PlaylistResponse> call, Response<PlaylistResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     trendingPlaylistAdapter.setPlaylists(response.body().data());
-                } else {
-                    Log.e(TAG, "Playlist API Error: " + response.message());
                 }
             }
 
@@ -146,36 +233,27 @@ public class MainActivity extends AppCompatActivity {
                 Log.e(TAG, "Playlist API Call Failed: " + t.getMessage());
             }
         });
-
     }
-
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (exoPlayer != null) {
-            exoPlayer.release();
+        if (player != null) {
+            player.release();
+            player = null;
         }
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Update play bar state if needed
+        if (currentTrack != null) {
+            binding.playBarPlayPauseIcon.setRotation(player.isPlaying() ? 0 : 0);
+        }
+    }
 
-    //khuc menu la cai ham nay ne
     private void onDrawerItemsClicked() {
-        slidingRootNavBuilder.getLayout().findViewById(R.id.settings).setOnClickListener(v -> {
-            startActivity(new Intent(this, SettingsActivity.class));
-            slidingRootNavBuilder.closeMenu();
-        });
-
-        slidingRootNavBuilder.getLayout().findViewById(R.id.logo).setOnClickListener(view -> slidingRootNavBuilder.closeMenu());
-
-        /*slidingRootNavBuilder.getLayout().findViewById(R.id.library).setOnClickListener(view -> {
-            startActivity(new Intent(MainActivity.this, SavedLibrariesActivity.class));
-            slidingRootNavBuilder.closeMenu();
-        });*/
-
-        slidingRootNavBuilder.getLayout().findViewById(R.id.about).setOnClickListener(view -> {
-            startActivity(new Intent(MainActivity.this, AboutActivity.class));
-            slidingRootNavBuilder.closeMenu();
-        });
+        // Implement drawer menu item clicks
     }
 }

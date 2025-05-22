@@ -48,6 +48,24 @@ public class ApplicationClass extends Application {
     public static int TEXT_ON_IMAGE_COLOR1 = IMAGE_BG_COLOR ^ 0x00FFFFFF;
     private static Activity currentActivity = null;
 
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        // Initialize ExoPlayer
+        player = new ExoPlayer.Builder(this).build();
+    }
+
+    public ExoPlayer getExoPlayer() {
+        if (player == null) {
+            player = new ExoPlayer.Builder(this).build();
+        }
+        return player;
+    }
+
+    public void setExoPlayer(ExoPlayer exoPlayer) {
+        player = exoPlayer;
+    }
+
     public static Activity getCurrentActivity() {
         return currentActivity;
     }
@@ -56,7 +74,13 @@ public class ApplicationClass extends Application {
         currentActivity = activity;
     }
 
-    
-
+    @Override
+    public void onTerminate() {
+        super.onTerminate();
+        if (player != null) {
+            player.release();
+            player = null;
+        }
+    }
 }
 
