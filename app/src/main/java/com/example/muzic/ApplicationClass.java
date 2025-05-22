@@ -38,7 +38,7 @@ public class ApplicationClass extends Application {
     public static String MUSIC_TITLE = "";
     public static String MUSIC_DESCRIPTION = "";
     public static String IMAGE_URL = "";
-    public static String MUSIC_ID = "";
+    public static String MUSIC_ID = null;
     public static String SONG_URL = "";
     public static int track_position = -1;
     //public static SharedPreferenceManager sharedPreferenceManager;

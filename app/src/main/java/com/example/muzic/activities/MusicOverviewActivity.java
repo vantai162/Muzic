@@ -85,14 +85,27 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
         playlist = new ArrayList<>();
         if (currentTrack != null) {
             playlist.add(currentTrack);
-            updateTrackUI(currentTrack);
+            // Store current track ID in ApplicationClass for reference
+            ApplicationClass.MUSIC_ID = String.valueOf(currentTrack.id);
+            
+            // Update UI without restarting playback
+            updateUIOnly(currentTrack);
+            
+            // Update seekbar to current position
+            if (getIntent().hasExtra("currentPosition")) {
+                long currentPosition = getIntent().getLongExtra("currentPosition", 0);
+                binding.seekbar.setProgress((int) (currentPosition / 1000));
+                binding.elapsedDuration.setText(formatDuration(currentPosition));
+            }
         }
 
         setupClickListeners();
         setupSeekBar();
         
         // Update UI based on current player state
-        updatePlayPauseButton(player.isPlaying());
+        if (player != null) {
+            updatePlayPauseButton(player.isPlaying());
+        }
     }
 
     private void setupClickListeners() {
@@ -177,44 +190,71 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
         binding.totalDuration.setText(formatDuration(track.duration * 1000L));
         binding.seekbar.setMax(track.duration);
 
-        // Only prepare and play if not already playing this track
+        // Get current playback position
+        long currentPosition = player.getCurrentPosition();
+
+        // Only prepare and play if this is a completely new track
+        String streamUrl = "https://discoveryprovider2.audius.co/v1/tracks/" + track.id + "/stream";
         if (!isCurrentTrack(track)) {
-            String streamUrl = "https://discoveryprovider2.audius.co/v1/tracks/" + track.id + "/stream";
             MediaItem mediaItem = MediaItem.fromUri(streamUrl);
             player.setMediaItem(mediaItem);
             player.prepare();
             player.play();
+        } else {
+            // If it's the same track, maintain the current position
+            binding.seekbar.setProgress((int) (currentPosition / 1000));
+            binding.elapsedDuration.setText(formatDuration(currentPosition));
         }
+        
+        // Always update play/pause button state based on current player state
         updatePlayPauseButton(player.isPlaying());
     }
 
     private boolean isCurrentTrack(TrackData track) {
         if (player.getCurrentMediaItem() == null) return false;
+        
         String currentUrl = player.getCurrentMediaItem().mediaId;
         String newUrl = "https://discoveryprovider2.audius.co/v1/tracks/" + track.id + "/stream";
-        return currentUrl.equals(newUrl);
+        
+        // Also check if the track IDs match
+        return currentUrl.equals(newUrl) || 
+               (ApplicationClass.MUSIC_ID != null && ApplicationClass.MUSIC_ID.equals(String.valueOf(track.id)));
+    }
+
+    private void updateUIOnly(TrackData track) {
+        binding.title.setText(track.title);
+        binding.description.setText(track.user.name);
+        if (track.artwork != null && track.artwork._480x480 != null) {
+            Picasso.get().load(track.artwork._480x480).into(binding.coverImage);
+        }
+        
+        // Set total duration
+        binding.totalDuration.setText(formatDuration(track.duration * 1000L));
+        binding.seekbar.setMax(track.duration);
+        
+        // Update elapsed duration with current position
+        binding.elapsedDuration.setText(formatDuration(player.getCurrentPosition()));
+        
+        // Update play/pause button state based on current player state
+        updatePlayPauseButton(player.isPlaying());
     }
 
     private void updatePlayPauseButton(boolean isPlaying) {
         if (isPlaying) {
             binding.playPauseImage.setImageResource(R.drawable.baseline_pause_24);
-            binding.playPauseImage.setRotation(0);
         } else {
-            binding.playPauseImage.setImageResource(R.drawable.play_arrow_24px);
-            binding.playPauseImage.setRotation(0);
-        }
-    }
-
-    private void togglePlayPause() {
-        boolean isPlaying = !player.isPlaying();
-        if (isPlaying) {
-            player.play();
-            binding.playPauseImage.setImageResource(R.drawable.baseline_pause_24);
-        } else {
-            player.pause();
             binding.playPauseImage.setImageResource(R.drawable.play_arrow_24px);
         }
         binding.playPauseImage.setRotation(0);
+    }
+
+    private void togglePlayPause() {
+        if (player.isPlaying()) {
+            player.pause();
+        } else {
+            player.play();
+        }
+        updatePlayPauseButton(player.isPlaying());
     }
 
     private void playNextTrack() {
@@ -242,6 +282,8 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
         if (state == Player.STATE_ENDED && repeatMode == Player.REPEAT_MODE_OFF) {
             playNextTrack();
         }
+        // Update play/pause button whenever playback state changes
+        updatePlayPauseButton(player.isPlaying());
     }
 
     @Override
@@ -268,10 +310,9 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
     @Override
     protected void onResume() {
         super.onResume();
-        // Sync with MainActivity's player state
-        if (getIntent().hasExtra("isPlaying")) {
-            boolean isPlaying = getIntent().getBooleanExtra("isPlaying", false);
-            updatePlayPauseButton(isPlaying);
+        // Always update play/pause button state when activity resumes
+        if (player != null) {
+            updatePlayPauseButton(player.isPlaying());
         }
     }
 }

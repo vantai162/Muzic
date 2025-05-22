@@ -10,6 +10,7 @@ import androidx.media3.common.MediaItem;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.example.muzic.ApplicationClass;
 import com.example.muzic.R;
 import com.example.muzic.adapter.PopularUserAdapter;
 import com.example.muzic.adapter.TrendingPlaylistAdapter;
@@ -56,8 +57,12 @@ public class MainActivity extends AppCompatActivity {
         // Initialize play bar binding
         playBarBinding = PlayBarBinding.bind(binding.playBar.getRoot());
 
-        // Initialize ExoPlayer
-        player = new ExoPlayer.Builder(this).build();
+        // Get shared ExoPlayer instance
+        player = ApplicationClass.player;
+        if (player == null) {
+            player = new ExoPlayer.Builder(this).build();
+            ApplicationClass.player = player;
+        }
 
         // Setup navigation drawer
         slidingRootNavBuilder = new SlidingRootNavBuilder(this)
@@ -77,11 +82,7 @@ public class MainActivity extends AppCompatActivity {
         // Setup play bar click listener
         binding.playBarBackground.setOnClickListener(v -> {
             if (currentTrack != null) {
-                Intent intent = new Intent(this, MusicOverviewActivity.class);
-                intent.putExtra("track", currentTrack);
-                intent.putExtra("isPlaying", player.isPlaying());
-                startActivity(intent);
-                overridePendingTransition(R.anim.slide_up, R.anim.no_animation);
+                openMusicOverview();
             }
         });
 
@@ -98,6 +99,8 @@ public class MainActivity extends AppCompatActivity {
         );
         trendingTracksAdapter = new TrendingTracksAdapter(this, track -> {
             playTrack(track);
+            // Open MusicOverviewActivity immediately after starting playback
+            openMusicOverview();
         });
         binding.popularSongsRecyclerView.setAdapter(trendingTracksAdapter);
 
@@ -116,6 +119,18 @@ public class MainActivity extends AppCompatActivity {
         );
         trendingPlaylistAdapter = new TrendingPlaylistAdapter(this, new ArrayList<>());
         binding.popularPlaylistRecyclerView.setAdapter(trendingPlaylistAdapter);
+    }
+
+    private void openMusicOverview() {
+        if (currentTrack != null) {
+            Intent intent = new Intent(this, MusicOverviewActivity.class);
+            intent.putExtra("track", currentTrack);
+            intent.putExtra("isPlaying", player.isPlaying());
+            // Add current playback position
+            intent.putExtra("currentPosition", player.getCurrentPosition());
+            startActivity(intent);
+            overridePendingTransition(R.anim.slide_up, R.anim.no_animation);
+        }
     }
 
     private void playTrack(Track track) {
@@ -146,12 +161,18 @@ public class MainActivity extends AppCompatActivity {
             Picasso.get().load(track.artwork().x480()).into(binding.playBarCoverImage);
         }
 
-        // Play the track
+        // Play the track using shared ExoPlayer instance
         String streamUrl = "https://discoveryprovider2.audius.co/v1/tracks/" + track.id() + "/stream";
         MediaItem mediaItem = MediaItem.fromUri(streamUrl);
-        player.setMediaItem(mediaItem);
-        player.prepare();
-        player.play();
+        
+        // Only start playback if this is a new track
+        if (player.getCurrentMediaItem() == null || 
+            !player.getCurrentMediaItem().mediaId.equals(streamUrl)) {
+            player.setMediaItem(mediaItem);
+            player.prepare();
+            player.play();
+        }
+        
         binding.playBarPlayPauseIcon.setImageResource(R.drawable.baseline_pause_24);
         binding.playBarPlayPauseIcon.setRotation(0);
     }
@@ -238,10 +259,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (player != null) {
-            player.release();
-            player = null;
-        }
+        // Don't release the player since it's shared
+        player = null;
     }
 
     @Override
