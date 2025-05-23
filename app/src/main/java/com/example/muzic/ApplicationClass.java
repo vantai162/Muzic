@@ -9,6 +9,7 @@ import android.graphics.Color;
 import android.support.v4.media.session.MediaSessionCompat;
 
 import androidx.media3.exoplayer.ExoPlayer;
+import androidx.media3.exoplayer.trackselection.DefaultTrackSelector;
 
 //import com.example.muzic.activities.MusicOverviewActivity;
 //import com.example.muzic.activities.SettingsActivity;
@@ -16,6 +17,7 @@ import androidx.media3.exoplayer.ExoPlayer;
 //import com.example.muzic.services.NotificationReceiver;
 import com.example.muzic.utils.MediaPlayerUtil;
 import com.example.muzic.utils.ThemeManager;
+import com.example.muzic.utils.AudioQualityManager;
 //import com.example.muzic.utils.SharedPreferenceManager;
 //import com.example.muzic.utils.TrackCacheHelper;
 
@@ -32,6 +34,8 @@ public class ApplicationClass extends Application {
     //public static TrackResponse CURRENT_TRACK = null;
 
     public static ExoPlayer player;
+    private AudioQualityManager audioQualityManager;
+    private DefaultTrackSelector trackSelector;
     public static String TRACK_QUALITY = "320kbps";
     public static boolean isTrackDownloaded = false;
     private MediaSessionCompat mediaSession;
@@ -57,13 +61,32 @@ public class ApplicationClass extends Application {
         themeManager = new ThemeManager(this);
         themeManager.applyTheme();
         
-        // Initialize ExoPlayer
-        player = new ExoPlayer.Builder(this).build();
+        // Initialize track selector for quality control
+        trackSelector = new DefaultTrackSelector(this);
+        
+        // Initialize ExoPlayer with track selector
+        player = new ExoPlayer.Builder(this)
+                .setTrackSelector(trackSelector)
+                .build();
+        
+        // Initialize audio quality manager
+        audioQualityManager = new AudioQualityManager(this);
+        TRACK_QUALITY = audioQualityManager.getCurrentQuality();
+    }
+
+    public AudioQualityManager getAudioQualityManager() {
+        if (audioQualityManager == null) {
+            audioQualityManager = new AudioQualityManager(this);
+        }
+        return audioQualityManager;
     }
 
     public ExoPlayer getExoPlayer() {
         if (player == null) {
-            player = new ExoPlayer.Builder(this).build();
+            trackSelector = new DefaultTrackSelector(this);
+            player = new ExoPlayer.Builder(this)
+                    .setTrackSelector(trackSelector)
+                    .build();
         }
         return player;
     }
@@ -78,6 +101,11 @@ public class ApplicationClass extends Application {
 
     public static void setCurrentActivity(Activity activity) {
         currentActivity = activity;
+    }
+
+    public void updateTrackQuality() {
+        TRACK_QUALITY = audioQualityManager.getCurrentQuality();
+        audioQualityManager.updatePlayerQuality();
     }
 
     @Override

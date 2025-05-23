@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -18,12 +19,14 @@ import com.example.muzic.R;
 import com.example.muzic.databinding.ActivitySettingsBinding;
 import com.example.muzic.utils.SettingsSharedPrefManager;
 import com.example.muzic.utils.ThemeManager;
+import com.example.muzic.utils.AudioQualityManager;
 import com.google.android.material.button.MaterialButtonToggleGroup;
 
 public class SettingsActivity extends AppCompatActivity {
 
     ActivitySettingsBinding binding;
     private ThemeManager themeManager;
+    private AudioQualityManager audioQualityManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +35,7 @@ public class SettingsActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
         
         themeManager = new ThemeManager(this);
+        audioQualityManager = ((ApplicationClass) getApplication()).getAudioQualityManager();
         final SettingsSharedPrefManager settingsSharedPrefManager = new SettingsSharedPrefManager(this);
 
         // Set up dark mode toggle group
@@ -65,8 +69,17 @@ public class SettingsActivity extends AppCompatActivity {
             }
         });
 
-        binding.downloadOverCellular.setOnCheckChangeListener(settingsSharedPrefManager::setDownloadOverCellular);
-        binding.highQualityTrack.setOnCheckChangeListener(settingsSharedPrefManager::setHighQualityTrack);
+        binding.downloadOverCellular.setOnCheckChangeListener(value -> {
+            settingsSharedPrefManager.setDownloadOverCellular(value);
+            updateAudioQuality();
+        });
+
+        binding.highQualityTrack.setOnCheckChangeListener(value -> {
+            settingsSharedPrefManager.setHighQualityTrack(value);
+            updateAudioQuality();
+            showQualityToast(value);
+        });
+
         binding.storeInCache.setOnCheckChangeListener(settingsSharedPrefManager::setStoreInCache);
         binding.blurPlayerBackground.setOnCheckChangeListener(settingsSharedPrefManager::setBlurPlayerBackground);
         binding.explicit.setOnCheckChangeListener(settingsSharedPrefManager::setExplicit);
@@ -89,5 +102,20 @@ public class SettingsActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+    }
+
+    private void updateAudioQuality() {
+        ((ApplicationClass) getApplication()).updateTrackQuality();
+    }
+
+    private void showQualityToast(boolean isHighQuality) {
+        String quality = audioQualityManager.getCurrentQuality();
+        String message = "Audio quality set to " + quality;
+        if (!isHighQuality) {
+            message += " (Low quality mode)";
+        } else if (!audioQualityManager.shouldUseCellular()) {
+            message += " (High quality on WiFi only)";
+        }
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 }
