@@ -16,6 +16,7 @@ import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -27,6 +28,7 @@ import androidx.media3.common.Player;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.common.util.UnstableApi;
 
+import com.example.muzic.utils.AudioQualityManager;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
@@ -64,6 +66,8 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
     private int currentTrackIndex = 0;
     private boolean isShuffleEnabled = false;
     private int repeatMode = Player.REPEAT_MODE_OFF;
+    TextView quality;
+    private AudioQualityManager audioQualityManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,6 +110,10 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
         if (player != null) {
             updatePlayPauseButton(player.isPlaying());
         }
+
+        quality = (TextView) findViewById(R.id.track_quality);
+        audioQualityManager = new AudioQualityManager(this);
+        quality.setText(audioQualityManager.getCurrentQuality());
     }
 
     private void setupClickListeners() {
