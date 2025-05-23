@@ -272,7 +272,23 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //khuc menu la cai ham nay ne
     private void onDrawerItemsClicked() {
-        // Implement drawer menu item clicks
+        slidingRootNavBuilder.getLayout().findViewById(R.id.settings).setOnClickListener(v -> {
+            startActivity(new Intent(this, SettingsActivity.class));
+            slidingRootNavBuilder.closeMenu();
+        });
+
+        slidingRootNavBuilder.getLayout().findViewById(R.id.logo).setOnClickListener(view -> slidingRootNavBuilder.closeMenu());
+
+        /*slidingRootNavBuilder.getLayout().findViewById(R.id.library).setOnClickListener(view -> {
+            startActivity(new Intent(MainActivity.this, SavedLibrariesActivity.class));
+            slidingRootNavBuilder.closeMenu();
+        });*/
+
+        slidingRootNavBuilder.getLayout().findViewById(R.id.about).setOnClickListener(view -> {
+            startActivity(new Intent(MainActivity.this, AboutActivity.class));
+            slidingRootNavBuilder.closeMenu();
+        });
     }
 }
