@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     tools:context=".activities.SettingsActivity"
     android:fitsSystemWindows="true"
-    android:background="@color/background">
+    android:background="?android:attr/colorBackground">
 
     <LinearLayout
         android:id="@+id/toolbar"
