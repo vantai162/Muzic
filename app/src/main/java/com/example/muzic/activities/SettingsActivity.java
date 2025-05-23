@@ -17,17 +17,53 @@ import com.example.muzic.ApplicationClass;
 import com.example.muzic.R;
 import com.example.muzic.databinding.ActivitySettingsBinding;
 import com.example.muzic.utils.SettingsSharedPrefManager;
+import com.example.muzic.utils.ThemeManager;
+import com.google.android.material.button.MaterialButtonToggleGroup;
 
 public class SettingsActivity extends AppCompatActivity {
 
     ActivitySettingsBinding binding;
+    private ThemeManager themeManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivitySettingsBinding.inflate(getLayoutInflater());
-        setContentView(R.layout.activity_settings);
+        setContentView(binding.getRoot());
+        
+        themeManager = new ThemeManager(this);
         final SettingsSharedPrefManager settingsSharedPrefManager = new SettingsSharedPrefManager(this);
+
+        // Set up dark mode toggle group
+        MaterialButtonToggleGroup darkModeToggle = binding.darkModeToggle;
+        
+        // Set initial button state based on current theme mode
+        int currentMode = themeManager.getThemeMode();
+        switch (currentMode) {
+            case ThemeManager.MODE_ON:
+                darkModeToggle.check(R.id.btn_on);
+                break;
+            case ThemeManager.MODE_OFF:
+                darkModeToggle.check(R.id.btn_off);
+                break;
+            case ThemeManager.MODE_SYSTEM:
+            default:
+                darkModeToggle.check(R.id.btn_default);
+                break;
+        }
+
+        // Listen for toggle changes
+        darkModeToggle.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
+            if (isChecked) {
+                if (checkedId == R.id.btn_on) {
+                    themeManager.setThemeMode(ThemeManager.MODE_ON);
+                } else if (checkedId == R.id.btn_off) {
+                    themeManager.setThemeMode(ThemeManager.MODE_OFF);
+                } else if (checkedId == R.id.btn_default) {
+                    themeManager.setThemeMode(ThemeManager.MODE_SYSTEM);
+                }
+            }
+        });
 
         binding.downloadOverCellular.setOnCheckChangeListener(settingsSharedPrefManager::setDownloadOverCellular);
         binding.highQualityTrack.setOnCheckChangeListener(settingsSharedPrefManager::setHighQualityTrack);
@@ -40,7 +76,6 @@ public class SettingsActivity extends AppCompatActivity {
         binding.storeInCache.setChecked(settingsSharedPrefManager.getStoreInCache());
         binding.blurPlayerBackground.setChecked(settingsSharedPrefManager.getBlurPlayerBackground());
         binding.explicit.setChecked(settingsSharedPrefManager.getExplicit());
-
 
         binding.returnImageView.setOnClickListener(new View.OnClickListener() {
             @Override

@@ -15,6 +15,7 @@ import androidx.media3.exoplayer.ExoPlayer;
 //import com.example.muzic.network.TrackManager;
 //import com.example.muzic.services.NotificationReceiver;
 import com.example.muzic.utils.MediaPlayerUtil;
+import com.example.muzic.utils.ThemeManager;
 //import com.example.muzic.utils.SharedPreferenceManager;
 //import com.example.muzic.utils.TrackCacheHelper;
 
@@ -47,10 +48,15 @@ public class ApplicationClass extends Application {
     public static int TEXT_ON_IMAGE_COLOR = IMAGE_BG_COLOR ^ 0x00FFFFFF;
     public static int TEXT_ON_IMAGE_COLOR1 = IMAGE_BG_COLOR ^ 0x00FFFFFF;
     private static Activity currentActivity = null;
+    private ThemeManager themeManager;
 
     @Override
     public void onCreate() {
         super.onCreate();
+        // Initialize theme
+        themeManager = new ThemeManager(this);
+        themeManager.applyTheme();
+        
         // Initialize ExoPlayer
         player = new ExoPlayer.Builder(this).build();
     }
