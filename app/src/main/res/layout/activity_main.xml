@@ -227,6 +227,14 @@
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
+    <include
+        android:id="@+id/playBar"
+        layout="@layout/play_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:visibility="gone" />
+
     <LinearLayout
         android:id="@+id/play_bar_background"
         android:layout_width="match_parent"
