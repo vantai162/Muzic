@@ -68,6 +68,7 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
     private int repeatMode = Player.REPEAT_MODE_OFF;
     TextView quality;
     private AudioQualityManager audioQualityManager;
+    private BottomSheetDialog moreInfoBottomSheet;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,6 +84,9 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
         }
         player.addListener(this);
         handler = new Handler(Looper.getMainLooper());
+
+        // Setup more info bottom sheet
+        setupMoreInfoBottomSheet();
 
         // Get track data from intent
         TrackData currentTrack = getIntent().getParcelableExtra("track");
@@ -125,6 +129,9 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
 
         // Previous button
         binding.prevIcon.setOnClickListener(v -> playPreviousTrack());
+
+        // More info button
+        binding.moreIcon.setOnClickListener(v -> showMoreInfoBottomSheet());
 
         // Shuffle button
         binding.shuffleIcon.setOnClickListener(v -> {
@@ -321,6 +328,45 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
         // Always update play/pause button state when activity resumes
         if (player != null) {
             updatePlayPauseButton(player.isPlaying());
+        }
+    }
+
+    private void setupMoreInfoBottomSheet() {
+        moreInfoBottomSheet = new BottomSheetDialog(this);
+        MusicOverviewMoreInfoBottomSheetBinding bottomSheetBinding = MusicOverviewMoreInfoBottomSheetBinding.inflate(getLayoutInflater());
+        moreInfoBottomSheet.setContentView(bottomSheetBinding.getRoot());
+
+        // Get current track
+        TrackData currentTrack = getIntent().getParcelableExtra("track");
+        if (currentTrack != null) {
+            // Set track info in bottom sheet
+            if (currentTrack.artwork != null && currentTrack.artwork._480x480 != null) {
+                Picasso.get().load(currentTrack.artwork._480x480).into(bottomSheetBinding.coverImage);
+            }
+            bottomSheetBinding.albumTitle.setText(currentTrack.title);
+            bottomSheetBinding.albumSubTitle.setText(currentTrack.user.name);
+        }
+
+        // Setup click listeners for bottom sheet actions
+        bottomSheetBinding.goToAlbum.setOnClickListener(v -> {
+            // Handle go to album click
+            moreInfoBottomSheet.dismiss();
+        });
+
+        bottomSheetBinding.addToLibrary.setOnClickListener(v -> {
+            // Handle add to library click
+            moreInfoBottomSheet.dismiss();
+        });
+
+        bottomSheetBinding.download.setOnClickListener(v -> {
+            // Handle download click
+            moreInfoBottomSheet.dismiss();
+        });
+    }
+
+    private void showMoreInfoBottomSheet() {
+        if (moreInfoBottomSheet != null) {
+            moreInfoBottomSheet.show();
         }
     }
 }

@@ -186,7 +186,7 @@
                 android:layout_width="@dimen/_45sdp"
                 android:layout_height="@dimen/_45sdp"
                 android:elevation="@dimen/_5sdp"
-                app:cardBackgroundColor="@color/background"
+                app:cardBackgroundColor="@android:color/white"
                 app:cardCornerRadius="999dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -202,7 +202,7 @@
                     android:padding="@dimen/_8sdp"
                     android:src="@drawable/play_arrow_24px"
                     android:clickable="true"
-                    app:tint="@color/text_dark"  />
+                    app:tint="@color/spotify_black" />
 
             </com.google.android.material.card.MaterialCardView>
 
