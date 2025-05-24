@@ -76,6 +76,10 @@ public class MaterialCustomSwitch extends LinearLayout {
         materialSwitch.setChecked(checked);
     }
 
+    public boolean getChecked() {
+        return materialSwitch.isChecked();
+    }
+
     public interface OnCheckChangeListener {
         void onCheckChanged(boolean isChecked);
     }
