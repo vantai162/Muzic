@@ -27,6 +27,11 @@ public class SettingsActivity extends AppCompatActivity {
     ActivitySettingsBinding binding;
     private ThemeManager themeManager;
     private AudioQualityManager audioQualityManager;
+    private static final String KEY_DOWNLOAD_CELLULAR = "download_cellular_state";
+    private static final String KEY_HIGH_QUALITY = "high_quality_state";
+    private static final String KEY_STORE_CACHE = "store_cache_state";
+    private static final String KEY_BLUR_BACKGROUND = "blur_background_state";
+    private static final String KEY_EXPLICIT = "explicit_state";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +42,21 @@ public class SettingsActivity extends AppCompatActivity {
         themeManager = new ThemeManager(this);
         audioQualityManager = ((ApplicationClass) getApplication()).getAudioQualityManager();
         final SettingsSharedPrefManager settingsSharedPrefManager = new SettingsSharedPrefManager(this);
+
+        // Initialize switches with saved state if available, otherwise use SharedPreferences
+        if (savedInstanceState != null) {
+            binding.downloadOverCellular.setChecked(savedInstanceState.getBoolean(KEY_DOWNLOAD_CELLULAR, settingsSharedPrefManager.getDownloadOverCellular()));
+            binding.highQualityTrack.setChecked(savedInstanceState.getBoolean(KEY_HIGH_QUALITY, settingsSharedPrefManager.getHighQualityTrack()));
+            binding.storeInCache.setChecked(savedInstanceState.getBoolean(KEY_STORE_CACHE, settingsSharedPrefManager.getStoreInCache()));
+            binding.blurPlayerBackground.setChecked(savedInstanceState.getBoolean(KEY_BLUR_BACKGROUND, settingsSharedPrefManager.getBlurPlayerBackground()));
+            binding.explicit.setChecked(savedInstanceState.getBoolean(KEY_EXPLICIT, settingsSharedPrefManager.getExplicit()));
+        } else {
+            binding.downloadOverCellular.setChecked(settingsSharedPrefManager.getDownloadOverCellular());
+            binding.highQualityTrack.setChecked(settingsSharedPrefManager.getHighQualityTrack());
+            binding.storeInCache.setChecked(settingsSharedPrefManager.getStoreInCache());
+            binding.blurPlayerBackground.setChecked(settingsSharedPrefManager.getBlurPlayerBackground());
+            binding.explicit.setChecked(settingsSharedPrefManager.getExplicit());
+        }
 
         // Set up dark mode toggle group
         MaterialButtonToggleGroup darkModeToggle = binding.darkModeToggle;
@@ -84,12 +104,6 @@ public class SettingsActivity extends AppCompatActivity {
         binding.blurPlayerBackground.setOnCheckChangeListener(settingsSharedPrefManager::setBlurPlayerBackground);
         binding.explicit.setOnCheckChangeListener(settingsSharedPrefManager::setExplicit);
 
-        binding.downloadOverCellular.setChecked(settingsSharedPrefManager.getDownloadOverCellular());
-        binding.highQualityTrack.setChecked(settingsSharedPrefManager.getHighQualityTrack());
-        binding.storeInCache.setChecked(settingsSharedPrefManager.getStoreInCache());
-        binding.blurPlayerBackground.setChecked(settingsSharedPrefManager.getBlurPlayerBackground());
-        binding.explicit.setChecked(settingsSharedPrefManager.getExplicit());
-
         binding.returnImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -102,6 +116,17 @@ public class SettingsActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        // Save the current state of all switches
+        outState.putBoolean(KEY_DOWNLOAD_CELLULAR, binding.downloadOverCellular.getChecked());
+        outState.putBoolean(KEY_HIGH_QUALITY, binding.highQualityTrack.getChecked());
+        outState.putBoolean(KEY_STORE_CACHE, binding.storeInCache.getChecked());
+        outState.putBoolean(KEY_BLUR_BACKGROUND, binding.blurPlayerBackground.getChecked());
+        outState.putBoolean(KEY_EXPLICIT, binding.explicit.getChecked());
     }
 
     private void updateAudioQuality() {
