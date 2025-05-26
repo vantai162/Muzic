@@ -314,11 +314,10 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        // Apply slide down animation when going back
-        overridePendingTransition(R.anim.no_animation, R.anim.slide_down);
     }
 
     public void backPress(View view) {
+        // Call onBackPressed to ensure consistent behavior
         onBackPressed();
     }
 

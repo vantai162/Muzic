@@ -36,6 +36,23 @@
     <style name="Theme.SaavnMp3" parent="Base.Theme.SaavnMp3" >
     </style>
 
+    <!-- Theme for MusicOverviewActivity with custom animations -->
+    <style name="Theme.SaavnMp3.NoAnimation" parent="Theme.SaavnMp3">
+        <item name="android:windowAnimationStyle">@style/WindowAnimationTransition</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+    </style>
+
+    <!-- Custom window animation transition style -->
+    <style name="WindowAnimationTransition">
+        <item name="android:windowEnterAnimation">@anim/slide_up_enter</item>
+        <item name="android:windowExitAnimation">@anim/slide_down_exit</item>
+        <item name="android:activityOpenEnterAnimation">@anim/slide_up_enter</item>
+        <item name="android:activityOpenExitAnimation">@null</item>
+        <item name="android:activityCloseEnterAnimation">@null</item>
+        <item name="android:activityCloseExitAnimation">@anim/slide_down_exit</item>
+    </style>
+
     <style name="ShapeAppearanceOverlay.App.CornerSize100Percent" parent="">
         <item name="cornerSize">50%</item>
     </style>
