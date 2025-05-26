@@ -12,11 +12,13 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.muzic.ApplicationClass;
 import com.example.muzic.R;
+import com.example.muzic.adapter.MoodPlaylistAdapter;
 import com.example.muzic.adapter.PopularUserAdapter;
 import com.example.muzic.adapter.TrendingPlaylistAdapter;
 import com.example.muzic.adapter.TrendingTracksAdapter;
 import com.example.muzic.databinding.ActivityMainBinding;
 import com.example.muzic.databinding.PlayBarBinding;
+import com.example.muzic.model.MoodPlaylist;
 import com.example.muzic.model.TrackData;
 import com.example.muzic.network.AudiusApiClient;
 import com.example.muzic.network.AudiusApiService;
@@ -29,8 +31,10 @@ import com.yarolegovich.slidingrootnav.SlidingRootNav;
 import com.yarolegovich.slidingrootnav.SlidingRootNavBuilder;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import retrofit2.Call;
@@ -43,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
     private TrendingTracksAdapter trendingTracksAdapter;
     private PopularUserAdapter popularUserAdapter;
     private TrendingPlaylistAdapter trendingPlaylistAdapter;
+    private MoodPlaylistAdapter moodPlaylistAdapter;
     private ActivityMainBinding binding;
     private PlayBarBinding playBarBinding;
     private SlidingRootNav slidingRootNavBuilder;
@@ -119,6 +124,13 @@ public class MainActivity extends AppCompatActivity {
         );
         trendingPlaylistAdapter = new TrendingPlaylistAdapter(this, new ArrayList<>());
         binding.popularPlaylistRecyclerView.setAdapter(trendingPlaylistAdapter);
+
+        // Mood
+        binding.moodPlaylistRecyclerView.setLayoutManager(
+                new LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL, false)
+        );
+        moodPlaylistAdapter = new MoodPlaylistAdapter(this, new ArrayList<>());
+        binding.moodPlaylistRecyclerView.setAdapter(moodPlaylistAdapter);
     }
 
     private void openMusicOverview() {
@@ -230,6 +242,28 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                     popularUserAdapter.setUsers(uniqueUsers);
+
+                    // === Tạo danh sách mood playlists ===
+                    Map<String, List<Track>> moodMap = new HashMap<>();
+                    for (Track track : tracks) {
+                        if (track.mood() == null) continue;
+                        String mood = track.mood().toLowerCase();
+                        if (!moodMap.containsKey(mood)) {
+                            moodMap.put(mood, new ArrayList<>());
+                        }
+                        moodMap.get(mood).add(track);
+                    }
+
+                    List<MoodPlaylist> moodPlaylists = new ArrayList<>();
+                    for (String mood : moodMap.keySet()) {
+                        moodPlaylists.add(new MoodPlaylist(capitalize(mood), moodMap.get(mood)));
+                    }
+                    Log.d("MoodPlaylist", "Mood playlists size: " + moodPlaylists.size());
+                    for (MoodPlaylist playlist : moodPlaylists) {
+                        Log.d("MoodPlaylist", "Title: " + playlist.getMood());
+                    }
+                    // Cập nhật adapter
+                    moodPlaylistAdapter.setMoodPlaylists(moodPlaylists);
                 }
             }
 
@@ -290,5 +324,9 @@ public class MainActivity extends AppCompatActivity {
             startActivity(new Intent(MainActivity.this, AboutActivity.class));
             slidingRootNavBuilder.closeMenu();
         });
+    }
+    private String capitalize(String str) {
+        if (str == null || str.length() == 0) return str;
+        return str.substring(0, 1).toUpperCase() + str.substring(1);
     }
 }
