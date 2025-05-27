@@ -18,6 +18,7 @@ import androidx.media3.exoplayer.trackselection.DefaultTrackSelector;
 import com.example.muzic.utils.MediaPlayerUtil;
 import com.example.muzic.utils.ThemeManager;
 import com.example.muzic.utils.AudioQualityManager;
+import com.example.muzic.utils.CacheManager;
 //import com.example.muzic.utils.SharedPreferenceManager;
 //import com.example.muzic.utils.TrackCacheHelper;
 
@@ -53,6 +54,7 @@ public class ApplicationClass extends Application {
     public static int TEXT_ON_IMAGE_COLOR1 = IMAGE_BG_COLOR ^ 0x00FFFFFF;
     private static Activity currentActivity = null;
     private ThemeManager themeManager;
+    private CacheManager cacheManager;
 
     @Override
     public void onCreate() {
@@ -72,6 +74,8 @@ public class ApplicationClass extends Application {
         // Initialize audio quality manager
         audioQualityManager = new AudioQualityManager(this);
         TRACK_QUALITY = audioQualityManager.getCurrentQuality();
+
+        cacheManager = new CacheManager(this);
     }
 
     public AudioQualityManager getAudioQualityManager() {
@@ -106,6 +110,10 @@ public class ApplicationClass extends Application {
     public void updateTrackQuality() {
         TRACK_QUALITY = audioQualityManager.getCurrentQuality();
         audioQualityManager.updatePlayerQuality();
+    }
+
+    public CacheManager getCacheManager() {
+        return cacheManager;
     }
 
     @Override
