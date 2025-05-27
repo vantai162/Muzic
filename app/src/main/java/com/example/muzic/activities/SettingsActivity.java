@@ -50,12 +50,16 @@ public class SettingsActivity extends AppCompatActivity {
             binding.storeInCache.setChecked(savedInstanceState.getBoolean(KEY_STORE_CACHE, settingsSharedPrefManager.getStoreInCache()));
             binding.blurPlayerBackground.setChecked(savedInstanceState.getBoolean(KEY_BLUR_BACKGROUND, settingsSharedPrefManager.getBlurPlayerBackground()));
             binding.explicit.setChecked(savedInstanceState.getBoolean(KEY_EXPLICIT, settingsSharedPrefManager.getExplicit()));
+
+            int selectedThemeId = savedInstanceState.getInt("selected_theme_id", R.id.original);
+            binding.themeGroup.check(selectedThemeId);
         } else {
             binding.downloadOverCellular.setChecked(settingsSharedPrefManager.getDownloadOverCellular());
             binding.highQualityTrack.setChecked(settingsSharedPrefManager.getHighQualityTrack());
             binding.storeInCache.setChecked(settingsSharedPrefManager.getStoreInCache());
             binding.blurPlayerBackground.setChecked(settingsSharedPrefManager.getBlurPlayerBackground());
             binding.explicit.setChecked(settingsSharedPrefManager.getExplicit());
+            binding.themeGroup.check(settingsSharedPrefManager.getTheme().equals("nebula") ? R.id.nebula : settingsSharedPrefManager.getTheme().equals("minty fresh") ? R.id.minty_fresh : settingsSharedPrefManager.getTheme().equals("tangerine") ? R.id.tangerine : settingsSharedPrefManager.getTheme().equals("crimson love") ? R.id.crimson_love : settingsSharedPrefManager.getTheme().equals("blue depths") ? R.id.blue_depths : R.id.original);
         }
 
         // Set up dark mode toggle group
@@ -104,6 +108,15 @@ public class SettingsActivity extends AppCompatActivity {
         binding.blurPlayerBackground.setOnCheckChangeListener(settingsSharedPrefManager::setBlurPlayerBackground);
         binding.explicit.setOnCheckChangeListener(settingsSharedPrefManager::setExplicit);
 
+        binding.themeGroup.setOnCheckedChangeListener((group, checkedId) -> {
+            settingsSharedPrefManager.setTheme(checkedId == R.id.nebula ? "nebula" :
+                                               checkedId == R.id.minty_fresh ? "minty fresh" :
+                                               checkedId == R.id.tangerine ? "tangerine" :
+                                               checkedId == R.id.crimson_love ? "crimson love" :
+                                               checkedId == R.id.blue_depths ? "blue depths" :
+                                               "original");
+        });
+
         binding.returnImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -127,6 +140,9 @@ public class SettingsActivity extends AppCompatActivity {
         outState.putBoolean(KEY_STORE_CACHE, binding.storeInCache.getChecked());
         outState.putBoolean(KEY_BLUR_BACKGROUND, binding.blurPlayerBackground.getChecked());
         outState.putBoolean(KEY_EXPLICIT, binding.explicit.getChecked());
+
+        int selectedThemeId = binding.themeGroup.getCheckedRadioButtonId();
+        outState.putInt("selected_theme_id", selectedThemeId);
     }
 
     private void updateAudioQuality() {

@@ -249,22 +249,40 @@
                 android:paddingHorizontal="@dimen/_12sdp">
 
                 <com.google.android.material.radiobutton.MaterialRadioButton
-                    android:id="@+id/dark"
+                    android:id="@+id/original"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Dark" />
+                    android:text="Original" />
 
                 <com.google.android.material.radiobutton.MaterialRadioButton
-                    android:id="@+id/light"
+                    android:id="@+id/nebula"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Light" />
+                    android:text="Nebula" />
 
                 <com.google.android.material.radiobutton.MaterialRadioButton
-                    android:id="@+id/system"
+                    android:id="@+id/minty_fresh"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Follow System" />
+                    android:text="Minty Fresh" />
+
+                <com.google.android.material.radiobutton.MaterialRadioButton
+                    android:id="@+id/tangerine"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Tangerine" />
+
+                <com.google.android.material.radiobutton.MaterialRadioButton
+                    android:id="@+id/crimson_love"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Crimson Love" />
+
+                <com.google.android.material.radiobutton.MaterialRadioButton
+                    android:id="@+id/blue_depths"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Blue Depths" />
 
             </RadioGroup>
 

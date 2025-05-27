@@ -47,4 +47,11 @@
     <color name="buttonBackground">@color/button_light</color>
     <color name="dividerBackground">@color/divider_dark</color>
     <color name="green">@color/spotify_light_green</color>
+    
+    <!-- Theme của PNS -->
+    <color name="nebula">#9C27B0</color>
+    <color name="minty_fresh">#4CE4C4</color>
+    <color name="tangerine">#FF6F00</color>
+    <color name="crimson_love">#C2185B</color>
+    <color name="blue_depths">#1565C0</color>
 </resources>
