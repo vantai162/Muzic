@@ -82,6 +82,16 @@ public class MoodPlaylistAdapter extends RecyclerView.Adapter<MoodPlaylistAdapte
             case "Fiery":
                 imageRes = R.drawable.angry;
                 break;
+            case "Empowering":
+                imageRes = R.drawable.em;
+                break;
+            case "Upbeat":
+                imageRes = R.drawable.upbeat;
+                break;
+            case "Romantic":
+                imageRes = R.drawable.romantic;
+                break;
+
         }
 
         // Load bằng Glide
