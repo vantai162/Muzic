@@ -2,6 +2,7 @@ package com.example.muzic.network;
 
 import com.example.muzic.records.AudiusTrackResponse;
 import com.example.muzic.records.Track;
+import com.example.muzic.records.PlaylistResponse;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +22,21 @@ public class AudiusRepository {
 
     public void getTrendingTracks(int limit, Callback<AudiusTrackResponse> callback) {
         Call<AudiusTrackResponse> call = apiService.getTrendingTracks(limit);
-        call.enqueue(callback);
+        call.enqueue(new Callback<AudiusTrackResponse>() {
+            @Override
+            public void onResponse(Call<AudiusTrackResponse> call, Response<AudiusTrackResponse> response) {
+                if (!response.isSuccessful()) {
+                    System.out.println("Error: " + response.code() + " - " + response.message());
+                }
+                callback.onResponse(call, response);
+            }
+
+            @Override
+            public void onFailure(Call<AudiusTrackResponse> call, Throwable t) {
+                System.out.println("Network Error: " + t.getMessage());
+                callback.onFailure(call, t);
+            }
+        });
     }
 
     public void streamTrack(String id, Callback<ResponseBody> callback) {
@@ -76,6 +91,25 @@ public class AudiusRepository {
             @Override
             public void onFailure(Call<AudiusTrackResponse> call, Throwable t) {
                 onError.accept(t);
+            }
+        });
+    }
+
+    public void getTrendingPlaylists(int limit, Callback<PlaylistResponse> callback) {
+        Call<PlaylistResponse> call = apiService.getTrendingPlaylists(limit);
+        call.enqueue(new Callback<PlaylistResponse>() {
+            @Override
+            public void onResponse(Call<PlaylistResponse> call, Response<PlaylistResponse> response) {
+                if (!response.isSuccessful()) {
+                    System.out.println("Error: " + response.code() + " - " + response.message());
+                }
+                callback.onResponse(call, response);
+            }
+
+            @Override
+            public void onFailure(Call<PlaylistResponse> call, Throwable t) {
+                System.out.println("Network Error: " + t.getMessage());
+                callback.onFailure(call, t);
             }
         });
     }

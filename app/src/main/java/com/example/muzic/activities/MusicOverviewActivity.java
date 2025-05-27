@@ -343,12 +343,12 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
                 Picasso.get().load(currentTrack.artwork._480x480).into(bottomSheetBinding.coverImage);
             }
             bottomSheetBinding.albumTitle.setText(currentTrack.title);
-            bottomSheetBinding.albumSubTitle.setText(currentTrack.user.name);
+
         }
 
         // Setup click listeners for bottom sheet actions
         bottomSheetBinding.goToAlbum.setOnClickListener(v -> {
-            // Handle go to album click
+            // Handle go to user click
             moreInfoBottomSheet.dismiss();
         });
 

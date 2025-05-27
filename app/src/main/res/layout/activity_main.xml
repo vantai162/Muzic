@@ -111,12 +111,12 @@
                         android:id="@+id/popular_songs_recycler_view"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/_8sdp"
                         android:orientation="horizontal"
                         android:scrollbars="none"
                         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                         tools:itemCount="10"
                         tools:listitem="@layout/activity_main_songs_item" />
-
 
                 </LinearLayout>
 

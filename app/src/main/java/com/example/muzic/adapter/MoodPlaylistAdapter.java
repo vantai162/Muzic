@@ -91,7 +91,9 @@ public class MoodPlaylistAdapter extends RecyclerView.Adapter<MoodPlaylistAdapte
             case "Romantic":
                 imageRes = R.drawable.romantic;
                 break;
-
+            case "Sentimental":
+                imageRes = R.drawable.sentimental_value1;
+                break;
         }
 
         // Load bằng Glide
