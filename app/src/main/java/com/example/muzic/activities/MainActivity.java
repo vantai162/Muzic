@@ -22,6 +22,7 @@ import com.example.muzic.model.MoodPlaylist;
 import com.example.muzic.model.TrackData;
 import com.example.muzic.network.AudiusApiClient;
 import com.example.muzic.network.AudiusApiService;
+import com.example.muzic.network.AudiusRepository;
 import com.example.muzic.records.AudiusTrackResponse;
 import com.example.muzic.records.PlaylistResponse;
 import com.example.muzic.records.Track;
@@ -52,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
     private PlayBarBinding playBarBinding;
     private SlidingRootNav slidingRootNavBuilder;
     private TrackData currentTrack;
+    private AudiusRepository audiusRepository;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +70,9 @@ public class MainActivity extends AppCompatActivity {
             player = new ExoPlayer.Builder(this).build();
             ApplicationClass.player = player;
         }
+
+        // Initialize AudiusRepository
+        audiusRepository = new AudiusRepository();
 
         // Setup navigation drawer
         slidingRootNavBuilder = new SlidingRootNavBuilder(this)
@@ -222,10 +227,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void loadTrendingTracks() {
-        AudiusApiService apiService = AudiusApiClient.getInstance();
-        Call<AudiusTrackResponse> call = apiService.getTrendingTracks(10);
-
-        call.enqueue(new Callback<AudiusTrackResponse>() {
+        audiusRepository.getTrendingTracks(15, new Callback<AudiusTrackResponse>() {
             @Override
             public void onResponse(Call<AudiusTrackResponse> call, Response<AudiusTrackResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
@@ -274,8 +276,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // Load trending playlists
-        Call<PlaylistResponse> playlistCall = apiService.getTrendingPlaylists(10);
-        playlistCall.enqueue(new Callback<PlaylistResponse>() {
+        audiusRepository.getTrendingPlaylists(10, new Callback<PlaylistResponse>() {
             @Override
             public void onResponse(Call<PlaylistResponse> call, Response<PlaylistResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {

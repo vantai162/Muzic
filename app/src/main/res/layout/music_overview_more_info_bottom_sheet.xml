@@ -77,7 +77,7 @@
             android:id="@+id/go_to_album"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:title="Go to album"
+            app:title="Go to user"
             android:src="@drawable/baseline_album_24"/>
 
         <com.example.muzic.utils.customview.BottomSheetItemView
@@ -94,13 +94,7 @@
             app:title="Download"
             android:src="@drawable/baseline_download_for_offline_24"/>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Artists"
-            android:textSize="@dimen/_14ssp"
-            android:paddingHorizontal="@dimen/_12sdp"
-            android:paddingVertical="@dimen/_4sdp"/>
+
 
     </LinearLayout>
 
