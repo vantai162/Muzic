@@ -17,8 +17,13 @@ public interface AudiusApiService {
 
     @GET("/v1/tracks/trending")
     Call<AudiusTrackResponse> getTrendingTracks(@Query("limit") int limit);
+
+    @GET("/v1/tracks/{id}")
+    Call<AudiusTrackResponse> getTrack(@Path("id") String trackId);
+
     @GET("/v1/tracks/stream/{id}")
     Call<ResponseBody> streamTrack(@Path("id") String trackId);
+
     @GET("v1/playlists/trending")
     Call<PlaylistResponse> getTrendingPlaylists(
             @Query("limit") int limit

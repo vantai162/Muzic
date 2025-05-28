@@ -5,7 +5,9 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -18,6 +20,7 @@ import android.widget.ListAdapter;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.OptIn;
@@ -49,6 +52,8 @@ import com.example.muzic.utils.SharedPreferenceManager;
 //import com.example.muzic.utils.TrackCacheHelper;
 import com.example.muzic.utils.customview.BottomSheetItemView;
 import com.squareup.picasso.Picasso;
+import com.example.muzic.utils.BlurUtils;
+import com.example.muzic.utils.SettingsSharedPrefManager;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -69,12 +74,30 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
     TextView quality;
     private AudioQualityManager audioQualityManager;
     private BottomSheetDialog moreInfoBottomSheet;
+    private SettingsSharedPrefManager settingsManager;
+    private ImageView backgroundImageView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        // Add configuration change handling
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
+        }
+        
+        // Set up window to draw behind system bars
+        getWindow().setStatusBarColor(Color.TRANSPARENT);
+        getWindow().setNavigationBarColor(Color.TRANSPARENT);
+        
         binding = ActivityMusicOverviewBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        // Initialize settings manager
+        settingsManager = new SettingsSharedPrefManager(this);
+        
+        // Initialize background image view using view binding
+        backgroundImageView = binding.backgroundImage;
 
         // Get shared ExoPlayer instance
         player = ApplicationClass.player;
@@ -118,6 +141,9 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
         quality = (TextView) findViewById(R.id.track_quality);
         audioQualityManager = new AudioQualityManager(this);
         quality.setText(audioQualityManager.getCurrentQuality());
+
+        // Setup background blur if enabled
+        updateBackgroundBlur();
     }
 
     private void setupClickListeners() {
@@ -198,7 +224,20 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
         binding.title.setText(track.title);
         binding.description.setText(track.user.name);
         if (track.artwork != null && track.artwork._480x480 != null) {
-            Picasso.get().load(track.artwork._480x480).into(binding.coverImage);
+            Picasso.get()
+                    .load(track.artwork._480x480)
+                    .into(binding.coverImage, new com.squareup.picasso.Callback() {
+                        @Override
+                        public void onSuccess() {
+                            // After artwork is loaded, update background blur
+                            updateBackgroundBlur();
+                        }
+
+                        @Override
+                        public void onError(Exception e) {
+                            Log.e("BlurDebug", "Error loading artwork", e);
+                        }
+                    });
         }
         
         // Set total duration
@@ -324,10 +363,19 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
     @Override
     protected void onResume() {
         super.onResume();
-        // Always update play/pause button state when activity resumes
+        // Update blur effect when activity resumes
+        updateBackgroundBlur();
+        // Update play/pause button state
         if (player != null) {
             updatePlayPauseButton(player.isPlaying());
         }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        // Update background blur when activity becomes visible
+        updateBackgroundBlur();
     }
 
     private void setupMoreInfoBottomSheet() {
@@ -366,6 +414,163 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
     private void showMoreInfoBottomSheet() {
         if (moreInfoBottomSheet != null) {
             moreInfoBottomSheet.show();
+        }
+    }
+
+    private boolean isDarkMode() {
+        int nightModeFlags = getResources().getConfiguration().uiMode & 
+                            android.content.res.Configuration.UI_MODE_NIGHT_MASK;
+        return nightModeFlags == android.content.res.Configuration.UI_MODE_NIGHT_YES;
+    }
+
+    private int getBackgroundColor() {
+        return isDarkMode() ? 
+            getResources().getColor(R.color.dark_background, getTheme()) :
+            getResources().getColor(android.R.color.white, getTheme());
+    }
+
+    private void updateBackgroundBlur() {
+        boolean isBlurEnabled = settingsManager.getBlurPlayerBackground();
+        View darkOverlay = findViewById(R.id.darkOverlay);
+        View backgroundContainer = findViewById(R.id.background_container);
+        
+        if (isBlurEnabled && binding.coverImage.getDrawable() != null) {
+            // Set background container to transparent
+            backgroundContainer.setBackgroundColor(Color.TRANSPARENT);
+            
+            // Show and update background image with blur
+            backgroundImageView.setVisibility(View.VISIBLE);
+            BlurUtils.applyBlur(this, binding.coverImage, backgroundImageView);
+            
+            // Show dark overlay for better contrast
+            darkOverlay.setVisibility(View.VISIBLE);
+            
+            // Make system bars transparent
+            getWindow().setStatusBarColor(Color.TRANSPARENT);
+            getWindow().setNavigationBarColor(Color.TRANSPARENT);
+            
+            // Set system UI visibility based on theme
+            if (isDarkMode()) {
+                getWindow().getDecorView().setSystemUiVisibility(
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                );
+            } else {
+                getWindow().getDecorView().setSystemUiVisibility(
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
+                    View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR |
+                    View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+                );
+            }
+            
+            // Update text and icon colors for blur mode
+            updateTextColors(true);
+        } else {
+            // Reset background container to theme color
+            int backgroundColor = getBackgroundColor();
+            backgroundContainer.setBackgroundColor(backgroundColor);
+            
+            // Hide blur elements
+            backgroundImageView.setVisibility(View.GONE);
+            darkOverlay.setVisibility(View.GONE);
+            
+            // Reset system bars to theme color
+            getWindow().setStatusBarColor(backgroundColor);
+            getWindow().setNavigationBarColor(backgroundColor);
+            
+            // Set system UI visibility based on theme
+            if (isDarkMode()) {
+                getWindow().getDecorView().setSystemUiVisibility(0); // Clear all flags for dark mode
+            } else {
+                getWindow().getDecorView().setSystemUiVisibility(
+                    View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR |
+                    View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+                );
+            }
+            
+            // Clear any existing blur
+            BlurUtils.clearBlur(backgroundImageView);
+            
+            // Reset text and icon colors for normal mode
+            updateTextColors(false);
+        }
+    }
+
+    private void updateTextColors(boolean isBlurEnabled) {
+        boolean isDark = isDarkMode();
+        
+        int textColor = isBlurEnabled ? 
+            getResources().getColor(android.R.color.white, getTheme()) :
+            getResources().getColor(isDark ? android.R.color.white : R.color.textMain, getTheme());
+        
+        int secondaryTextColor = isBlurEnabled ? 
+            getResources().getColor(android.R.color.white, getTheme()) :
+            getResources().getColor(isDark ? R.color.textSecDark : R.color.textSec, getTheme());
+
+        // Update text colors
+        binding.title.setTextColor(textColor);
+        binding.description.setTextColor(secondaryTextColor);
+        binding.elapsedDuration.setTextColor(secondaryTextColor);
+        binding.totalDuration.setTextColor(secondaryTextColor);
+        binding.trackQuality.setTextColor(secondaryTextColor);
+
+        // Update icons tint
+        ColorStateList iconTint = ColorStateList.valueOf(secondaryTextColor);
+        binding.shuffleIcon.setImageTintList(iconTint);
+        binding.repeatIcon.setImageTintList(iconTint);
+        binding.prevIcon.setImageTintList(iconTint);
+        binding.nextIcon.setImageTintList(iconTint);
+        binding.shareIcon.setImageTintList(iconTint);
+        binding.moreIcon.setImageTintList(iconTint);
+    }
+
+    @Override
+    public void onConfigurationChanged(@NonNull android.content.res.Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        
+        // Update UI for theme changes without recreating activity
+        updateBackgroundBlur();
+        
+        // Update playbar state if music is playing
+        if (player != null) {
+            updatePlaybackState();
+        }
+    }
+
+    private void updatePlaybackState() {
+        // Update play/pause button state
+        updatePlayPauseButton(player.isPlaying());
+        
+        // Update current position
+        if (player.getCurrentMediaItem() != null) {
+            binding.seekbar.setProgress((int) (player.getCurrentPosition() / 1000));
+            binding.elapsedDuration.setText(formatDuration(player.getCurrentPosition()));
+        }
+        
+        // Update track info if available
+        TrackData currentTrack = getIntent().getParcelableExtra("track");
+        if (currentTrack != null && ApplicationClass.MUSIC_ID != null && 
+            ApplicationClass.MUSIC_ID.equals(String.valueOf(currentTrack.id))) {
+            binding.title.setText(currentTrack.title);
+            binding.description.setText(currentTrack.user.name);
+            if (currentTrack.artwork != null && currentTrack.artwork._480x480 != null) {
+                Picasso.get()
+                    .load(currentTrack.artwork._480x480)
+                    .into(binding.coverImage, new com.squareup.picasso.Callback() {
+                        @Override
+                        public void onSuccess() {
+                            updateBackgroundBlur();
+                        }
+
+                        @Override
+                        public void onError(Exception e) {
+                            Log.e("PlaybackState", "Error loading artwork", e);
+                        }
+                    });
+            }
         }
     }
 }
