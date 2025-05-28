@@ -1,10 +1,12 @@
 package com.example.muzic.activities;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.media3.common.MediaItem;
 import androidx.media3.exoplayer.ExoPlayer;
@@ -27,6 +29,7 @@ import com.example.muzic.records.AudiusTrackResponse;
 import com.example.muzic.records.PlaylistResponse;
 import com.example.muzic.records.Track;
 import com.example.muzic.records.User;
+import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
 import com.yarolegovich.slidingrootnav.SlidingRootNav;
 import com.yarolegovich.slidingrootnav.SlidingRootNavBuilder;
@@ -86,20 +89,14 @@ public class MainActivity extends AppCompatActivity {
         // Setup RecyclerViews
         setupRecyclerViews();
         
+        // Setup play bar listeners
+        setupPlayBarListeners();
+        
         // Load data
         loadTrendingTracks();
         
-        // Setup play bar click listener
-        binding.playBarBackground.setOnClickListener(v -> {
-            if (currentTrack != null) {
-                openMusicOverview();
-            }
-        });
-
-        // Setup play bar controls
-        binding.playBarPlayPauseIcon.setOnClickListener(v -> togglePlayPause());
-        binding.playBarPrevIcon.setOnClickListener(v -> playPreviousTrack());
-        binding.playBarNextIcon.setOnClickListener(v -> playNextTrack());
+        // Restore play bar state if needed
+        restorePlayBarState();
     }
 
     private void setupRecyclerViews() {
@@ -142,56 +139,31 @@ public class MainActivity extends AppCompatActivity {
         if (currentTrack != null) {
             Intent intent = new Intent(this, MusicOverviewActivity.class);
             intent.putExtra("track", currentTrack);
-            intent.putExtra("isPlaying", player.isPlaying());
-            // Add current playback position
-            intent.putExtra("currentPosition", player.getCurrentPosition());
+            intent.putExtra("isPlaying", player != null && player.isPlaying());
+            intent.putExtra("currentPosition", player != null ? player.getCurrentPosition() : 0);
             startActivity(intent);
             overridePendingTransition(R.anim.slide_up, R.anim.no_animation);
         }
     }
 
     private void playTrack(Track track) {
-        // Convert Track to TrackData and handle type conversion
-        currentTrack = new TrackData();
-        currentTrack.id = track.id();
-        currentTrack.title = track.title();
+        // Convert Track to TrackData and store as current
+        currentTrack = convertToTrackData(track);
+        ApplicationClass.currentTrack = currentTrack;
         
-        // Convert Artwork
-        currentTrack.artwork = new com.example.muzic.model.Artwork();
-        if (track.artwork() != null) {
-            currentTrack.artwork._150x150 = track.artwork().x150();
-            currentTrack.artwork._480x480 = track.artwork().x480();
-            currentTrack.artwork._1000x1000 = track.artwork().x1000();
-        }
-        
-        // Convert User
-        currentTrack.user = new com.example.muzic.model.User();
-        currentTrack.user.name = track.user().name();
-        currentTrack.user.id = track.user().id();
-        currentTrack.duration = track.duration();
-
-        // Update play bar UI
-        binding.playBarBackground.setVisibility(View.VISIBLE);
-        binding.playBarMusicTitle.setText(track.title());
-        binding.playBarMusicDesc.setText(track.user().name());
-        if (track.artwork() != null && track.artwork().x480() != null) {
-            Picasso.get().load(track.artwork().x480()).into(binding.playBarCoverImage);
-        }
+        // Update UI
+        updatePlayBarContent(currentTrack);
 
         // Play the track using shared ExoPlayer instance
         String streamUrl = "https://discoveryprovider2.audius.co/v1/tracks/" + track.id() + "/stream";
         MediaItem mediaItem = MediaItem.fromUri(streamUrl);
         
-        // Only start playback if this is a new track
         if (player.getCurrentMediaItem() == null || 
             !player.getCurrentMediaItem().mediaId.equals(streamUrl)) {
             player.setMediaItem(mediaItem);
             player.prepare();
             player.play();
         }
-        
-        binding.playBarPlayPauseIcon.setImageResource(R.drawable.baseline_pause_24);
-        binding.playBarPlayPauseIcon.setRotation(0);
     }
 
     private void togglePlayPause() {
@@ -301,9 +273,17 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Update play bar state if needed
-        if (currentTrack != null) {
-            binding.playBarPlayPauseIcon.setRotation(player.isPlaying() ? 0 : 0);
+        if (ApplicationClass.currentTrack != null) {
+            currentTrack = ApplicationClass.currentTrack;
+            updatePlayBarContent(currentTrack);
+        } else if (ApplicationClass.MUSIC_ID != null) {
+            fetchCurrentTrackData(ApplicationClass.MUSIC_ID, track -> {
+                if (track != null) {
+                    currentTrack = track;
+                    ApplicationClass.currentTrack = track;
+                    updatePlayBarContent(track);
+                }
+            });
         }
     }
 
@@ -329,5 +309,246 @@ public class MainActivity extends AppCompatActivity {
     private String capitalize(String str) {
         if (str == null || str.length() == 0) return str;
         return str.substring(0, 1).toUpperCase() + str.substring(1);
+    }
+
+    @Override
+    public void onConfigurationChanged(@NonNull android.content.res.Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        // Restore play bar state from ApplicationClass
+        if (ApplicationClass.currentTrack != null) {
+            currentTrack = ApplicationClass.currentTrack;
+            updatePlayBarContent(currentTrack);
+        }
+        // If no current track in ApplicationClass but music is playing
+        else if (ApplicationClass.MUSIC_ID != null) {
+            fetchCurrentTrackData(ApplicationClass.MUSIC_ID, track -> {
+                if (track != null) {
+                    currentTrack = track;
+                    ApplicationClass.currentTrack = track;
+                    updatePlayBarContent(track);
+                }
+            });
+        }
+    }
+
+    private void updatePlayControls() {
+        if (player != null) {
+            binding.playBarPlayPauseIcon.setImageResource(
+                player.isPlaying() ? 
+                R.drawable.baseline_pause_24 : 
+                R.drawable.play_arrow_24px
+            );
+        }
+    }
+
+    private void updatePlayBarContent(TrackData track) {
+        if (track == null) return;
+        
+        runOnUiThread(() -> {
+            binding.playBarBackground.setVisibility(View.VISIBLE);
+            binding.playBarMusicTitle.setText(track.title);
+            binding.playBarMusicDesc.setText(track.user != null ? track.user.name : "");
+            
+            if (track.artwork != null && track.artwork._480x480 != null) {
+                Picasso.get()
+                    .load(track.artwork._480x480)
+                    .into(binding.playBarCoverImage);
+            }
+            
+            // Update play/pause button state
+            if (player != null) {
+                binding.playBarPlayPauseIcon.setImageResource(
+                    player.isPlaying() ? 
+                    R.drawable.baseline_pause_24 : 
+                    R.drawable.play_arrow_24px
+                );
+            }
+
+            // Ensure click listeners are set
+            binding.playBarBackground.setOnClickListener(v -> openMusicOverview());
+            binding.playBarPlayPauseIcon.setOnClickListener(v -> togglePlayPause());
+            binding.playBarPrevIcon.setOnClickListener(v -> playPreviousTrack());
+            binding.playBarNextIcon.setOnClickListener(v -> playNextTrack());
+        });
+    }
+
+    private void reattachClickListeners() {
+        runOnUiThread(() -> {
+            // Reattach main play bar click listener
+            binding.playBarBackground.setOnClickListener(v -> {
+                if (currentTrack != null) {
+                    openMusicOverview();
+                }
+            });
+
+            // Reattach control listeners
+            binding.playBarPlayPauseIcon.setOnClickListener(v -> togglePlayPause());
+            binding.playBarPrevIcon.setOnClickListener(v -> playPreviousTrack());
+            binding.playBarNextIcon.setOnClickListener(v -> playNextTrack());
+        });
+    }
+
+    private void setupPlayBarListeners() {
+        // Setup play bar click listener
+        binding.playBarBackground.setOnClickListener(v -> {
+            if (currentTrack != null) {
+                openMusicOverview();
+            }
+        });
+
+        // Setup play bar controls
+        binding.playBarPlayPauseIcon.setOnClickListener(v -> togglePlayPause());
+        binding.playBarPrevIcon.setOnClickListener(v -> playPreviousTrack());
+        binding.playBarNextIcon.setOnClickListener(v -> playNextTrack());
+    }
+
+    private void restorePlayBarState() {
+        // First try to restore from currentTrack
+        if (currentTrack != null) {
+            binding.playBarBackground.setVisibility(View.VISIBLE);
+            binding.playBarMusicTitle.setText(currentTrack.title);
+            binding.playBarMusicDesc.setText(currentTrack.user.name);
+            
+            if (currentTrack.artwork != null && currentTrack.artwork._480x480 != null) {
+                Picasso.get()
+                    .load(currentTrack.artwork._480x480)
+                    .into(binding.playBarCoverImage);
+            }
+
+            binding.playBarPlayPauseIcon.setImageResource(
+                player != null && player.isPlaying() ? 
+                R.drawable.baseline_pause_24 : 
+                R.drawable.play_arrow_24px
+            );
+            return;
+        }
+
+        // If no currentTrack but music is playing from ApplicationClass
+        if (ApplicationClass.player != null && ApplicationClass.MUSIC_ID != null) {
+            binding.playBarBackground.setVisibility(View.VISIBLE);
+            
+            // Set initial play/pause state
+            binding.playBarPlayPauseIcon.setImageResource(
+                ApplicationClass.player.isPlaying() ? 
+                R.drawable.baseline_pause_24 : 
+                R.drawable.play_arrow_24px
+            );
+
+            // Fetch track data
+            fetchCurrentTrackData(ApplicationClass.MUSIC_ID, track -> {
+                if (track != null) {
+                    currentTrack = track;
+                    binding.playBarMusicTitle.setText(track.title);
+                    binding.playBarMusicDesc.setText(track.user.name);
+                    
+                    if (track.artwork != null && track.artwork._480x480 != null) {
+                        Picasso.get()
+                            .load(track.artwork._480x480)
+                            .into(binding.playBarCoverImage);
+                    }
+                }
+            });
+        }
+    }
+
+    private void fetchCurrentTrackData(String trackId, OnTrackDataFetchedListener listener) {
+        // First try to get from ApplicationClass
+        if (ApplicationClass.currentTrack != null && 
+            ApplicationClass.currentTrack.id.equals(trackId)) {
+            listener.onTrackDataFetched(ApplicationClass.currentTrack);
+            return;
+        }
+
+        // Then try to get from cache
+        TrackData cachedTrack = getTrackFromCache(trackId);
+        if (cachedTrack != null) {
+            ApplicationClass.currentTrack = cachedTrack;
+            listener.onTrackDataFetched(cachedTrack);
+            return;
+        }
+
+        // If not in cache, fetch from API
+        AudiusApiClient.getInstance()
+            .getTrack(trackId)
+            .enqueue(new retrofit2.Callback<AudiusTrackResponse>() {
+                @Override
+                public void onResponse(@NonNull retrofit2.Call<AudiusTrackResponse> call,
+                                     @NonNull retrofit2.Response<AudiusTrackResponse> response) {
+                    if (response.isSuccessful() && response.body() != null && !response.body().data().isEmpty()) {
+                        Track apiTrack = response.body().data().get(0);
+                        TrackData track = convertToTrackData(apiTrack);
+                        cacheTrackData(track);
+                        ApplicationClass.currentTrack = track;
+                        runOnUiThread(() -> listener.onTrackDataFetched(track));
+                    } else {
+                        runOnUiThread(() -> listener.onTrackDataFetched(null));
+                    }
+                }
+
+                @Override
+                public void onFailure(@NonNull retrofit2.Call<AudiusTrackResponse> call,
+                                    @NonNull Throwable t) {
+                    Log.e(TAG, "Error fetching track data", t);
+                    runOnUiThread(() -> listener.onTrackDataFetched(null));
+                }
+            });
+    }
+
+    private TrackData getTrackFromCache(String trackId) {
+        SharedPreferences prefs = getSharedPreferences("track_cache", MODE_PRIVATE);
+        String trackJson = prefs.getString("track_" + trackId, null);
+        if (trackJson != null) {
+            return new Gson().fromJson(trackJson, TrackData.class);
+        }
+        return null;
+    }
+
+    private void cacheTrackData(TrackData track) {
+        SharedPreferences prefs = getSharedPreferences("track_cache", MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("track_" + track.id, new Gson().toJson(track));
+        editor.apply();
+    }
+
+    private TrackData convertToTrackData(Track track) {
+        TrackData trackData = new TrackData();
+        trackData.id = track.id();
+        trackData.title = track.title();
+        trackData.duration = track.duration();
+        trackData.description = track.description();
+        trackData.genre = track.genre();
+        trackData.track_cid = track.trackCid();
+        trackData.mood = track.mood();
+        trackData.release_date = track.releaseDate();
+        trackData.repost_count = track.repostCount();
+        trackData.favorite_count = track.favoriteCount();
+        trackData.tags = track.tags();
+        trackData.downloadable = track.downloadable();
+        trackData.play_count = track.playCount();
+        trackData.permalink = track.permalink();
+        trackData.is_streamable = track.isStreamable();
+
+        // Convert artwork
+        if (track.artwork() != null) {
+            trackData.artwork = new com.example.muzic.model.Artwork();
+            trackData.artwork._150x150 = track.artwork().x150();
+            trackData.artwork._480x480 = track.artwork().x480();
+            trackData.artwork._1000x1000 = track.artwork().x1000();
+        }
+
+        // Convert user
+        if (track.user() != null) {
+            trackData.user = new com.example.muzic.model.User();
+            trackData.user.name = track.user().name();
+            trackData.user.id = track.user().id();
+            // Add other user fields as needed
+        }
+
+        return trackData;
+    }
+
+    interface OnTrackDataFetchedListener {
+        void onTrackDataFetched(TrackData track);
     }
 }

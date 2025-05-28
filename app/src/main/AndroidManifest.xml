@@ -48,6 +48,7 @@
         <!-- Music Player Activity -->
         <activity
             android:name=".activities.MusicOverviewActivity"
+            android:configChanges="uiMode|orientation|screenSize|screenLayout|smallestScreenSize"
             android:exported="false"
             android:launchMode="singleTop"
             android:theme="@style/Theme.SaavnMp3.NoAnimation">

@@ -54,4 +54,8 @@
     <color name="tangerine">#FF6F00</color>
     <color name="crimson_love">#C2185B</color>
     <color name="blue_depths">#1565C0</color>
+
+    <!-- Dark mode colors -->
+    <color name="dark_background">#121212</color>
+    <color name="textSecDark">#B3FFFFFF</color>
 </resources>

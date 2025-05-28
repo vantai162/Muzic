@@ -21,6 +21,7 @@ import com.example.muzic.utils.AudioQualityManager;
 import com.example.muzic.utils.CacheManager;
 //import com.example.muzic.utils.SharedPreferenceManager;
 //import com.example.muzic.utils.TrackCacheHelper;
+import com.example.muzic.model.TrackData;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,6 +56,7 @@ public class ApplicationClass extends Application {
     private static Activity currentActivity = null;
     private ThemeManager themeManager;
     private CacheManager cacheManager;
+    public static TrackData currentTrack;
 
     @Override
     public void onCreate() {
