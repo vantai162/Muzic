@@ -8,6 +8,7 @@ import android.app.Application;
 import android.graphics.Color;
 import android.support.v4.media.session.MediaSessionCompat;
 
+import androidx.media3.common.Player;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector;
 
@@ -56,7 +57,11 @@ public class ApplicationClass extends Application {
     private static Activity currentActivity = null;
     private ThemeManager themeManager;
     private CacheManager cacheManager;
+    
+    // Add new fields for playlist management
     public static TrackData currentTrack;
+    public static ArrayList<TrackData> currentPlaylist = new ArrayList<>();
+    public static int currentTrackIndex = -1;
 
     @Override
     public void onCreate() {
@@ -127,14 +132,54 @@ public class ApplicationClass extends Application {
         }
     }
 
-    // Add new methods for track management
+    // Add new methods for playlist management
+    public void updatePlaylist(ArrayList<TrackData> playlist, int position) {
+        currentPlaylist = playlist;
+        currentTrackIndex = position;
+        if (position >= 0 && position < playlist.size()) {
+            currentTrack = playlist.get(position);
+            MUSIC_ID = currentTrack.id;
+            MUSIC_TITLE = currentTrack.title;
+            MUSIC_DESCRIPTION = currentTrack.user.name;
+            IMAGE_URL = currentTrack.artwork != null ? currentTrack.artwork._480x480 : "";
+        }
+    }
+
+    public void playNextTrack() {
+        if (currentPlaylist != null && !currentPlaylist.isEmpty()) {
+            if (currentTrackIndex < currentPlaylist.size() - 1) {
+                currentTrackIndex++;
+                currentTrack = currentPlaylist.get(currentTrackIndex);
+                playCurrentTrack();
+            } else if (player.getRepeatMode() == Player.REPEAT_MODE_ALL) {
+                currentTrackIndex = 0;
+                currentTrack = currentPlaylist.get(currentTrackIndex);
+                playCurrentTrack();
+            }
+        }
+    }
+
+    public void playPreviousTrack() {
+        if (currentPlaylist != null && !currentPlaylist.isEmpty()) {
+            if (currentTrackIndex > 0) {
+                currentTrackIndex--;
+                currentTrack = currentPlaylist.get(currentTrackIndex);
+                playCurrentTrack();
+            } else if (player.getRepeatMode() == Player.REPEAT_MODE_ALL) {
+                currentTrackIndex = currentPlaylist.size() - 1;
+                currentTrack = currentPlaylist.get(currentTrackIndex);
+                playCurrentTrack();
+            }
+        }
+    }
+
     public void updateCurrentTrack(TrackData track, List<String> newQueue, int position) {
         currentTrack = track;
         if (newQueue != null) {
             trackQueue.clear();
             trackQueue.addAll(newQueue);
         }
-        track_position = position;
+        currentTrackIndex = position;
         MUSIC_ID = track.id;
         MUSIC_TITLE = track.title;
         MUSIC_DESCRIPTION = track.user.name;
@@ -149,8 +194,8 @@ public class ApplicationClass extends Application {
     
     public void playCurrentTrack() {
         if (currentTrack != null && player != null) {
-            // Get streaming URL based on track_cid
-            String streamUrl = "https://audius.co/tracks/" + currentTrack.track_cid;
+            // Get streaming URL using the correct format
+            String streamUrl = "https://discoveryprovider2.audius.co/v1/tracks/" + currentTrack.id + "/stream";
             SONG_URL = streamUrl;
             
             // Prepare and play

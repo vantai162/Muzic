@@ -10,10 +10,12 @@ import android.view.View;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.example.muzic.model.TrackData;
 import com.example.muzic.records.ProfilePicture;
 import com.example.muzic.records.Artwork;
 import com.example.muzic.records.CoverPhoto;
 import com.example.muzic.records.User;
+
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
@@ -44,7 +46,6 @@ import java.util.List;
 public class ListActivity extends AppCompatActivity {
 
     private ActivityListBinding binding;
-    private final List<String> trackQueue = new ArrayList<>();
     private Playlist playlistData;
     private boolean isUserCreated = false;
     private final List<ArtistData> artistData = new ArrayList<>();
@@ -69,19 +70,70 @@ public class ListActivity extends AppCompatActivity {
     }
 
     private void setupClickListeners() {
-        /*binding.playAllBtn.setOnClickListener(view -> {
-            if (!trackQueue.isEmpty()) {
-                ((ApplicationClass) getApplicationContext()).setTrackQueue(trackQueue);
-                ((ApplicationClass) getApplicationContext()).nextTrack();
-                startActivity(new Intent(ListActivity.this, MusicOverviewActivity.class)
-                        .putExtra("id", ApplicationClass.MUSIC_ID));
+        binding.playAllBtn.setOnClickListener(view -> {
+            if (playlistData != null) {
+                // Fetch tracks for this playlist
+                audiusRepository.getPlaylistTracks(playlistData.id(), tracks -> {
+                    if (tracks != null && !tracks.isEmpty()) {
+                        // Convert all tracks to TrackData
+                        ArrayList<TrackData> playlist = new ArrayList<>();
+                        for (Track track : tracks) {
+                            playlist.add(convertToTrackData(track));
+                        }
+                        
+                        // Update playlist in ApplicationClass and start playing
+                        ApplicationClass app = (ApplicationClass) getApplication();
+                        app.updatePlaylist(playlist, 0);
+                        app.playCurrentTrack();
+                        
+                        // Open MusicOverviewActivity
+                        startActivity(new Intent(ListActivity.this, MusicOverviewActivity.class));
+                    }
+                }, error -> {
+                    Log.e("ListActivity", "Error fetching playlist tracks: " + error);
+                    Snackbar.make(binding.getRoot(), "Failed to play tracks", Snackbar.LENGTH_SHORT).show();
+                });
             }
-        });*/
+        });
 
         binding.addToLibrary.setOnClickListener(view -> handleAddToLibrary());
-        //binding.addMoreSongs.setOnClickListener(view ->
-            //startActivity(new Intent(ListActivity.this, SearchActivity.class)));
         binding.moreIcon.setOnClickListener(view -> onMoreIconClicked());
+    }
+
+    private TrackData convertToTrackData(Track track) {
+        TrackData trackData = new TrackData();
+        trackData.id = track.id();
+        trackData.title = track.title();
+        trackData.track_cid = track.trackCid();
+        trackData.duration = track.duration();
+        
+        // Create and set User
+        com.example.muzic.model.User userData = new com.example.muzic.model.User();
+        userData.name = track.user().name();
+        userData.id = track.user().id();
+        trackData.user = userData;
+        
+        // Create and set Artwork
+        com.example.muzic.model.Artwork artworkData = new com.example.muzic.model.Artwork();
+        artworkData._480x480 = track.artwork().x480();
+        artworkData._150x150 = track.artwork().x150();
+        artworkData._1000x1000 = track.artwork().x1000();
+        trackData.artwork = artworkData;
+        
+        // Set other fields
+        trackData.description = track.description();
+        trackData.genre = track.genre();
+        trackData.mood = track.mood();
+        trackData.release_date = track.releaseDate();
+        trackData.repost_count = track.repostCount();
+        trackData.favorite_count = track.favoriteCount();
+        trackData.tags = track.tags();
+        trackData.downloadable = track.downloadable();
+        trackData.play_count = track.playCount();
+        trackData.permalink = track.permalink();
+        trackData.is_streamable = track.isStreamable();
+        
+        return trackData;
     }
 
     private void handleAddToLibrary() {
@@ -259,13 +311,6 @@ public class ListActivity extends AppCompatActivity {
             Log.d("ListActivity", "Tracks fetched successfully, count: " + (tracks != null ? tracks.size() : 0));
             ActivityListSongsItemAdapter adapter = new ActivityListSongsItemAdapter(tracks);
             binding.recyclerView.setAdapter(adapter);
-
-            trackQueue.clear();
-            if (tracks != null) {
-                for (Track track : tracks) {
-                    trackQueue.add(track.id());
-                }
-            }
         }, error -> {
             Log.e("ListActivity", "Error fetching playlist tracks: " + error);
             Snackbar.make(binding.getRoot(), "Failed to load tracks", Snackbar.LENGTH_SHORT).show();
@@ -318,10 +363,6 @@ public class ListActivity extends AppCompatActivity {
         Picasso.get().load(Uri.parse(userPlaylist.image())).into(binding.albumCover);
         
         binding.recyclerView.setAdapter(new UserCreatedSongsListAdapter(userPlaylist.tracks()));
-        
-        for (Track track : userPlaylist.tracks()) {
-            trackQueue.add(track.id());
-        }
     }
 
     private void onMoreIconClicked() {
@@ -369,12 +410,6 @@ public class ListActivity extends AppCompatActivity {
             try {
                 String imgUrl = artist.image().isEmpty() ? "" : artist.image();
                 BottomSheetItemView artistView = new BottomSheetItemView(this, artist.name(), imgUrl, artist.id());
-                /*artistView.setOnClickListener(view -> {
-                    startActivity(new Intent(this, ArtistProfileActivity.class)
-                            .putExtra("data", new Gson().toJson(
-                                    new BasicDataRecord(artist.id(), artist.name(), "", imgUrl)))
-                    );
-                });*/
                 sheetBinding.main.addView(artistView);
             } catch (Exception e) {
                 Log.e("ListActivity", "Error setting up artist view", e);

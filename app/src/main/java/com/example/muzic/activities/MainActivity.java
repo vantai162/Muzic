@@ -137,10 +137,21 @@ public class MainActivity extends AppCompatActivity {
 
     private void openMusicOverview() {
         if (currentTrack != null) {
+            // Convert all tracks to TrackData and update ApplicationClass
+            ArrayList<TrackData> playlist = new ArrayList<>();
+            for (int i = 0; i < trendingTracksAdapter.getItemCount(); i++) {
+                Track track = trendingTracksAdapter.getTrack(i);
+                if (track != null) {
+                    playlist.add(convertToTrackData(track));
+                }
+            }
+            
+            // Update playlist in ApplicationClass
+            ApplicationClass app = (ApplicationClass) getApplication();
+            app.updatePlaylist(playlist, trendingTracksAdapter.getCurrentTrackIndex());
+            
+            // Start MusicOverviewActivity
             Intent intent = new Intent(this, MusicOverviewActivity.class);
-            intent.putExtra("track", currentTrack);
-            intent.putExtra("isPlaying", player != null && player.isPlaying());
-            intent.putExtra("currentPosition", player != null ? player.getCurrentPosition() : 0);
             startActivity(intent);
             overridePendingTransition(R.anim.slide_up, R.anim.no_animation);
         }
@@ -149,21 +160,23 @@ public class MainActivity extends AppCompatActivity {
     private void playTrack(Track track) {
         // Convert Track to TrackData and store as current
         currentTrack = convertToTrackData(track);
-        ApplicationClass.currentTrack = currentTrack;
         
         // Update UI
         updatePlayBarContent(currentTrack);
 
-        // Play the track using shared ExoPlayer instance
-        String streamUrl = "https://discoveryprovider2.audius.co/v1/tracks/" + track.id() + "/stream";
-        MediaItem mediaItem = MediaItem.fromUri(streamUrl);
-        
-        if (player.getCurrentMediaItem() == null || 
-            !player.getCurrentMediaItem().mediaId.equals(streamUrl)) {
-            player.setMediaItem(mediaItem);
-            player.prepare();
-            player.play();
+        // Convert all tracks to TrackData and update ApplicationClass
+        ArrayList<TrackData> playlist = new ArrayList<>();
+        for (int i = 0; i < trendingTracksAdapter.getItemCount(); i++) {
+            Track t = trendingTracksAdapter.getTrack(i);
+            if (t != null) {
+                playlist.add(convertToTrackData(t));
+            }
         }
+        
+        // Update playlist in ApplicationClass
+        ApplicationClass app = (ApplicationClass) getApplication();
+        app.updatePlaylist(playlist, trendingTracksAdapter.getCurrentTrackIndex());
+        app.playCurrentTrack();
     }
 
     private void togglePlayPause() {
@@ -179,23 +192,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void playPreviousTrack() {
-        // Get current track index from adapter
-        int currentIndex = trendingTracksAdapter.getCurrentTrackIndex();
-        if (currentIndex > 0) {
-            Track previousTrack = trendingTracksAdapter.getTrack(currentIndex - 1);
-            playTrack(previousTrack);
-            trendingTracksAdapter.setCurrentTrackIndex(currentIndex - 1);
-        }
+        ApplicationClass app = (ApplicationClass) getApplication();
+        app.playPreviousTrack();
+        currentTrack = app.currentTrack;
+        updatePlayBarContent(currentTrack);
+        trendingTracksAdapter.setCurrentTrackIndex(app.currentTrackIndex);
     }
 
     private void playNextTrack() {
-        // Get current track index from adapter
-        int currentIndex = trendingTracksAdapter.getCurrentTrackIndex();
-        if (currentIndex < trendingTracksAdapter.getItemCount() - 1) {
-            Track nextTrack = trendingTracksAdapter.getTrack(currentIndex + 1);
-            playTrack(nextTrack);
-            trendingTracksAdapter.setCurrentTrackIndex(currentIndex + 1);
-        }
+        ApplicationClass app = (ApplicationClass) getApplication();
+        app.playNextTrack();
+        currentTrack = app.currentTrack;
+        updatePlayBarContent(currentTrack);
+        trendingTracksAdapter.setCurrentTrackIndex(app.currentTrackIndex);
     }
 
     private void loadTrendingTracks() {
