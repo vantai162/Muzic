@@ -28,4 +28,10 @@ public interface AudiusApiService {
     Call<PlaylistResponse> getTrendingPlaylists(
             @Query("limit") int limit
     );
+
+    @GET("v1/playlists/{playlist_id}")
+    Call<PlaylistResponse> getPlaylist(@Path("playlist_id") String playlistId);
+
+    @GET("v1/playlists/{playlist_id}/tracks")
+    Call<AudiusTrackResponse> getPlaylistTracks(@Path("playlist_id") String playlistId);
 }

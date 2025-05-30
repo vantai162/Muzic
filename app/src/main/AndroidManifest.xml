@@ -45,6 +45,12 @@
             </intent-filter>
         </activity>
 
+        <!-- List Activity -->
+        <activity
+            android:name=".activities.ListActivity"
+            android:exported="false"
+            android:launchMode="singleTop" />
+
         <!-- Music Player Activity -->
         <activity
             android:name=".activities.MusicOverviewActivity"

@@ -126,5 +126,42 @@ public class ApplicationClass extends Application {
             player = null;
         }
     }
+
+    // Add new methods for track management
+    public void updateCurrentTrack(TrackData track, List<String> newQueue, int position) {
+        currentTrack = track;
+        if (newQueue != null) {
+            trackQueue.clear();
+            trackQueue.addAll(newQueue);
+        }
+        track_position = position;
+        MUSIC_ID = track.id;
+        MUSIC_TITLE = track.title;
+        MUSIC_DESCRIPTION = track.user.name;
+        IMAGE_URL = track.artwork != null ? track.artwork._480x480 : "";
+        
+        // Stop current playback before changing track
+        if (player != null) {
+            player.stop();
+            player.clearMediaItems();
+        }
+    }
+    
+    public void playCurrentTrack() {
+        if (currentTrack != null && player != null) {
+            // Get streaming URL based on track_cid
+            String streamUrl = "https://audius.co/tracks/" + currentTrack.track_cid;
+            SONG_URL = streamUrl;
+            
+            // Prepare and play
+            player.setMediaItem(androidx.media3.common.MediaItem.fromUri(streamUrl));
+            player.prepare();
+            player.play();
+        }
+    }
+    
+    public boolean isPlayingTrack(String trackId) {
+        return currentTrack != null && currentTrack.id.equals(trackId) && player != null && player.isPlaying();
+    }
 }
 

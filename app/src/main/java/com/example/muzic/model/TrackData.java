@@ -46,6 +46,8 @@ public class TrackData implements Parcelable {
         is_streamable = in.readByte() != 0;
     }
 
+
+
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeParcelable(artwork, flags);

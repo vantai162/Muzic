@@ -99,35 +99,36 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
         // Initialize background image view using view binding
         backgroundImageView = binding.backgroundImage;
 
+        // Get application instance
+        ApplicationClass app = (ApplicationClass) getApplication();
+        
         // Get shared ExoPlayer instance
-        player = ApplicationClass.player;
-        if (player == null) {
-            player = new ExoPlayer.Builder(this).build();
-            ApplicationClass.player = player;
-        }
+        player = app.getExoPlayer();
         player.addListener(this);
         handler = new Handler(Looper.getMainLooper());
 
         // Setup more info bottom sheet
         setupMoreInfoBottomSheet();
 
-        // Get track data from intent
-        TrackData currentTrack = getIntent().getParcelableExtra("track");
-        playlist = new ArrayList<>();
-        if (currentTrack != null) {
-            playlist.add(currentTrack);
-            // Store current track ID in ApplicationClass for reference
-            ApplicationClass.MUSIC_ID = String.valueOf(currentTrack.id);
-            
-            // Update UI without restarting playback
-            updateUIOnly(currentTrack);
-            
-            // Update seekbar to current position
-            if (getIntent().hasExtra("currentPosition")) {
-                long currentPosition = getIntent().getLongExtra("currentPosition", 0);
-                binding.seekbar.setProgress((int) (currentPosition / 1000));
-                binding.elapsedDuration.setText(formatDuration(currentPosition));
+        // Get track data and queue from intent
+        TrackData newTrack = getIntent().getParcelableExtra("track");
+        ArrayList<String> newQueue = getIntent().getStringArrayListExtra("trackQueue");
+        int position = getIntent().getIntExtra("position", -1);
+        
+        if (newTrack != null) {
+            // Check if this is a different track from what's currently playing
+            if (!app.isPlayingTrack(newTrack.id)) {
+                // Update track info and queue in ApplicationClass
+                app.updateCurrentTrack(newTrack, newQueue, position);
+                // Start playing the new track
+                app.playCurrentTrack();
             }
+            
+            // Update UI
+            updateUIOnly(newTrack);
+        } else if (app.currentTrack != null) {
+            // If no new track, but there's a current track, just update UI
+            updateUIOnly(app.currentTrack);
         }
 
         setupClickListeners();
@@ -138,7 +139,7 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
             updatePlayPauseButton(player.isPlaying());
         }
 
-        quality = (TextView) findViewById(R.id.track_quality);
+        quality = findViewById(R.id.track_quality);
         audioQualityManager = new AudioQualityManager(this);
         quality.setText(audioQualityManager.getCurrentQuality());
 

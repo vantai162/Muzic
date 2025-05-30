@@ -3,6 +3,7 @@ package com.example.muzic.network;
 import com.example.muzic.records.AudiusTrackResponse;
 import com.example.muzic.records.Track;
 import com.example.muzic.records.PlaylistResponse;
+import com.example.muzic.records.Playlist;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -110,6 +111,44 @@ public class AudiusRepository {
             public void onFailure(Call<PlaylistResponse> call, Throwable t) {
                 System.out.println("Network Error: " + t.getMessage());
                 callback.onFailure(call, t);
+            }
+        });
+    }
+
+    public void getPlaylist(String playlistId, Consumer<Playlist> onSuccess, Consumer<String> onError) {
+        Call<PlaylistResponse> call = apiService.getPlaylist(playlistId);
+        call.enqueue(new Callback<PlaylistResponse>() {
+            @Override
+            public void onResponse(Call<PlaylistResponse> call, Response<PlaylistResponse> response) {
+                if (response.isSuccessful() && response.body() != null && !response.body().data().isEmpty()) {
+                    onSuccess.accept(response.body().data().get(0));
+                } else {
+                    onError.accept("Failed to get playlist");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<PlaylistResponse> call, Throwable t) {
+                onError.accept(t.getMessage());
+            }
+        });
+    }
+
+    public void getPlaylistTracks(String playlistId, Consumer<List<Track>> onSuccess, Consumer<String> onError) {
+        Call<AudiusTrackResponse> call = apiService.getPlaylistTracks(playlistId);
+        call.enqueue(new Callback<AudiusTrackResponse>() {
+            @Override
+            public void onResponse(Call<AudiusTrackResponse> call, Response<AudiusTrackResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    onSuccess.accept(response.body().data());
+                } else {
+                    onError.accept("Failed to get playlist tracks");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<AudiusTrackResponse> call, Throwable t) {
+                onError.accept(t.getMessage());
             }
         });
     }
