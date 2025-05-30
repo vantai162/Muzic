@@ -251,6 +251,7 @@ public class ListActivity extends AppCompatActivity {
 
         // Get playlist data from intent
         String playlistJson = getIntent().getExtras().getString("data");
+        boolean isMoodPlaylist = getIntent().getBooleanExtra("isMoodPlaylist", false);
         if (playlistJson == null) {
             Log.e("ListActivity", "No playlist data found in intent");
             return;
@@ -258,6 +259,27 @@ public class ListActivity extends AppCompatActivity {
         Log.d("ListActivity", "Received playlist data: " + playlistJson);
 
         try {
+            // Try to parse as CustomPlaylistData first
+            CustomPlaylistData customData = new Gson().fromJson(playlistJson, CustomPlaylistData.class);
+            if (customData != null) {
+                // Convert CustomPlaylistData to Playlist
+                Playlist playlist = new Playlist(
+                    customData.artwork,
+                    customData.description,
+                    customData.permalink,
+                    customData.id,
+                    customData.isAlbum,
+                    customData.playlistName,
+                    customData.repostCount,
+                    customData.favoriteCount,
+                    customData.totalPlayCount,
+                    customData.user
+                );
+                onPlaylistFetched(playlist, isMoodPlaylist ? customData.tracks : null);
+                return;
+            }
+
+            // If not CustomPlaylistData, try parsing as regular Playlist
             Playlist playlist = new Gson().fromJson(playlistJson, Playlist.class);
             if (playlist == null) {
                 Log.e("ListActivity", "Failed to parse playlist data");
@@ -272,19 +294,19 @@ public class ListActivity extends AppCompatActivity {
             
             if (cachedPlaylist != null) {
                 Log.d("ListActivity", "Found cached playlist, loading from cache");
-                onPlaylistFetched(cachedPlaylist);
+                onPlaylistFetched(cachedPlaylist, null);
                 return;
             }
 
             Log.d("ListActivity", "No cached playlist found, fetching from API");
             audiusRepository.getPlaylist(playlistId, fetchedPlaylist -> {
                 Log.d("ListActivity", "Playlist fetched successfully");
-                onPlaylistFetched(fetchedPlaylist);
+                onPlaylistFetched(fetchedPlaylist, null);
             }, error -> {
                 Log.e("ListActivity", "Error fetching playlist: " + error);
                 // If API call fails, use the playlist data from intent
                 Log.d("ListActivity", "Using playlist data from intent as fallback");
-                onPlaylistFetched(playlist);
+                onPlaylistFetched(playlist, null);
             });
         } catch (Exception e) {
             Log.e("ListActivity", "Error parsing playlist data: " + e.getMessage());
@@ -292,29 +314,41 @@ public class ListActivity extends AppCompatActivity {
         }
     }
 
-    private void onPlaylistFetched(Playlist playlist) {
+    private void onPlaylistFetched(Playlist playlist, List<Track> providedTracks) {
         Log.d("ListActivity", "Starting onPlaylistFetched");
         playlistData = playlist;
 
         binding.albumTitle.setText(playlist.playlistName());
         binding.albumSubTitle.setText(playlist.user().name());
         
+        // Get mood image resource if available
+        int moodImageRes = getIntent().getIntExtra("moodImageRes", -1);
         String artworkUrl = playlist.artwork() != null ? playlist.artwork().x480() : "";
-        Log.d("ListActivity", "Loading artwork from URL: " + artworkUrl);
-        if (!artworkUrl.isEmpty()) {
+        
+        // Prioritize mood image over artwork URL
+        if (moodImageRes > 0) {
+            binding.albumCover.setImageResource(moodImageRes);
+        } else if (!artworkUrl.isEmpty()) {
             Picasso.get().load(Uri.parse(artworkUrl)).into(binding.albumCover);
         }
 
-        // Fetch tracks for this playlist
-        Log.d("ListActivity", "Fetching tracks for playlist: " + playlist.id());
-        audiusRepository.getPlaylistTracks(playlist.id(), tracks -> {
-            Log.d("ListActivity", "Tracks fetched successfully, count: " + (tracks != null ? tracks.size() : 0));
-            ActivityListSongsItemAdapter adapter = new ActivityListSongsItemAdapter(tracks);
+        // If providedTracks is not null, use it directly
+        if (providedTracks != null) {
+            Log.d("ListActivity", "Using provided tracks for playlist");
+            ActivityListSongsItemAdapter adapter = new ActivityListSongsItemAdapter(providedTracks);
             binding.recyclerView.setAdapter(adapter);
-        }, error -> {
-            Log.e("ListActivity", "Error fetching playlist tracks: " + error);
-            Snackbar.make(binding.getRoot(), "Failed to load tracks", Snackbar.LENGTH_SHORT).show();
-        });
+        } else {
+            // Fetch tracks for this playlist
+            Log.d("ListActivity", "Fetching tracks for playlist: " + playlist.id());
+            audiusRepository.getPlaylistTracks(playlist.id(), tracks -> {
+                Log.d("ListActivity", "Tracks fetched successfully, count: " + (tracks != null ? tracks.size() : 0));
+                ActivityListSongsItemAdapter adapter = new ActivityListSongsItemAdapter(tracks);
+                binding.recyclerView.setAdapter(adapter);
+            }, error -> {
+                Log.e("ListActivity", "Error fetching playlist tracks: " + error);
+                Snackbar.make(binding.getRoot(), "Failed to load tracks", Snackbar.LENGTH_SHORT).show();
+            });
+        }
 
         artistData.clear();
         if (playlist.user() != null) {
@@ -471,4 +505,19 @@ public class ListActivity extends AppCompatActivity {
     }
 
     private record ArtistData(String name, String id, String image) {}
+
+    // Add CustomPlaylistData class definition
+    private static class CustomPlaylistData {
+        public Artwork artwork;
+        public String description;
+        public String permalink;
+        public String id;
+        public boolean isAlbum;
+        public String playlistName;
+        public int repostCount;
+        public int favoriteCount;
+        public int totalPlayCount;
+        public com.example.muzic.records.User user;
+        public List<Track> tracks;
+    }
 }

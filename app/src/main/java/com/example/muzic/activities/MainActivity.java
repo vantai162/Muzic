@@ -239,8 +239,23 @@ public class MainActivity extends AppCompatActivity {
 
                     List<MoodPlaylist> moodPlaylists = new ArrayList<>();
                     for (String mood : moodMap.keySet()) {
-                        moodPlaylists.add(new MoodPlaylist(capitalize(mood), moodMap.get(mood)));
+                        List<Track> moodTracks = moodMap.get(mood);
+                        if (moodTracks != null && !moodTracks.isEmpty()) {
+                            // Sử dụng thông tin từ track đầu tiên cho playlist
+                            Track firstTrack = moodTracks.get(0);
+                            String playlistId = "mood-" + mood + "-" + System.currentTimeMillis();
+                            String description = "A collection of " + capitalize(mood) + " tracks";
+                            
+                            moodPlaylists.add(new MoodPlaylist(
+                                playlistId,
+                                capitalize(mood),
+                                description,
+                                moodTracks,
+                                firstTrack.user() // Sử dụng user của track đầu tiên
+                            ));
+                        }
                     }
+
                     Log.d("MoodPlaylist", "Mood playlists size: " + moodPlaylists.size());
                     for (MoodPlaylist playlist : moodPlaylists) {
                         Log.d("MoodPlaylist", "Title: " + playlist.getMood());
