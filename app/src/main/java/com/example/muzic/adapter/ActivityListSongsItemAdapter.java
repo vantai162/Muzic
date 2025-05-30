@@ -60,60 +60,60 @@ public class ActivityListSongsItemAdapter extends RecyclerView.Adapter<ActivityL
         holder.itemView.setOnClickListener(view -> {
             Track track = data.get(holder.getBindingAdapterPosition());
             
-            // Update track queue in ApplicationClass
-            if (ApplicationClass.trackQueue == null) {
-                ApplicationClass.trackQueue = new ArrayList<>();
-            }
-            
-            // Add all tracks to queue if not already present
+            // Convert all tracks to TrackData
+            ArrayList<TrackData> playlist = new ArrayList<>();
             for (Track t : data) {
-                if (!ApplicationClass.trackQueue.contains(t.id())) {
-                    ApplicationClass.trackQueue.add(t.id());
-                }
+                playlist.add(convertToTrackData(t));
             }
             
-            // Set current track position
-            if (ApplicationClass.trackQueue.contains(track.id())) {
-                ApplicationClass.track_position = holder.getBindingAdapterPosition();
-            }
+            // Get current track data
+            TrackData currentTrack = convertToTrackData(track);
             
-            // Create TrackData object and set its fields
-            TrackData trackData = new TrackData();
-            trackData.id = track.id();
-            trackData.title = track.title();
-            trackData.track_cid = track.trackCid();
-            trackData.duration = track.duration();
+            // Update playlist in ApplicationClass
+            ApplicationClass app = (ApplicationClass) view.getContext().getApplicationContext();
+            app.updatePlaylist(playlist, holder.getBindingAdapterPosition());
+            app.playCurrentTrack();
             
-            // Create and set User
-            User userData = new User();
-            userData.name = track.user().name();
-            trackData.user = userData;
-            
-            // Create and set Artwork
-            Artwork artworkData = new Artwork();
-            artworkData._480x480 = track.artwork().x480();
-            trackData.artwork = artworkData;
-            
-            // Set other fields
-            trackData.description = track.description();
-            trackData.genre = track.genre();
-            trackData.mood = track.mood();
-            trackData.release_date = track.releaseDate();
-            trackData.repost_count = track.repostCount();
-            trackData.favorite_count = track.favoriteCount();
-            trackData.tags = track.tags();
-            trackData.downloadable = track.downloadable();
-            trackData.play_count = track.playCount();
-            trackData.permalink = track.permalink();
-            trackData.is_streamable = track.isStreamable();
-            
+            // Start MusicOverviewActivity
             Intent intent = new Intent(view.getContext(), MusicOverviewActivity.class);
-            intent.putExtra("track", trackData);
-            intent.putExtra("id", track.id());
-            intent.putExtra("position", holder.getBindingAdapterPosition());
-            intent.putExtra("trackQueue", new ArrayList<>(ApplicationClass.trackQueue));
-            holder.itemView.getContext().startActivity(intent);
+            view.getContext().startActivity(intent);
         });
+    }
+
+    private TrackData convertToTrackData(Track track) {
+        TrackData trackData = new TrackData();
+        trackData.id = track.id();
+        trackData.title = track.title();
+        trackData.track_cid = track.trackCid();
+        trackData.duration = track.duration();
+        
+        // Create and set User
+        com.example.muzic.model.User userData = new com.example.muzic.model.User();
+        userData.name = track.user().name();
+        userData.id = track.user().id();
+        trackData.user = userData;
+        
+        // Create and set Artwork
+        com.example.muzic.model.Artwork artworkData = new com.example.muzic.model.Artwork();
+        artworkData._480x480 = track.artwork().x480();
+        artworkData._150x150 = track.artwork().x150();
+        artworkData._1000x1000 = track.artwork().x1000();
+        trackData.artwork = artworkData;
+        
+        // Set other fields
+        trackData.description = track.description();
+        trackData.genre = track.genre();
+        trackData.mood = track.mood();
+        trackData.release_date = track.releaseDate();
+        trackData.repost_count = track.repostCount();
+        trackData.favorite_count = track.favoriteCount();
+        trackData.tags = track.tags();
+        trackData.downloadable = track.downloadable();
+        trackData.play_count = track.playCount();
+        trackData.permalink = track.permalink();
+        trackData.is_streamable = track.isStreamable();
+        
+        return trackData;
     }
 
     @Override

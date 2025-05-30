@@ -110,24 +110,12 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
         // Setup more info bottom sheet
         setupMoreInfoBottomSheet();
 
-        // Get track data and queue from intent
-        TrackData newTrack = getIntent().getParcelableExtra("track");
-        ArrayList<String> newQueue = getIntent().getStringArrayListExtra("trackQueue");
-        int position = getIntent().getIntExtra("position", -1);
+        // Get playlist from ApplicationClass
+        playlist = app.currentPlaylist;
+        currentTrackIndex = app.currentTrackIndex;
         
-        if (newTrack != null) {
-            // Check if this is a different track from what's currently playing
-            if (!app.isPlayingTrack(newTrack.id)) {
-                // Update track info and queue in ApplicationClass
-                app.updateCurrentTrack(newTrack, newQueue, position);
-                // Start playing the new track
-                app.playCurrentTrack();
-            }
-            
-            // Update UI
-            updateUIOnly(newTrack);
-        } else if (app.currentTrack != null) {
-            // If no new track, but there's a current track, just update UI
+        // Update UI with current track
+        if (app.currentTrack != null) {
             updateUIOnly(app.currentTrack);
         }
 
@@ -313,16 +301,20 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
     }
 
     private void playNextTrack() {
-        if (playlist.size() > 1) {
-            currentTrackIndex = (currentTrackIndex + 1) % playlist.size();
-            updateTrackUI(playlist.get(currentTrackIndex));
+        ApplicationClass app = (ApplicationClass) getApplication();
+        app.playNextTrack();
+        currentTrackIndex = app.currentTrackIndex;
+        if (app.currentTrack != null) {
+            updateUIOnly(app.currentTrack);
         }
     }
 
     private void playPreviousTrack() {
-        if (playlist.size() > 1) {
-            currentTrackIndex = (currentTrackIndex - 1 + playlist.size()) % playlist.size();
-            updateTrackUI(playlist.get(currentTrackIndex));
+        ApplicationClass app = (ApplicationClass) getApplication();
+        app.playPreviousTrack();
+        currentTrackIndex = app.currentTrackIndex;
+        if (app.currentTrack != null) {
+            updateUIOnly(app.currentTrack);
         }
     }
 
