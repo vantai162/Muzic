@@ -15,120 +15,292 @@ import com.example.muzic.records.sharedpref.SavedLibrariesAudius;
 import java.util.ArrayList;
 
 public class SharedPreferenceManager {
-
-    public SharedPreferences getSharedPreferences() {
-        return sharedPreferences;
-    }
-
     private final SharedPreferences sharedPreferences;
-
     private static SharedPreferenceManager instance;
+    private static final String CACHE_NAME = "audius_cache";
+    private static final String KEY_TRACK_PREFIX = "track:";
+    private static final String KEY_PLAYLIST_PREFIX = "playlist:";
+    private static final String KEY_ARTIST_PREFIX = "artist:";
+    private static final String KEY_SAVED_LIBRARIES = "saved_libraries";
+    private static final String KEY_HOME_TRENDING_TRACKS = "home_trending_tracks";
+    private static final String KEY_HOME_TRENDING_PLAYLISTS = "home_trending_playlists";
+    private static final String KEY_HOME_TRENDING_ARTISTS = "home_trending_artists";
 
     public static SharedPreferenceManager getInstance(Context context) {
-        if (instance == null) instance = new SharedPreferenceManager(context);
+        if (instance == null) {
+            instance = new SharedPreferenceManager(context);
+        }
         return instance;
     }
 
     private SharedPreferenceManager(Context context) {
-        sharedPreferences = context.getSharedPreferences("cache", Context.MODE_PRIVATE);
+        sharedPreferences = context.getSharedPreferences(CACHE_NAME, Context.MODE_PRIVATE);
     }
 
-    public void setAudiusTrackById(String id, AudiusTrackResponse track) {
-        sharedPreferences.edit().putString("track:" + id, new Gson().toJson(track)).apply();
+    // Track related methods
+    public void cacheTrack(String id, Track track) {
+        saveToPreferences(KEY_TRACK_PREFIX + id, track);
     }
 
-    public AudiusTrackResponse getAudiusTrackById(String id) {
-        return sharedPreferences.contains("track:" + id) ?
-                new Gson().fromJson(sharedPreferences.getString("track:" + id, ""), AudiusTrackResponse.class) :
-                null;
+    public Track getCachedTrack(String id) {
+        return getFromPreferences(KEY_TRACK_PREFIX + id, Track.class);
     }
 
-
-    public void setHomeArtistsRecommended(AudiusUserResponse artistsRecommended) {
-        sharedPreferences.edit().putString("home_artists_recommended", new Gson().toJson(artistsRecommended)).apply();
+    public void cacheTrendingTracks(AudiusTrackResponse response) {
+        saveToPreferences(KEY_HOME_TRENDING_TRACKS, response);
     }
 
-    public AudiusUserResponse getHomeArtistsRecommended() {
-        return new Gson().fromJson(sharedPreferences.getString("home_artists_recommended", ""), AudiusUserResponse.class);
+    public AudiusTrackResponse getCachedTrendingTracks() {
+        return getFromPreferences(KEY_HOME_TRENDING_TRACKS, AudiusTrackResponse.class);
     }
 
-
-    public void setHomePlaylistRecommended(PlaylistResponse playlistsSearch) {
-        sharedPreferences.edit().putString("home_playlists_recommended", new Gson().toJson(playlistsSearch)).apply();
+    // Playlist related methods
+    public void cachePlaylist(String id, Playlist playlist) {
+        saveToPreferences(KEY_PLAYLIST_PREFIX + id, playlist);
     }
 
-    public PlaylistResponse getHomePlaylistRecommended() {
-        return new Gson().fromJson(sharedPreferences.getString("home_playlists_recommended", ""), PlaylistResponse.class);
+    public Playlist getCachedPlaylist(String id) {
+        return getFromPreferences(KEY_PLAYLIST_PREFIX + id, Playlist.class);
     }
 
-    /*public void setSongResponseById(String id, AudiusTrackResponse songSearch) {
-        sharedPreferences.edit().putString(id, new Gson().toJson(songSearch)).apply();
+    public void cacheTrendingPlaylists(PlaylistResponse response) {
+        saveToPreferences(KEY_HOME_TRENDING_PLAYLISTS, response);
     }
 
-    public AudiusTrackResponse getSongResponseById(String id) {
-        return new Gson().fromJson(sharedPreferences.getString(id, ""), AudiusTrackResponse.class);
+    public PlaylistResponse getCachedTrendingPlaylists() {
+        return getFromPreferences(KEY_HOME_TRENDING_PLAYLISTS, PlaylistResponse.class);
     }
 
-    public boolean isSongResponseById(String id) {
-        return sharedPreferences.contains(id);
+    // Artist related methods
+    public void cacheArtist(String id, User artist) {
+        saveToPreferences(KEY_ARTIST_PREFIX + id, artist);
     }
 
-
-    public void setPlaylistResponseById(String id, PlaylistSearch playlistSearch) {
-        sharedPreferences.edit().putString(id, new Gson().toJson(playlistSearch)).apply();
+    public User getCachedArtist(String id) {
+        return getFromPreferences(KEY_ARTIST_PREFIX + id, User.class);
     }
 
-    public PlaylistSearch getPlaylistResponseById(String id) {
-        return new Gson().fromJson(sharedPreferences.getString(id, ""), PlaylistSearch.class);
+    public void cacheTrendingArtists(AudiusUserResponse response) {
+        saveToPreferences(KEY_HOME_TRENDING_ARTISTS, response);
     }
 
-    public void setTrackQuality(String string) {
-        sharedPreferences.edit().putString("track_quality", string).apply();
+    public AudiusUserResponse getCachedTrendingArtists() {
+        return getFromPreferences(KEY_HOME_TRENDING_ARTISTS, AudiusUserResponse.class);
     }
 
-    public String getTrackQuality() {
-        return sharedPreferences.getString("track_quality", "320kbps");
-    }
-*/
+    // Library related methods
     public void setSavedLibrariesData(SavedLibrariesAudius savedLibraries) {
-        sharedPreferences.edit().putString("saved_libraries", new Gson().toJson(savedLibraries)).apply();
+        saveToPreferences(KEY_SAVED_LIBRARIES, savedLibraries);
     }
 
     public SavedLibrariesAudius getSavedLibrariesData() {
-        return new Gson().fromJson(sharedPreferences.getString("saved_libraries", ""), SavedLibrariesAudius.class);
+        return getFromPreferences(KEY_SAVED_LIBRARIES, SavedLibrariesAudius.class);
     }
-
 
     public void addLibraryToSavedLibraries(SavedLibrariesAudius.Library library) {
         SavedLibrariesAudius savedLibraries = getSavedLibrariesData();
-        if (savedLibraries == null) savedLibraries = new SavedLibrariesAudius(new ArrayList<>());
+        if (savedLibraries == null) {
+            savedLibraries = new SavedLibrariesAudius(new ArrayList<>());
+        }
         savedLibraries.lists().add(library);
         setSavedLibrariesData(savedLibraries);
     }
 
     public void removeLibraryFromSavedLibraries(int index) {
         SavedLibrariesAudius savedLibraries = getSavedLibrariesData();
-        if (savedLibraries == null) return;
-        savedLibraries.lists().remove(index);
+        if (savedLibraries == null || savedLibraries.lists() == null) return;
+        if (index >= 0 && index < savedLibraries.lists().size()) {
+            savedLibraries.lists().remove(index);
+            setSavedLibrariesData(savedLibraries);
+        }
+    }
+
+    // Cache clearing methods
+    public void clearTrendingCache() {
+        sharedPreferences.edit()
+                .remove(KEY_HOME_TRENDING_TRACKS)
+                .remove(KEY_HOME_TRENDING_PLAYLISTS)
+                .remove(KEY_HOME_TRENDING_ARTISTS)
+                .apply();
+    }
+
+    public void clearAllCache() {
+        sharedPreferences.edit().clear().apply();
+    }
+
+    // Helper methods
+    private <T> void saveToPreferences(String key, T data) {
+        if (data == null) return;
+        sharedPreferences.edit()
+                .putString(key, new Gson().toJson(data))
+                .apply();
+    }
+
+    private <T> T getFromPreferences(String key, Class<T> type) {
+        String json = sharedPreferences.getString(key, null);
+        if (json == null) return null;
+        try {
+            return new Gson().fromJson(json, type);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public boolean hasCache(String key) {
+        return sharedPreferences.contains(key);
+    }
+}
+/*
+package com.example.muzic.utils;
+
+import android.content.Context;
+import android.content.SharedPreferences;
+
+import com.google.gson.Gson;
+import com.example.muzic.records.AudiusTrackResponse;
+import com.example.muzic.records.PlaylistResponse;
+import com.example.muzic.records.AudiusUserResponse;
+import com.example.muzic.records.Track;
+import com.example.muzic.records.User;
+import com.example.muzic.records.Playlist;
+import com.example.muzic.records.sharedpref.SavedLibrariesAudius;
+
+import java.util.ArrayList;
+
+public class SharedPreferenceManager {
+    private final SharedPreferences sharedPreferences;
+    private static SharedPreferenceManager instance;
+    private static final String CACHE_NAME = "audius_cache";
+    private static final String KEY_TRACK_PREFIX = "track:";
+    private static final String KEY_PLAYLIST_PREFIX = "playlist:";
+    private static final String KEY_ARTIST_PREFIX = "artist:";
+    private static final String KEY_SAVED_LIBRARIES = "saved_libraries";
+    private static final String KEY_HOME_TRENDING_TRACKS = "home_trending_tracks";
+    private static final String KEY_HOME_TRENDING_PLAYLISTS = "home_trending_playlists";
+    private static final String KEY_HOME_TRENDING_ARTISTS = "home_trending_artists";
+
+    public static SharedPreferenceManager getInstance(Context context) {
+        if (instance == null) {
+            instance = new SharedPreferenceManager(context);
+        }
+        return instance;
+    }
+
+    private SharedPreferenceManager(Context context) {
+        sharedPreferences = context.getSharedPreferences(CACHE_NAME, Context.MODE_PRIVATE);
+    }
+
+    // Track related methods
+    public void cacheTrack(String id, Track track) {
+        saveToPreferences(KEY_TRACK_PREFIX + id, track);
+    }
+
+    public Track getCachedTrack(String id) {
+        return getFromPreferences(KEY_TRACK_PREFIX + id, Track.class);
+    }
+
+    public void cacheTrendingTracks(AudiusTrackResponse response) {
+        saveToPreferences(KEY_HOME_TRENDING_TRACKS, response);
+    }
+
+    public AudiusTrackResponse getCachedTrendingTracks() {
+        return getFromPreferences(KEY_HOME_TRENDING_TRACKS, AudiusTrackResponse.class);
+    }
+
+    // Playlist related methods
+    public void cachePlaylist(String id, Playlist playlist) {
+        saveToPreferences(KEY_PLAYLIST_PREFIX + id, playlist);
+    }
+
+    public Playlist getCachedPlaylist(String id) {
+        return getFromPreferences(KEY_PLAYLIST_PREFIX + id, Playlist.class);
+    }
+
+    public void cacheTrendingPlaylists(PlaylistResponse response) {
+        saveToPreferences(KEY_HOME_TRENDING_PLAYLISTS, response);
+    }
+
+    public PlaylistResponse getCachedTrendingPlaylists() {
+        return getFromPreferences(KEY_HOME_TRENDING_PLAYLISTS, PlaylistResponse.class);
+    }
+
+    // Artist related methods
+    public void cacheArtist(String id, User artist) {
+        saveToPreferences(KEY_ARTIST_PREFIX + id, artist);
+    }
+
+    public User getCachedArtist(String id) {
+        return getFromPreferences(KEY_ARTIST_PREFIX + id, User.class);
+    }
+
+    public void cacheTrendingArtists(AudiusUserResponse response) {
+        saveToPreferences(KEY_HOME_TRENDING_ARTISTS, response);
+    }
+
+    public AudiusUserResponse getCachedTrendingArtists() {
+        return getFromPreferences(KEY_HOME_TRENDING_ARTISTS, AudiusUserResponse.class);
+    }
+
+    // Library related methods
+    public void setSavedLibrariesData(SavedLibrariesAudius savedLibraries) {
+        saveToPreferences(KEY_SAVED_LIBRARIES, savedLibraries);
+    }
+
+    public SavedLibrariesAudius getSavedLibrariesData() {
+        return getFromPreferences(KEY_SAVED_LIBRARIES, SavedLibrariesAudius.class);
+    }
+
+    public void addLibraryToSavedLibraries(SavedLibrariesAudius.Library library) {
+        SavedLibrariesAudius savedLibraries = getSavedLibrariesData();
+        if (savedLibraries == null) {
+            savedLibraries = new SavedLibrariesAudius(new ArrayList<>());
+        }
+        savedLibraries.lists().add(library);
         setSavedLibrariesData(savedLibraries);
     }
 
-    public void setSavedLibraryDataById(String id, SavedLibrariesAudius.Library library) {
-        sharedPreferences.edit().putString("library:" + id, new Gson().toJson(library)).apply();
+    public void removeLibraryFromSavedLibraries(int index) {
+        SavedLibrariesAudius savedLibraries = getSavedLibrariesData();
+        if (savedLibraries == null || savedLibraries.lists() == null) return;
+        if (index >= 0 && index < savedLibraries.lists().size()) {
+            savedLibraries.lists().remove(index);
+            setSavedLibrariesData(savedLibraries);
+        }
     }
 
-    public SavedLibrariesAudius.Library getSavedLibraryDataById(String id) {
-        return sharedPreferences.contains("library:" + id) ?
-                new Gson().fromJson(sharedPreferences.getString("library:" + id, ""), SavedLibrariesAudius.Library.class) :
-                null;
+    // Cache clearing methods
+    public void clearTrendingCache() {
+        sharedPreferences.edit()
+                .remove(KEY_HOME_TRENDING_TRACKS)
+                .remove(KEY_HOME_TRENDING_PLAYLISTS)
+                .remove(KEY_HOME_TRENDING_ARTISTS)
+                .apply();
     }
 
-
-    public void setArtistData(String artistID, User artistSearch) {
-        sharedPreferences.edit().putString("artistData://" + artistID, new Gson().toJson(artistSearch)).apply();
+    public void clearAllCache() {
+        sharedPreferences.edit().clear().apply();
     }
 
-    public User getArtistData(String artistId) {
-        return sharedPreferences.contains("artistData://" + artistId) ? new Gson().fromJson(sharedPreferences.getString("artistData://" + artistId, ""), User.class) : null;
+    // Helper methods
+    private <T> void saveToPreferences(String key, T data) {
+        if (data == null) return;
+        sharedPreferences.edit()
+                .putString(key, new Gson().toJson(data))
+                .apply();
+    }
+
+    private <T> T getFromPreferences(String key, Class<T> type) {
+        String json = sharedPreferences.getString(key, null);
+        if (json == null) return null;
+        try {
+            return new Gson().fromJson(json, type);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public boolean hasCache(String key) {
+        return sharedPreferences.contains(key);
     }
 }
+*/

@@ -1,6 +1,7 @@
 package com.example.muzic.adapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,8 +14,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.muzic.R;
+import com.example.muzic.activities.ListActivity;
 import com.example.muzic.records.Playlist;
 import com.facebook.shimmer.ShimmerFrameLayout;
+import com.google.gson.Gson;
 
 import java.util.List;
 
@@ -62,6 +65,9 @@ public class TrendingPlaylistAdapter extends RecyclerView.Adapter<TrendingPlayli
         } else {
             holder.ivArtwork.setImageResource(R.drawable.bolt_24px);
         }
+        holder.itemView.setOnClickListener(v -> {
+            v.getContext().startActivity(new Intent(v.getContext(), ListActivity.class).putExtra("data", new Gson().toJson(playlists.get(position))));
+        });
     }
 
     @Override
