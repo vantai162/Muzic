@@ -268,7 +268,20 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
         binding.title.setText(track.title);
         binding.description.setText(track.user.name);
         if (track.artwork != null && track.artwork._480x480 != null) {
-            Picasso.get().load(track.artwork._480x480).into(binding.coverImage);
+            Picasso.get()
+                .load(track.artwork._480x480)
+                .into(binding.coverImage, new com.squareup.picasso.Callback() {
+                    @Override
+                    public void onSuccess() {
+                        // After artwork is loaded, update background blur
+                        updateBackgroundBlur();
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+                        Log.e("BlurDebug", "Error loading artwork", e);
+                    }
+                });
         }
         
         // Set total duration
@@ -306,6 +319,8 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
         currentTrackIndex = app.currentTrackIndex;
         if (app.currentTrack != null) {
             updateUIOnly(app.currentTrack);
+            // Update background blur after UI is updated
+            updateBackgroundBlur();
         }
     }
 
@@ -315,6 +330,8 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
         currentTrackIndex = app.currentTrackIndex;
         if (app.currentTrack != null) {
             updateUIOnly(app.currentTrack);
+            // Update background blur after UI is updated  
+            updateBackgroundBlur();
         }
     }
 
