@@ -14,12 +14,14 @@
         <item name="android:layout_height">match_parent</item>
         <item name="android:minWidth">72dp</item>
         <item name="shapeAppearanceOverlay">@style/ToggleShape</item>
-        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textColor">@color/selector_toggle_text</item>
         <item name="backgroundTint">@color/selector_toggle_background</item>
-        <item name="rippleColor">#66FFFFFF</item> <!-- hiệu ứng ripple nhẹ -->
+        <item name="rippleColor">#33FFFFFF</item>
+        <item name="strokeColor">@color/textSec</item>
+        <item name="strokeWidth">1dp</item>
     </style>
 
     <style name="ToggleShape" parent="">
-        <item name="cornerSize">50%</item> <!-- Bo tròn hoàn toàn -->
+        <item name="cornerSize">50%</item>
     </style>
 </resources>
