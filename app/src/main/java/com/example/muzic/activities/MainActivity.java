@@ -7,8 +7,10 @@ import android.util.Log;
 import android.view.View;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.OptIn;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.media3.common.MediaItem;
+import androidx.media3.common.util.UnstableApi;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -58,8 +60,13 @@ public class MainActivity extends AppCompatActivity {
     private TrackData currentTrack;
     private AudiusRepository audiusRepository;
 
+    @OptIn(markerClass = UnstableApi.class)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Apply theme before super.onCreate and setContentView
+        ApplicationClass app = (ApplicationClass) getApplication();
+        app.reapplyTheme();
+        
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -135,6 +142,7 @@ public class MainActivity extends AppCompatActivity {
         binding.moodPlaylistRecyclerView.setAdapter(moodPlaylistAdapter);
     }
 
+    @OptIn(markerClass = UnstableApi.class)
     private void openMusicOverview() {
         if (currentTrack != null) {
             // Convert all tracks to TrackData and update ApplicationClass
@@ -157,6 +165,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @OptIn(markerClass = UnstableApi.class)
     private void playTrack(Track track) {
         // Convert Track to TrackData and store as current
         currentTrack = convertToTrackData(track);
@@ -191,6 +200,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @OptIn(markerClass = UnstableApi.class)
     private void playPreviousTrack() {
         ApplicationClass app = (ApplicationClass) getApplication();
         app.playPreviousTrack();
@@ -199,6 +209,7 @@ public class MainActivity extends AppCompatActivity {
         trendingTracksAdapter.setCurrentTrackIndex(app.currentTrackIndex);
     }
 
+    @OptIn(markerClass = UnstableApi.class)
     private void playNextTrack() {
         ApplicationClass app = (ApplicationClass) getApplication();
         app.playNextTrack();
@@ -294,9 +305,14 @@ public class MainActivity extends AppCompatActivity {
         player = null;
     }
 
+    @OptIn(markerClass = UnstableApi.class)
+    @UnstableApi
     @Override
     protected void onResume() {
         super.onResume();
+        // Reapply theme when activity resumes
+        ((ApplicationClass) getApplication()).reapplyTheme();
+        
         if (ApplicationClass.currentTrack != null) {
             currentTrack = ApplicationClass.currentTrack;
             updatePlayBarContent(currentTrack);
@@ -335,6 +351,7 @@ public class MainActivity extends AppCompatActivity {
         return str.substring(0, 1).toUpperCase() + str.substring(1);
     }
 
+    @OptIn(markerClass = UnstableApi.class)
     @Override
     public void onConfigurationChanged(@NonNull android.content.res.Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
@@ -427,6 +444,7 @@ public class MainActivity extends AppCompatActivity {
         binding.playBarNextIcon.setOnClickListener(v -> playNextTrack());
     }
 
+    @OptIn(markerClass = UnstableApi.class)
     private void restorePlayBarState() {
         // First try to restore from currentTrack
         if (currentTrack != null) {
@@ -476,6 +494,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @OptIn(markerClass = UnstableApi.class)
     private void fetchCurrentTrackData(String trackId, OnTrackDataFetchedListener listener) {
         // First try to get from ApplicationClass
         if (ApplicationClass.currentTrack != null && 

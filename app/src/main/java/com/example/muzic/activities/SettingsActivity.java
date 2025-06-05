@@ -1,16 +1,11 @@
 package com.example.muzic.activities;
 
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.Toast;
+import android.content.res.ColorStateList;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
-import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
@@ -21,6 +16,8 @@ import com.example.muzic.utils.SettingsSharedPrefManager;
 import com.example.muzic.utils.ThemeManager;
 import com.example.muzic.utils.AudioQualityManager;
 import com.google.android.material.button.MaterialButtonToggleGroup;
+import com.google.android.material.radiobutton.MaterialRadioButton;
+import com.google.android.material.button.MaterialButton;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -39,9 +36,13 @@ public class SettingsActivity extends AppCompatActivity {
         binding = ActivitySettingsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         
-        themeManager = new ThemeManager(this);
-        audioQualityManager = ((ApplicationClass) getApplication()).getAudioQualityManager();
+        ApplicationClass app = (ApplicationClass) getApplication();
+        themeManager = app.getThemeManager();
+        audioQualityManager = app.getAudioQualityManager();
         final SettingsSharedPrefManager settingsSharedPrefManager = new SettingsSharedPrefManager(this);
+
+        // Apply current theme colors from ApplicationClass
+        applyThemeColors();
 
         // Initialize switches with saved state if available, otherwise use SharedPreferences
         if (savedInstanceState != null) {
@@ -108,14 +109,7 @@ public class SettingsActivity extends AppCompatActivity {
         binding.blurPlayerBackground.setOnCheckChangeListener(settingsSharedPrefManager::setBlurPlayerBackground);
         binding.explicit.setOnCheckChangeListener(settingsSharedPrefManager::setExplicit);
 
-        binding.themeGroup.setOnCheckedChangeListener((group, checkedId) -> {
-            settingsSharedPrefManager.setTheme(checkedId == R.id.nebula ? "nebula" :
-                                               checkedId == R.id.minty_fresh ? "minty fresh" :
-                                               checkedId == R.id.tangerine ? "tangerine" :
-                                               checkedId == R.id.crimson_love ? "crimson love" :
-                                               checkedId == R.id.blue_depths ? "blue depths" :
-                                               "original");
-        });
+        setupThemeGroupListener();
 
         binding.returnImageView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -125,7 +119,7 @@ public class SettingsActivity extends AppCompatActivity {
         });
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            androidx.core.graphics.Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
@@ -158,5 +152,101 @@ public class SettingsActivity extends AppCompatActivity {
             message += " (High quality on WiFi only)";
         }
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+
+    private void applyThemeColors() {
+        ApplicationClass app = (ApplicationClass) getApplication();
+        ColorStateList themeColor = app.getCurrentThemeColors();
+        
+        // Update radio buttons color
+        for (int i = 0; i < binding.themeGroup.getChildCount(); i++) {
+            MaterialRadioButton radioButton = (MaterialRadioButton) binding.themeGroup.getChildAt(i);
+            radioButton.setButtonTintList(themeColor);
+        }
+
+        // Update switches track color with theme
+        ColorStateList switchTrackColors = new ColorStateList(
+            new int[][] {
+                new int[] { android.R.attr.state_checked },
+                new int[] { -android.R.attr.state_checked }
+            },
+            new int[] {
+                themeManager.getPrimaryColor(),
+                getResources().getColor(R.color.textSec, getTheme())
+            }
+        );
+
+        binding.downloadOverCellular.setThumbTintList(switchTrackColors);
+        binding.highQualityTrack.setThumbTintList(switchTrackColors);
+        binding.storeInCache.setThumbTintList(switchTrackColors);
+        binding.blurPlayerBackground.setThumbTintList(switchTrackColors);
+        binding.explicit.setThumbTintList(switchTrackColors);
+
+        // Update dark mode toggle buttons
+        for (int i = 0; i < binding.darkModeToggle.getChildCount(); i++) {
+            View child = binding.darkModeToggle.getChildAt(i);
+            if (child instanceof MaterialButton) {
+                MaterialButton button = (MaterialButton) child;
+                button.setStrokeColor(themeColor);
+                
+                // Set background tint for selected state
+                ColorStateList backgroundTint = new ColorStateList(
+                    new int[][] {
+                        new int[] { android.R.attr.state_checked },
+                        new int[] { -android.R.attr.state_checked }
+                    },
+                    new int[] {
+                        themeManager.getPrimaryColor(),
+                        getResources().getColor(android.R.color.transparent, getTheme())
+                    }
+                );
+                button.setBackgroundTintList(backgroundTint);
+                
+                // Set text color for selected/unselected states
+                ColorStateList textColor = new ColorStateList(
+                    new int[][] {
+                        new int[] { android.R.attr.state_checked },
+                        new int[] { -android.R.attr.state_checked }
+                    },
+                    new int[] {
+                        getResources().getColor(android.R.color.white, getTheme()),
+                        themeManager.getPrimaryColor()
+                    }
+                );
+                button.setTextColor(textColor);
+            }
+        }
+    }
+
+    // Update the theme group listener to also update ApplicationClass
+    private void setupThemeGroupListener() {
+        binding.themeGroup.setOnCheckedChangeListener((group, checkedId) -> {
+            String selectedTheme = checkedId == R.id.nebula ? "nebula" :
+                                 checkedId == R.id.minty_fresh ? "minty fresh" :
+                                 checkedId == R.id.tangerine ? "tangerine" :
+                                 checkedId == R.id.crimson_love ? "crimson love" :
+                                 checkedId == R.id.blue_depths ? "blue depths" :
+                                 "original";
+            
+            SettingsSharedPrefManager settingsSharedPrefManager = new SettingsSharedPrefManager(this);
+            settingsSharedPrefManager.setTheme(selectedTheme);
+            
+            // Update theme colors in ApplicationClass
+            ApplicationClass app = (ApplicationClass) getApplication();
+            app.updateThemeColors();
+            
+            // Apply updated theme colors
+            applyThemeColors();
+
+            // Show toast to inform user
+            Toast.makeText(this, "Theme applied: " + selectedTheme, Toast.LENGTH_SHORT).show();
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Reapply theme colors when activity resumes
+        applyThemeColors();
     }
 }

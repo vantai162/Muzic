@@ -50,6 +50,7 @@
             app:layout_constraintTop_toTopOf="parent">
 
             <ImageView
+                android:id="@+id/back_button"
                 android:layout_width="@dimen/_40sdp"
                 android:layout_height="@dimen/_40sdp"
                 android:clickable="true"
@@ -213,7 +214,7 @@
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/__play_pause_icon_bg"
+                    android:id="@+id/play_pause_icon_bg"
                     android:layout_width="@dimen/_45sdp"
                     android:layout_height="@dimen/_45sdp"
                     android:elevation="@dimen/_5sdp"
@@ -243,9 +244,9 @@
                     android:layout_height="@dimen/_30sdp"
                     android:layout_marginEnd="@dimen/_8sdp"
                     android:src="@drawable/skip_previous_24px"
-                    app:layout_constraintBottom_toBottomOf="@id/__play_pause_icon_bg"
-                    app:layout_constraintEnd_toStartOf="@id/__play_pause_icon_bg"
-                    app:layout_constraintTop_toTopOf="@id/__play_pause_icon_bg" />
+                    app:layout_constraintBottom_toBottomOf="@id/play_pause_icon_bg"
+                    app:layout_constraintEnd_toStartOf="@id/play_pause_icon_bg"
+                    app:layout_constraintTop_toTopOf="@id/play_pause_icon_bg" />
 
                 <ImageView
                     android:id="@+id/nextIcon"
@@ -253,9 +254,9 @@
                     android:layout_height="@dimen/_30sdp"
                     android:layout_marginStart="@dimen/_8sdp"
                     android:src="@drawable/skip_next_24px"
-                    app:layout_constraintBottom_toBottomOf="@id/__play_pause_icon_bg"
-                    app:layout_constraintStart_toEndOf="@id/__play_pause_icon_bg"
-                    app:layout_constraintTop_toTopOf="@id/__play_pause_icon_bg" />
+                    app:layout_constraintBottom_toBottomOf="@id/play_pause_icon_bg"
+                    app:layout_constraintStart_toEndOf="@id/play_pause_icon_bg"
+                    app:layout_constraintTop_toTopOf="@id/play_pause_icon_bg" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 

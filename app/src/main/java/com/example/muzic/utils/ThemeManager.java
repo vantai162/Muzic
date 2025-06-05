@@ -1,48 +1,34 @@
 package com.example.muzic.utils;
 
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.res.Configuration;
-
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import androidx.appcompat.app.AppCompatDelegate;
 
 public class ThemeManager {
-    private static final String PREF_NAME = "AppSettings";
-    private static final String THEME_MODE_PREF = "theme_mode_pref";
-    private final SharedPreferences sharedPreferences;
     private final Context context;
-
-    public static final int MODE_ON = 0;  // Dark mode on
-    public static final int MODE_OFF = 1;  // Dark mode off
-    public static final int MODE_SYSTEM = 2;  // Follow system
+    public static final int MODE_ON = 1;
+    public static final int MODE_OFF = 2;
+    public static final int MODE_SYSTEM = 3;
 
     public ThemeManager(Context context) {
         this.context = context;
-        sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-    }
-
-    public void applyTheme() {
-        int themeMode = getThemeMode();
-        applyThemeMode(themeMode);
-    }
-
-    public int getThemeMode() {
-        return sharedPreferences.getInt(THEME_MODE_PREF, MODE_SYSTEM);
     }
 
     public void setThemeMode(int mode) {
-        if (mode < MODE_ON || mode > MODE_SYSTEM) {
-            return;
-        }
-
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putInt(THEME_MODE_PREF, mode);
-        editor.apply();
-        
-        applyThemeMode(mode);
+        SettingsSharedPrefManager settings = new SettingsSharedPrefManager(context);
+        settings.setDarkMode(mode == MODE_ON ? "on" : mode == MODE_OFF ? "off" : "default");
+        applyTheme();
     }
 
-    private void applyThemeMode(int mode) {
+    public int getThemeMode() {
+        SettingsSharedPrefManager settings = new SettingsSharedPrefManager(context);
+        String mode = settings.getDarkMode();
+        return mode.equals("on") ? MODE_ON : mode.equals("off") ? MODE_OFF : MODE_SYSTEM;
+    }
+
+    public void applyTheme() {
+        int mode = getThemeMode();
         switch (mode) {
             case MODE_ON:
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
@@ -50,24 +36,45 @@ public class ThemeManager {
             case MODE_OFF:
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
                 break;
-            case MODE_SYSTEM:
             default:
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
                 break;
         }
     }
 
-    public boolean isDarkModeActive() {
-        int currentMode = getThemeMode();
-        if (currentMode == MODE_ON) {
-            return true;
-        } else if (currentMode == MODE_OFF) {
-            return false;
-        } else {
-            // Check system dark mode setting
-            int nightModeFlags = context.getResources().getConfiguration().uiMode & 
-                               Configuration.UI_MODE_NIGHT_MASK;
-            return nightModeFlags == Configuration.UI_MODE_NIGHT_YES;
+    public int getPrimaryColor() {
+        SettingsSharedPrefManager settings = new SettingsSharedPrefManager(context);
+        String theme = settings.getTheme();
+        
+        switch (theme.toLowerCase()) {
+            case "nebula":
+                return Color.parseColor("#7B68EE"); // Indigo
+            case "minty fresh":
+                return Color.parseColor("#98FF98"); // Mint green
+            case "tangerine":
+                return Color.parseColor("#FFA500"); // Orange
+            case "crimson love":
+                return Color.parseColor("#DC143C"); // Crimson
+            case "blue depths":
+                return Color.parseColor("#0066CC"); // Deep blue
+            default:
+                return Color.parseColor("#1DB954"); // Spotify green (Original)
         }
+    }
+
+    public ColorStateList getColorStateList() {
+        return ColorStateList.valueOf(getPrimaryColor());
+    }
+
+    public int getSecondaryColor() {
+        return adjustAlpha(getPrimaryColor(), 0.6f);
+    }
+
+    private int adjustAlpha(int color, float factor) {
+        int alpha = Math.round(Color.alpha(color) * factor);
+        int red = Color.red(color);
+        int green = Color.green(color);
+        int blue = Color.blue(color);
+        return Color.argb(alpha, red, green, blue);
     }
 } 

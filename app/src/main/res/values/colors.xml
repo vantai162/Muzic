@@ -58,4 +58,6 @@
     <!-- Dark mode colors -->
     <color name="dark_background">#121212</color>
     <color name="textSecDark">#B3FFFFFF</color>
+
+    <color name="transparent_20">#33000000</color>
 </resources>
