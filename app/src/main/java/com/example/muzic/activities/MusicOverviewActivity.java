@@ -54,6 +54,7 @@ import com.example.muzic.utils.customview.BottomSheetItemView;
 import com.squareup.picasso.Picasso;
 import com.example.muzic.utils.BlurUtils;
 import com.example.muzic.utils.SettingsSharedPrefManager;
+import com.example.muzic.utils.ThemeManager;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -77,6 +78,7 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
     private SettingsSharedPrefManager settingsManager;
     private ImageView backgroundImageView;
 
+    @OptIn(markerClass = UnstableApi.class)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -135,6 +137,7 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
         updateBackgroundBlur();
     }
 
+    @OptIn(markerClass = UnstableApi.class)
     private void setupClickListeners() {
         // Play/Pause button
         binding.playPauseImage.setOnClickListener(v -> togglePlayPause());
@@ -180,6 +183,7 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
         });
     }
 
+    @OptIn(markerClass = UnstableApi.class)
     private void setupSeekBar() {
         binding.seekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -209,6 +213,7 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
         }, 0);
     }
 
+    @OptIn(markerClass = UnstableApi.class)
     private void updateTrackUI(TrackData track) {
         binding.title.setText(track.title);
         binding.description.setText(track.user.name);
@@ -253,6 +258,8 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
         updatePlayPauseButton(player.isPlaying());
     }
 
+    @OptIn(markerClass = UnstableApi.class)
+    @UnstableApi
     private boolean isCurrentTrack(TrackData track) {
         if (player.getCurrentMediaItem() == null) return false;
         
@@ -264,6 +271,7 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
                (ApplicationClass.MUSIC_ID != null && ApplicationClass.MUSIC_ID.equals(String.valueOf(track.id)));
     }
 
+    @OptIn(markerClass = UnstableApi.class)
     private void updateUIOnly(TrackData track) {
         binding.title.setText(track.title);
         binding.description.setText(track.user.name);
@@ -295,6 +303,7 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
         updatePlayPauseButton(player.isPlaying());
     }
 
+    @OptIn(markerClass = UnstableApi.class)
     private void updatePlayPauseButton(boolean isPlaying) {
         if (isPlaying) {
             binding.playPauseImage.setImageResource(R.drawable.baseline_pause_24);
@@ -304,6 +313,7 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
         binding.playPauseImage.setRotation(0);
     }
 
+    @OptIn(markerClass = UnstableApi.class)
     private void togglePlayPause() {
         if (player.isPlaying()) {
             player.pause();
@@ -313,6 +323,8 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
         updatePlayPauseButton(player.isPlaying());
     }
 
+    @OptIn(markerClass = UnstableApi.class)
+    @UnstableApi
     private void playNextTrack() {
         ApplicationClass app = (ApplicationClass) getApplication();
         app.playNextTrack();
@@ -324,6 +336,7 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
         }
     }
 
+    @OptIn(markerClass = UnstableApi.class)
     private void playPreviousTrack() {
         ApplicationClass app = (ApplicationClass) getApplication();
         app.playPreviousTrack();
@@ -341,6 +354,7 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
         return String.format("%02d:%02d", minutes, seconds);
     }
 
+    @OptIn(markerClass = UnstableApi.class)
     @Override
     public void onPlaybackStateChanged(int state) {
         if (state == Player.STATE_ENDED && repeatMode == Player.REPEAT_MODE_OFF) {
@@ -350,6 +364,7 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
         updatePlayPauseButton(player.isPlaying());
     }
 
+    @OptIn(markerClass = UnstableApi.class)
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -478,6 +493,10 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
             
             // Update text and icon colors for blur mode
             updateTextColors(true);
+
+            // Set back button to white for better visibility on blur background
+            binding.backButton.setImageTintList(ColorStateList.valueOf(Color.WHITE));
+            
         } else {
             // Reset background container to theme color
             int backgroundColor = getBackgroundColor();
@@ -506,11 +525,17 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
             
             // Reset text and icon colors for normal mode
             updateTextColors(false);
+
+            // Reset back button color based on theme
+            binding.backButton.setImageTintList(ColorStateList.valueOf(
+                getResources().getColor(isDarkMode() ? android.R.color.white : R.color.textMain, getTheme())
+            ));
         }
     }
 
     private void updateTextColors(boolean isBlurEnabled) {
         boolean isDark = isDarkMode();
+        ThemeManager themeManager = new ThemeManager(this);
         
         int textColor = isBlurEnabled ? 
             getResources().getColor(android.R.color.white, getTheme()) :
@@ -527,14 +552,22 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
         binding.totalDuration.setTextColor(secondaryTextColor);
         binding.trackQuality.setTextColor(secondaryTextColor);
 
-        // Update icons tint
-        ColorStateList iconTint = ColorStateList.valueOf(secondaryTextColor);
+        // Update icons tint with theme color
+        ColorStateList iconTint = themeManager.getColorStateList();
         binding.shuffleIcon.setImageTintList(iconTint);
         binding.repeatIcon.setImageTintList(iconTint);
         binding.prevIcon.setImageTintList(iconTint);
         binding.nextIcon.setImageTintList(iconTint);
         binding.shareIcon.setImageTintList(iconTint);
         binding.moreIcon.setImageTintList(iconTint);
+
+        // Update seekbar colors
+        binding.seekbar.setProgressTintList(iconTint);
+        binding.seekbar.setThumbTintList(iconTint);
+
+        // Update play/pause button colors
+        binding.playPauseIconBg.setCardBackgroundColor(themeManager.getPrimaryColor());
+        binding.playPauseImage.setImageTintList(ColorStateList.valueOf(Color.WHITE));
     }
 
     @Override
@@ -550,6 +583,7 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
         }
     }
 
+    @OptIn(markerClass = UnstableApi.class)
     private void updatePlaybackState() {
         // Update play/pause button state
         updatePlayPauseButton(player.isPlaying());

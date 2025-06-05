@@ -1,7 +1,9 @@
 package com.example.muzic.utils.customview;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
+import android.graphics.Color;
 import android.util.AttributeSet;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -39,13 +41,16 @@ public class MaterialCustomSwitch extends LinearLayout {
 
     private void init(AttributeSet attrs, int defStyle) {
         // Load attributes
-
         inflate(getContext(), R.layout.material_custom_switch, this);
 
         textHeadView = findViewById(R.id.text_head);
         textDescView = findViewById(R.id.text_desc);
         materialSwitch = findViewById(R.id.materialSwitch);
         findViewById(R.id.root).setOnClickListener(v -> materialSwitch.toggle());
+
+        // Set up switch colors
+        materialSwitch.setThumbTintList(ColorStateList.valueOf(Color.WHITE));
+        materialSwitch.setTrackTintList(getResources().getColorStateList(R.color.selector_switch_track, getContext().getTheme()));
 
         materialSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             textDescView.setText(isChecked ? textOn : textOff);
@@ -64,7 +69,6 @@ public class MaterialCustomSwitch extends LinearLayout {
             textHeadView.setText(textHead);
             textDescView.setText(checked ? textOn : textOff);
             materialSwitch.setChecked(checked);
-
         }
     }
 
@@ -78,6 +82,11 @@ public class MaterialCustomSwitch extends LinearLayout {
 
     public boolean getChecked() {
         return materialSwitch.isChecked();
+    }
+
+    public void setThumbTintList(ColorStateList tint) {
+        // Update track color based on theme
+        materialSwitch.setTrackTintList(tint);
     }
 
     public interface OnCheckChangeListener {

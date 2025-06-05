@@ -7,8 +7,10 @@ import android.app.Activity;
 import android.app.Application;
 import android.graphics.Color;
 import android.support.v4.media.session.MediaSessionCompat;
+import android.content.res.ColorStateList;
 
 import androidx.media3.common.Player;
+import androidx.media3.common.util.UnstableApi;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector;
 
@@ -27,6 +29,7 @@ import com.example.muzic.model.TrackData;
 import java.util.ArrayList;
 import java.util.List;
 
+@UnstableApi
 public class ApplicationClass extends Application {
     public static final String CHANNEL_ID_1 = "channel_1";
     public static final String CHANNEL_ID_2 = "channel_2";
@@ -36,7 +39,7 @@ public class ApplicationClass extends Application {
     public static final MediaPlayerUtil mediaPlayerUtil = MediaPlayerUtil.getInstance();
     //public static TrackResponse CURRENT_TRACK = null;
 
-    public static ExoPlayer player;
+    public static ExoPlayer player;  // Changed back to public static
     private AudioQualityManager audioQualityManager;
     private DefaultTrackSelector trackSelector;
     public static String TRACK_QUALITY = "320kbps";
@@ -63,12 +66,17 @@ public class ApplicationClass extends Application {
     public static ArrayList<TrackData> currentPlaylist = new ArrayList<>();
     public static int currentTrackIndex = -1;
 
+    private ColorStateList currentThemeColors;
+
     @Override
     public void onCreate() {
         super.onCreate();
-        // Initialize theme
+        audioQualityManager = new AudioQualityManager(this);
         themeManager = new ThemeManager(this);
+        
+        // Initialize and apply theme first
         themeManager.applyTheme();
+        updateThemeColors();
         
         // Initialize track selector for quality control
         trackSelector = new DefaultTrackSelector(this);
@@ -79,17 +87,9 @@ public class ApplicationClass extends Application {
                 .build();
         
         // Initialize audio quality manager
-        audioQualityManager = new AudioQualityManager(this);
         TRACK_QUALITY = audioQualityManager.getCurrentQuality();
 
         cacheManager = new CacheManager(this);
-    }
-
-    public AudioQualityManager getAudioQualityManager() {
-        if (audioQualityManager == null) {
-            audioQualityManager = new AudioQualityManager(this);
-        }
-        return audioQualityManager;
     }
 
     public ExoPlayer getExoPlayer() {
@@ -102,21 +102,18 @@ public class ApplicationClass extends Application {
         return player;
     }
 
-    public void setExoPlayer(ExoPlayer exoPlayer) {
-        player = exoPlayer;
+    public void setExoPlayer(ExoPlayer newPlayer) {
+        player = newPlayer;
     }
 
-    public static Activity getCurrentActivity() {
-        return currentActivity;
-    }
-
-    public static void setCurrentActivity(Activity activity) {
-        currentActivity = activity;
+    public AudioQualityManager getAudioQualityManager() {
+        return audioQualityManager;
     }
 
     public void updateTrackQuality() {
-        TRACK_QUALITY = audioQualityManager.getCurrentQuality();
-        audioQualityManager.updatePlayerQuality();
+        if (audioQualityManager != null) {
+            audioQualityManager.updatePlayerQuality();
+        }
     }
 
     public CacheManager getCacheManager() {
@@ -207,6 +204,35 @@ public class ApplicationClass extends Application {
     
     public boolean isPlayingTrack(String trackId) {
         return currentTrack != null && currentTrack.id.equals(trackId) && player != null && player.isPlaying();
+    }
+
+    public ThemeManager getThemeManager() {
+        return themeManager;
+    }
+
+    public void updateThemeColors() {
+        if (themeManager != null) {
+            currentThemeColors = themeManager.getColorStateList();
+        }
+    }
+
+    public ColorStateList getCurrentThemeColors() {
+        return currentThemeColors;
+    }
+
+    public static Activity getCurrentActivity() {
+        return currentActivity;
+    }
+
+    public static void setCurrentActivity(Activity activity) {
+        currentActivity = activity;
+    }
+
+    public void reapplyTheme() {
+        if (themeManager != null) {
+            themeManager.applyTheme();
+            updateThemeColors();
+        }
     }
 }
 
