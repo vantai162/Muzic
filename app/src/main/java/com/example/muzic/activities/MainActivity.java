@@ -123,7 +123,9 @@ public class MainActivity extends AppCompatActivity {
                 new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         );
         popularUserAdapter = new PopularUserAdapter(this, new ArrayList<>(), user -> {
-            Log.d(TAG, "User clicked: " + user.name());
+            Intent intent = new Intent(this, ArtistProfileActivity.class);
+            intent.putExtra("data", new Gson().toJson(user));
+            startActivity(intent);
         });
         binding.popularArtistsRecyclerView.setAdapter(popularUserAdapter);
 
