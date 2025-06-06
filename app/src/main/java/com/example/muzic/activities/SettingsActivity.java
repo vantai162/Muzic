@@ -60,7 +60,7 @@ public class SettingsActivity extends AppCompatActivity {
             binding.storeInCache.setChecked(settingsSharedPrefManager.getStoreInCache());
             binding.blurPlayerBackground.setChecked(settingsSharedPrefManager.getBlurPlayerBackground());
             binding.explicit.setChecked(settingsSharedPrefManager.getExplicit());
-            binding.themeGroup.check(settingsSharedPrefManager.getTheme().equals("nebula") ? R.id.nebula : settingsSharedPrefManager.getTheme().equals("minty fresh") ? R.id.minty_fresh : settingsSharedPrefManager.getTheme().equals("tangerine") ? R.id.tangerine : settingsSharedPrefManager.getTheme().equals("crimson love") ? R.id.crimson_love : settingsSharedPrefManager.getTheme().equals("blue depths") ? R.id.blue_depths : R.id.original);
+            binding.themeGroup.check(settingsSharedPrefManager.getTheme().equals("nebula") ? R.id.nebula : settingsSharedPrefManager.getTheme().equals("aqua") ? R.id.aqua : settingsSharedPrefManager.getTheme().equals("tangerine") ? R.id.tangerine : settingsSharedPrefManager.getTheme().equals("crimson love") ? R.id.crimson_love : settingsSharedPrefManager.getTheme().equals("blue depths") ? R.id.blue_depths : R.id.original);
         }
 
         // Set up dark mode toggle group
@@ -222,7 +222,7 @@ public class SettingsActivity extends AppCompatActivity {
     private void setupThemeGroupListener() {
         binding.themeGroup.setOnCheckedChangeListener((group, checkedId) -> {
             String selectedTheme = checkedId == R.id.nebula ? "nebula" :
-                                 checkedId == R.id.minty_fresh ? "minty fresh" :
+                                 checkedId == R.id.aqua ? "aqua" :
                                  checkedId == R.id.tangerine ? "tangerine" :
                                  checkedId == R.id.crimson_love ? "crimson love" :
                                  checkedId == R.id.blue_depths ? "blue depths" :
