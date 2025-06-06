@@ -336,10 +336,10 @@ public class MainActivity extends AppCompatActivity {
 
         slidingRootNavBuilder.getLayout().findViewById(R.id.logo).setOnClickListener(view -> slidingRootNavBuilder.closeMenu());
 
-        /*slidingRootNavBuilder.getLayout().findViewById(R.id.library).setOnClickListener(view -> {
+        slidingRootNavBuilder.getLayout().findViewById(R.id.library).setOnClickListener(view -> {
             startActivity(new Intent(MainActivity.this, SavedLibrariesActivity.class));
             slidingRootNavBuilder.closeMenu();
-        });*/
+        });
 
         slidingRootNavBuilder.getLayout().findViewById(R.id.about).setOnClickListener(view -> {
             startActivity(new Intent(MainActivity.this, AboutActivity.class));

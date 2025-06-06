@@ -1,4 +1,4 @@
-/*package com.example.muzic.activities;
+package com.example.muzic.activities;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
@@ -11,22 +11,29 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.snackbar.Snackbar;
 import com.example.muzic.R;
-import com.example.muzic.adapters.SavedLibrariesAdapter;
+import com.example.muzic.adapter.SavedLibrariesAdapter;
 import com.example.muzic.databinding.ActivitySavedLibrariesBinding;
 import com.example.muzic.databinding.AddNewLibraryBottomSheetBinding;
-import com.example.muzic.records.sharedpref.SavedLibrariesAudius;
+import com.example.muzic.records.Artwork;
+import com.example.muzic.records.CoverPhoto;
+import com.example.muzic.records.Playlist;
+import com.example.muzic.records.ProfilePicture;
+import com.example.muzic.records.User;
 import com.example.muzic.utils.SharedPreferenceManager;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import me.everything.android.ui.overscroll.OverScrollDecoratorHelper;
 
 public class SavedLibrariesActivity extends AppCompatActivity {
 
-    ActivitySavedLibrariesBinding binding;
-    SavedLibrariesAudius savedLibraries;
+    private static final String TAG = "SavedLibrariesActivity";
+    private ActivitySavedLibrariesBinding binding;
+    private List<Playlist> savedPlaylists;
+    private SavedLibrariesAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,76 +41,116 @@ public class SavedLibrariesActivity extends AppCompatActivity {
         binding = ActivitySavedLibrariesBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        setupRecyclerView();
+        setupAddNewLibraryButton();
+        loadSavedPlaylists();
+    }
+
+    private void setupRecyclerView() {
         binding.recyclerView.setLayoutManager(new LinearLayoutManager(this));
         OverScrollDecoratorHelper.setUpOverScroll(binding.recyclerView, OverScrollDecoratorHelper.ORIENTATION_VERTICAL);
-
-        binding.addNewLibrary.setOnClickListener(view -> {
-            AddNewLibraryBottomSheetBinding addNewLibraryBottomSheetBinding = AddNewLibraryBottomSheetBinding.inflate(getLayoutInflater());
-            BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this, R.style.MyBottomSheetDialogTheme);
-            bottomSheetDialog.setContentView(addNewLibraryBottomSheetBinding.getRoot());
-            addNewLibraryBottomSheetBinding.cancel.setOnClickListener(view1 -> {
-                bottomSheetDialog.dismiss();
-            });
-            addNewLibraryBottomSheetBinding.create.setOnClickListener(view1 -> {
-                final String name = addNewLibraryBottomSheetBinding.edittext.getText().toString();
-                if(name.isEmpty()) {
-                    addNewLibraryBottomSheetBinding.edittext.setError("Name cannot be empty");
-                    return;
-                }
-                addNewLibraryBottomSheetBinding.edittext.setError(null);
-                Log.i("SavedLibrariesActivity", "BottomSheetDialog_create: " + name);
-
-                final String currentTime = String.valueOf(System.currentTimeMillis());
-
-                SavedLibrariesAudius.Library library = new SavedLibrariesAudius.Library(
-                        "#"+currentTime,
-                        true,
-                        false,
-                        name,
-                        "",
-                        "Created on :- " + formatMillis(Long.parseLong(currentTime)),
-                        new ArrayList<>()
-                );
-
-                final SharedPreferenceManager sharedPreferenceManager = SharedPreferenceManager.getInstance(this);
-                sharedPreferenceManager.addLibraryToSavedLibraries(library);
-                Snackbar.make(binding.getRoot(), "Library added successfully", Snackbar.LENGTH_SHORT).show();
-
-
-                bottomSheetDialog.dismiss();
-
-                showData(sharedPreferenceManager);
-            });
-            bottomSheetDialog.show();
-        });
-
-        showData();
+        savedPlaylists = new ArrayList<>();
+        adapter = new SavedLibrariesAdapter(savedPlaylists);
+        binding.recyclerView.setAdapter(adapter);
     }
 
+    private void setupAddNewLibraryButton() {
+        binding.addNewLibrary.setOnClickListener(view -> showAddLibraryDialog());
+    }
+
+    private void showAddLibraryDialog() {
+        AddNewLibraryBottomSheetBinding dialogBinding = AddNewLibraryBottomSheetBinding.inflate(getLayoutInflater());
+        BottomSheetDialog dialog = new BottomSheetDialog(this, R.style.MyBottomSheetDialogTheme);
+        dialog.setContentView(dialogBinding.getRoot());
+
+        dialogBinding.cancel.setOnClickListener(v -> dialog.dismiss());
+        dialogBinding.create.setOnClickListener(v -> createNewLibrary(dialogBinding, dialog));
+
+        dialog.show();
+    }
+
+    private void createNewLibrary(AddNewLibraryBottomSheetBinding dialogBinding, BottomSheetDialog dialog) {
+        String name = dialogBinding.edittext.getText().toString().trim();
+        if (name.isEmpty()) {
+            dialogBinding.edittext.setError("Name cannot be empty");
+            return;
+        }
+
+        long currentTime = System.currentTimeMillis();
+        String playlistId = "local_" + currentTime;
+
+        Playlist newPlaylist = new Playlist(
+                new Artwork("", "", ""),  // Empty artwork initially
+                "Created on: " + formatMillis(currentTime), // Description
+                playlistId, // permalink
+                playlistId, // id
+                false, // isAlbum
+                name,  // playlist name
+                0,    // repost count
+                0,    // favorite count
+                0,    // total play count
+                new User(
+                        0,                  // albumCount
+                        "",                 // artistPickTrackId
+                        "",                 // bio
+                        new CoverPhoto("",""), // coverPhoto
+                        0,                  // followeeCount
+                        0,                  // followerCount
+                        false,              // doesFollowCurrentUser
+                        "local",            // handle
+                        "local",            // id
+                        false,              // isVerified
+                        "",                 // location
+                        "Local Library",    // name
+                        0,                  // playlistCount
+                        new ProfilePicture("","",""), // profilePicture
+                        0,                  // repostCount
+                        0,                  // trackCount
+                        false,              // isDeactivated
+                        true,               // isAvailable
+                        "",                 // ercWallet
+                        "",                 // splWallet
+                        0,                  // supporterCount
+                        0,                  // supportingCount
+                        0                   // totalAudioBalance
+                )
+        );
+
+        SharedPreferenceManager.getInstance(this).addPlaylistToSavedPlaylists(newPlaylist);
+        savedPlaylists.add(newPlaylist);
+        adapter.notifyItemInserted(savedPlaylists.size() - 1);
+        
+        updateEmptyState();
+        Snackbar.make(binding.getRoot(), "Library created successfully", Snackbar.LENGTH_SHORT).show();
+        dialog.dismiss();
+    }
+
+    private void loadSavedPlaylists() {
+        List<Playlist> playlists = SharedPreferenceManager.getInstance(this).getSavedPlaylists();
+        if (playlists != null) {
+            savedPlaylists.clear();
+            savedPlaylists.addAll(playlists);
+            adapter.notifyDataSetChanged();
+        }
+        updateEmptyState();
+    }
+
+    private void updateEmptyState() {
+        binding.emptyListTv.setVisibility(savedPlaylists.isEmpty() ? View.VISIBLE : View.GONE);
+    }
+
+    @SuppressLint("SimpleDateFormat")
     private String formatMillis(long millis) {
-        Date date = new Date(millis);
-        @SuppressLint("SimpleDateFormat")
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM-dd-yyyy HH:mm a");
-        return simpleDateFormat.format(date);
-    }
-
-
-    private void showData(SharedPreferenceManager sharedPreferenceManager){
-        savedLibraries = sharedPreferenceManager.getSavedLibrariesData();
-        binding.emptyListTv.setVisibility(savedLibraries == null ? View.VISIBLE : View.GONE);
-        if(savedLibraries != null) binding.recyclerView.setAdapter(new SavedLibrariesAdapter(savedLibraries.lists()));
-    }
-    private void showData() {
-        showData(SharedPreferenceManager.getInstance(this));
+        return new SimpleDateFormat("MM-dd-yyyy HH:mm a").format(new Date(millis));
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        showData();
+        loadSavedPlaylists();
     }
 
-    public void backPress(View view){
+    public void backPress(View view) {
         finish();
     }
-}*/
+}

@@ -67,6 +67,10 @@
             android:name=".activities.SettingsActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".activities.SavedLibrariesActivity"
+            android:exported="false" />
+
     </application>
 
 </manifest>
