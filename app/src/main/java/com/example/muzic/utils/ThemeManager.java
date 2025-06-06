@@ -49,8 +49,8 @@ public class ThemeManager {
         switch (theme.toLowerCase()) {
             case "nebula":
                 return Color.parseColor("#7B68EE"); // Indigo
-            case "minty fresh":
-                return Color.parseColor("#98FF98"); // Mint green
+            case "aqua":
+                return Color.parseColor("#57FFFF"); // Mint green
             case "tangerine":
                 return Color.parseColor("#FFA500"); // Orange
             case "crimson love":

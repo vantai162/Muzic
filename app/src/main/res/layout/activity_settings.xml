@@ -261,10 +261,10 @@
                     android:text="Nebula" />
 
                 <com.google.android.material.radiobutton.MaterialRadioButton
-                    android:id="@+id/minty_fresh"
+                    android:id="@+id/aqua"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Minty Fresh" />
+                    android:text="Aqua" />
 
                 <com.google.android.material.radiobutton.MaterialRadioButton
                     android:id="@+id/tangerine"
