@@ -19,7 +19,9 @@ import com.example.muzic.records.Track;
 import com.facebook.shimmer.ShimmerFrameLayout;
 import com.squareup.picasso.Picasso;
 import com.example.muzic.databinding.ActivityArtistProfileViewTopSongsItemBinding;
+import com.example.muzic.ApplicationClass;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ActivityArtistProfileTopSongsAdapter extends RecyclerView.Adapter<ActivityArtistProfileTopSongsAdapter.ViewHolder> {
@@ -83,9 +85,22 @@ public class ActivityArtistProfileTopSongsAdapter extends RecyclerView.Adapter<A
             // Set click listener
             holder.itemView.setOnClickListener(v -> {
                 try {
+                    // Convert all tracks to TrackData
+                    ArrayList<TrackData> playlist = new ArrayList<>();
+                    for (Track t : tracks) {
+                        playlist.add(convertToTrackData(t));
+                    }
+                    
+                    // Get current track data
+                    TrackData currentTrack = convertToTrackData(track);
+                    
+                    // Update playlist in ApplicationClass
+                    ApplicationClass app = (ApplicationClass) v.getContext().getApplicationContext();
+                    app.updatePlaylist(playlist, holder.getBindingAdapterPosition());
+                    app.playCurrentTrack();
+                    
+                    // Start MusicOverviewActivity
                     Intent intent = new Intent(v.getContext(), MusicOverviewActivity.class);
-                    TrackData trackData = convertToTrackData(track);
-                    intent.putExtra("track", trackData);
                     v.getContext().startActivity(intent);
                 } catch (Exception e) {
                     Log.e(TAG, "Error launching MusicOverviewActivity", e);
