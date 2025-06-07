@@ -131,15 +131,22 @@ public class ApplicationClass extends Application {
 
     // Add new methods for playlist management
     public void updatePlaylist(ArrayList<TrackData> playlist, int position) {
-        currentPlaylist = playlist;
-        currentTrackIndex = position;
-        if (position >= 0 && position < playlist.size()) {
-            currentTrack = playlist.get(position);
-            MUSIC_ID = currentTrack.id;
-            MUSIC_TITLE = currentTrack.title;
-            MUSIC_DESCRIPTION = currentTrack.user.name;
-            IMAGE_URL = currentTrack.artwork != null ? currentTrack.artwork._480x480 : "";
+        if (playlist == null || playlist.isEmpty() || position < 0 || position >= playlist.size()) {
+            return;
         }
+        
+        // Update current playlist
+        currentPlaylist.clear();
+        currentPlaylist.addAll(playlist);
+        
+        // Update current track and queue
+        TrackData selectedTrack = playlist.get(position);
+        List<String> newQueue = new ArrayList<>();
+        for (TrackData track : playlist) {
+            newQueue.add(track.id);
+        }
+        
+        updateCurrentTrack(selectedTrack, newQueue, position);
     }
 
     public void playNextTrack() {

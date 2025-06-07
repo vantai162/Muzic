@@ -112,8 +112,9 @@ public class MainActivity extends AppCompatActivity {
                 new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         );
         trendingTracksAdapter = new TrendingTracksAdapter(this, track -> {
+            // Play the track first
             playTrack(track);
-            // Open MusicOverviewActivity immediately after starting playback
+            // Then open MusicOverview
             openMusicOverview();
         });
         binding.popularSongsRecyclerView.setAdapter(trendingTracksAdapter);
@@ -123,7 +124,9 @@ public class MainActivity extends AppCompatActivity {
                 new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         );
         popularUserAdapter = new PopularUserAdapter(this, new ArrayList<>(), user -> {
-            Log.d(TAG, "User clicked: " + user.name());
+            Intent intent = new Intent(this, ArtistProfileActivity.class);
+            intent.putExtra("data", new Gson().toJson(user));
+            startActivity(intent);
         });
         binding.popularArtistsRecyclerView.setAdapter(popularUserAdapter);
 
@@ -145,19 +148,6 @@ public class MainActivity extends AppCompatActivity {
     @OptIn(markerClass = UnstableApi.class)
     private void openMusicOverview() {
         if (currentTrack != null) {
-            // Convert all tracks to TrackData and update ApplicationClass
-            ArrayList<TrackData> playlist = new ArrayList<>();
-            for (int i = 0; i < trendingTracksAdapter.getItemCount(); i++) {
-                Track track = trendingTracksAdapter.getTrack(i);
-                if (track != null) {
-                    playlist.add(convertToTrackData(track));
-                }
-            }
-            
-            // Update playlist in ApplicationClass
-            ApplicationClass app = (ApplicationClass) getApplication();
-            app.updatePlaylist(playlist, trendingTracksAdapter.getCurrentTrackIndex());
-            
             // Start MusicOverviewActivity
             Intent intent = new Intent(this, MusicOverviewActivity.class);
             startActivity(intent);
@@ -182,7 +172,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         
-        // Update playlist in ApplicationClass
+        // Update playlist in ApplicationClass and start playing
         ApplicationClass app = (ApplicationClass) getApplication();
         app.updatePlaylist(playlist, trendingTracksAdapter.getCurrentTrackIndex());
         app.playCurrentTrack();

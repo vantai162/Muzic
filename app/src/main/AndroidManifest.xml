@@ -71,6 +71,10 @@
             android:name=".activities.SavedLibrariesActivity"
             android:exported="false" />
 
+        <activity 
+            android:name=".activities.ArtistProfileActivity"
+            android:exported="false" />
+
     </application>
 
 </manifest>

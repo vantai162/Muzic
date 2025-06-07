@@ -1,6 +1,5 @@
 package com.example.muzic.network;
 
-
 import okhttp3.HttpUrl;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -26,60 +25,56 @@ public class AudiusApiClient {
 
     public static AudiusApiService getInstance() {
         if (apiService == null) {
-
             OkHttpClient client = new OkHttpClient.Builder()
                     .connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
                     .readTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
                     .writeTimeout(WRITE_TIMEOUT, TimeUnit.SECONDS)
                     .retryOnConnectionFailure(true)
-                    .addInterceptor(new Interceptor() {
-                        @Override
-                        public Response intercept(Chain chain) throws IOException {
-                            Request original = chain.request();
-                            
-                            // Add app_name parameter
-                            HttpUrl originalUrl = original.url();
-                            HttpUrl newUrl = originalUrl.newBuilder()
-                                    .addQueryParameter("app_name", APP_NAME)
-                                    .build();
-                            
-                            // Build new request
-                            Request newRequest = original.newBuilder()
-                                    .url(newUrl)
-                                    .build();
+                    .addInterceptor(chain -> {
+                        Request original = chain.request();
+                        
+                        // Add app_name parameter
+                        HttpUrl originalUrl = original.url();
+                        HttpUrl newUrl = originalUrl.newBuilder()
+                                .addQueryParameter("app_name", APP_NAME)
+                                .build();
+                        
+                        // Build new request
+                        Request newRequest = original.newBuilder()
+                                .url(newUrl)
+                                .build();
 
-                            // Try the request with retries
-                            Response response = null;
-                            IOException lastException = null;
-                            
-                            for (int retry = 0; retry < MAX_RETRIES; retry++) {
+                        Response response = null;
+                        IOException lastException = null;
+                        
+                        for (int retry = 0; retry < MAX_RETRIES; retry++) {
+                            try {
+                                if (response != null) {
+                                    response.close();
+                                }
+                                response = chain.proceed(newRequest);
+                                if (response.isSuccessful()) {
+                                    return response;
+                                }
+                                response.close();
+                            } catch (IOException e) {
+                                lastException = e;
+                                if (response != null) {
+                                    response.close();
+                                }
+                                if (retry == MAX_RETRIES - 1) {
+                                    throw lastException;
+                                }
                                 try {
-                                    response = chain.proceed(newRequest);
-                                    if (response.isSuccessful()) {
-                                        return response;
-                                    }
-                                } catch (IOException e) {
-                                    lastException = e;
-                                    if (response != null) {
-                                        response.close();
-                                    }
-                                    // If this is the last retry, throw the exception
-                                    if (retry == MAX_RETRIES - 1) {
-                                        throw lastException;
-                                    }
-                                    try {
-                                        // Wait before retrying (exponential backoff)
-                                        Thread.sleep((1 << retry) * 1000L);
-                                    } catch (InterruptedException ie) {
-                                        Thread.currentThread().interrupt();
-                                        throw lastException;
-                                    }
+                                    Thread.sleep((1 << retry) * 1000L);
+                                } catch (InterruptedException ie) {
+                                    Thread.currentThread().interrupt();
+                                    throw lastException;
                                 }
                             }
-                            
-                            // If we get here, all retries failed
-                            throw new IOException("Request failed after " + MAX_RETRIES + " retries");
                         }
+                        
+                        throw new IOException("Request failed after " + MAX_RETRIES + " retries");
                     })
                     .build();
 
