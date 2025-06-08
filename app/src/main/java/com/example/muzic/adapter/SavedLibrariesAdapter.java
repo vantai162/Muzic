@@ -24,9 +24,15 @@ public class SavedLibrariesAdapter extends RecyclerView.Adapter<SavedLibrariesAd
 
     private final List<Playlist> playlists;
     private final Gson gson = new Gson();
+    private final OnPlaylistLongClickListener longClickListener;
 
-    public SavedLibrariesAdapter(List<Playlist> playlists) {
+    public interface OnPlaylistLongClickListener {
+        void onPlaylistLongClick(Playlist playlist);
+    }
+
+    public SavedLibrariesAdapter(List<Playlist> playlists, OnPlaylistLongClickListener listener) {
         this.playlists = playlists;
+        this.longClickListener = listener;
     }
 
     @NonNull
@@ -56,6 +62,7 @@ public class SavedLibrariesAdapter extends RecyclerView.Adapter<SavedLibrariesAd
             holder.binding.coverImage.setImageResource(R.drawable.bolt_24px);
         }
 
+        // Set click listeners
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(v.getContext(), ListActivity.class)
                 .putExtra("id", playlist.id())
@@ -64,6 +71,14 @@ public class SavedLibrariesAdapter extends RecyclerView.Adapter<SavedLibrariesAd
                 .putExtra("createdByUser", playlist.id().startsWith("local_"));
 
             v.getContext().startActivity(intent);
+        });
+
+        holder.itemView.setOnLongClickListener(v -> {
+            if (longClickListener != null) {
+                longClickListener.onPlaylistLongClick(playlist);
+                return true;
+            }
+            return false;
         });
     }
 
