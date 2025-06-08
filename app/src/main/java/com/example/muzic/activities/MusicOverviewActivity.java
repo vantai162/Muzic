@@ -80,7 +80,8 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
     private ActivityMusicOverviewBinding binding;
     private ExoPlayer player;
     private Handler handler;
-    private List<TrackData> playlist;
+    private ArrayList<TrackData> playlist;
+    private ArrayList<TrackData> originalPlaylist;
     private int currentTrackIndex = 0;
     private boolean isShuffleEnabled = false;
     private int repeatMode = Player.REPEAT_MODE_OFF;
@@ -123,18 +124,39 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
 
         // Initialize shuffle and repeat buttons with default state
         int defaultColor = getResources().getColor(isDarkMode() ? R.color.textSecDark : R.color.textSec, getTheme());
-        binding.shuffleIcon.setImageTintList(ColorStateList.valueOf(defaultColor));
-        binding.repeatIcon.setImageTintList(ColorStateList.valueOf(defaultColor));
-        isShuffleEnabled = false;
-        repeatMode = Player.REPEAT_MODE_OFF;
-        player.setShuffleModeEnabled(false);
-        player.setRepeatMode(Player.REPEAT_MODE_OFF);
+        ThemeManager themeManager = new ThemeManager(this);
+        
+        // Restore shuffle state
+        isShuffleEnabled = ApplicationClass.isShuffleEnabled;
+        binding.shuffleIcon.setImageTintList(ColorStateList.valueOf(
+            isShuffleEnabled ? themeManager.getPrimaryColor() : defaultColor
+        ));
+        player.setShuffleModeEnabled(isShuffleEnabled);
+
+        // Restore repeat state
+        repeatMode = ApplicationClass.repeatMode;
+        switch (repeatMode) {
+            case Player.REPEAT_MODE_ONE:
+                binding.repeatIcon.setScaleX(-1);
+                binding.repeatIcon.setImageTintList(ColorStateList.valueOf(themeManager.getPrimaryColor()));
+                break;
+            case Player.REPEAT_MODE_ALL:
+                binding.repeatIcon.setScaleX(1);
+                binding.repeatIcon.setImageTintList(ColorStateList.valueOf(themeManager.getPrimaryColor()));
+                break;
+            default:
+                binding.repeatIcon.setScaleX(1);
+                binding.repeatIcon.setImageTintList(ColorStateList.valueOf(defaultColor));
+                break;
+        }
+        player.setRepeatMode(repeatMode);
 
         // Setup more info bottom sheet
         setupMoreInfoBottomSheet();
 
-        // Get playlist from ApplicationClass
+        // Get playlist from ApplicationClass and store original order
         playlist = app.currentPlaylist;
+        originalPlaylist = new ArrayList<>(playlist);
         currentTrackIndex = app.currentTrackIndex;
         
         // Update UI with current track
@@ -196,7 +218,13 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
         // Shuffle button
         binding.shuffleIcon.setOnClickListener(v -> {
             isShuffleEnabled = !isShuffleEnabled;
+            ApplicationClass.isShuffleEnabled = isShuffleEnabled; // Save to ApplicationClass
             player.setShuffleModeEnabled(isShuffleEnabled);
+            
+            // Shuffle or restore playlist
+            shufflePlaylist();
+            
+            // Update shuffle button color
             ThemeManager themeManager = new ThemeManager(this);
             binding.shuffleIcon.setImageTintList(ColorStateList.valueOf(
                 isShuffleEnabled ? themeManager.getPrimaryColor() : 
@@ -226,6 +254,7 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
                     ));
                     break;
             }
+            ApplicationClass.repeatMode = repeatMode; // Save to ApplicationClass
             player.setRepeatMode(repeatMode);
         });
     }
@@ -373,26 +402,42 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
     @OptIn(markerClass = UnstableApi.class)
     @UnstableApi
     private void playNextTrack() {
+        if (playlist == null || playlist.isEmpty()) return;
+        
+        currentTrackIndex = (currentTrackIndex + 1) % playlist.size();
         ApplicationClass app = (ApplicationClass) getApplication();
-        app.playNextTrack();
-        currentTrackIndex = app.currentTrackIndex;
-        if (app.currentTrack != null) {
-            updateUIOnly(app.currentTrack);
-            // Update background blur after UI is updated
-            updateBackgroundBlur();
-        }
+        app.currentTrackIndex = currentTrackIndex;
+        app.currentTrack = playlist.get(currentTrackIndex);
+        
+        updateUIOnly(app.currentTrack);
+        // Prepare and play the track
+        String streamUrl = "https://discoveryprovider2.audius.co/v1/tracks/" + app.currentTrack.id + "/stream";
+        MediaItem mediaItem = MediaItem.fromUri(streamUrl);
+        player.setMediaItem(mediaItem);
+        player.prepare();
+        player.play();
+        
+        updateBackgroundBlur();
     }
 
     @OptIn(markerClass = UnstableApi.class)
     private void playPreviousTrack() {
+        if (playlist == null || playlist.isEmpty()) return;
+        
+        currentTrackIndex = (currentTrackIndex - 1 + playlist.size()) % playlist.size();
         ApplicationClass app = (ApplicationClass) getApplication();
-        app.playPreviousTrack();
-        currentTrackIndex = app.currentTrackIndex;
-        if (app.currentTrack != null) {
-            updateUIOnly(app.currentTrack);
-            // Update background blur after UI is updated  
-            updateBackgroundBlur();
-        }
+        app.currentTrackIndex = currentTrackIndex;
+        app.currentTrack = playlist.get(currentTrackIndex);
+        
+        updateUIOnly(app.currentTrack);
+        // Prepare and play the track
+        String streamUrl = "https://discoveryprovider2.audius.co/v1/tracks/" + app.currentTrack.id + "/stream";
+        MediaItem mediaItem = MediaItem.fromUri(streamUrl);
+        player.setMediaItem(mediaItem);
+        player.prepare();
+        player.play();
+        
+        updateBackgroundBlur();
     }
 
     private String formatDuration(long durationMs) {
@@ -904,8 +949,49 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
             }
         }
     }
+
     @SuppressLint("SimpleDateFormat")
     private String formatMillis(long millis) {
         return new SimpleDateFormat("MM-dd-yyyy HH:mm a").format(new Date(millis));
+    }
+
+    private void shufflePlaylist() {
+        if (isShuffleEnabled) {
+            // Save current track
+            TrackData currentTrack = playlist.get(currentTrackIndex);
+            
+            // Create a temporary list without current track
+            ArrayList<TrackData> tempList = new ArrayList<>(playlist);
+            tempList.remove(currentTrackIndex);
+            
+            // Shuffle the temporary list
+            Collections.shuffle(tempList);
+            
+            // Clear and rebuild playlist with current track at start
+            playlist = new ArrayList<>();
+            playlist.add(currentTrack);  // Add current track at the beginning
+            playlist.addAll(tempList);   // Add shuffled remaining tracks
+            
+            // Update current index to 0 since current track is now first
+            currentTrackIndex = 0;
+        } else {
+            // Restore original playlist order
+            playlist = new ArrayList<>(originalPlaylist);
+            
+            // Find the current track in the original playlist
+            TrackData currentTrack = ApplicationClass.currentTrack;
+            currentTrackIndex = 0;
+            for (int i = 0; i < originalPlaylist.size(); i++) {
+                if (originalPlaylist.get(i).id.equals(currentTrack.id)) {
+                    currentTrackIndex = i;
+                    break;
+                }
+            }
+        }
+        
+        // Update playlist in ApplicationClass
+        ApplicationClass app = (ApplicationClass) getApplication();
+        app.currentPlaylist = playlist;
+        app.currentTrackIndex = currentTrackIndex;
     }
 }

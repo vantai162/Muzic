@@ -65,6 +65,8 @@ public class ApplicationClass extends Application {
     public static TrackData currentTrack;
     public static ArrayList<TrackData> currentPlaylist = new ArrayList<>();
     public static int currentTrackIndex = -1;
+    public static boolean isShuffleEnabled = false;
+    public static int repeatMode = Player.REPEAT_MODE_OFF;
 
     private ColorStateList currentThemeColors;
 
