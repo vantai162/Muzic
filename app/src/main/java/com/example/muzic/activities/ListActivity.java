@@ -6,10 +6,17 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.muzic.adapter.SelectLibraryAdapter;
+import com.example.muzic.databinding.AddNewLibraryBottomSheetBinding;
+import com.example.muzic.databinding.SelectLibraryBottomSheetBinding;
 import com.example.muzic.model.TrackData;
 import com.example.muzic.records.ProfilePicture;
 import com.example.muzic.records.Artwork;
@@ -17,6 +24,7 @@ import com.example.muzic.records.CoverPhoto;
 import com.example.muzic.records.User;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.gson.Gson;
@@ -39,10 +47,16 @@ import com.example.muzic.utils.SharedPreferenceManager;
 import com.example.muzic.utils.customview.BottomSheetItemView;
 import com.squareup.picasso.Picasso;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
+import androidx.media3.common.util.UnstableApi;
+
+@UnstableApi
 public class ListActivity extends AppCompatActivity {
 
     private ActivityListBinding binding;
@@ -140,51 +154,132 @@ public class ListActivity extends AppCompatActivity {
         if (playlistData == null) return;
 
         SharedPreferenceManager sharedPreferenceManager = SharedPreferenceManager.getInstance(this);
-        SavedLibrariesAudius savedLibraries = sharedPreferenceManager.getSavedLibrariesData();
+        List<Playlist> savedPlaylists = sharedPreferenceManager.getSavedPlaylists();
 
-        if (isPlaylistInLibrary(playlistData, savedLibraries)) {
-            showRemoveFromLibraryDialog(sharedPreferenceManager);
-        } else {
-            addPlaylistToLibrary(sharedPreferenceManager);
-        }
-    }
+        // Show select library bottom sheet
+        View bottomSheetView = getLayoutInflater().inflate(R.layout.select_library_bottom_sheet, null);
+        BottomSheetDialog dialog = new BottomSheetDialog(this, R.style.MyBottomSheetDialogTheme);
+        dialog.setContentView(bottomSheetView);
 
-    private void showRemoveFromLibraryDialog(SharedPreferenceManager sharedPreferenceManager) {
-        new MaterialAlertDialogBuilder(this)
-                .setTitle("Are you sure?")
-                .setMessage("Do you want to remove this playlist from your library?")
-                .setPositiveButton("Yes", (dialogInterface, i) -> {
-                    int index = getPlaylistIndexInLibrary(playlistData, sharedPreferenceManager.getSavedLibrariesData());
-                    if (index != -1) {
-                        sharedPreferenceManager.removeLibraryFromSavedLibraries(index);
-                        Snackbar.make(binding.getRoot(), "Removed from Library", Snackbar.LENGTH_SHORT).show();
-                        updatePlaylistInLibraryStatus();
-                        finish();
-                    }
-                })
-                .setNegativeButton("No", null)
-                .show();
-    }
+        // Get views
+        RecyclerView librariesRecyclerView = bottomSheetView.findViewById(R.id.libraries_recycler_view);
+        TextView emptyText = bottomSheetView.findViewById(R.id.empty_text);
+        MaterialButton createNewLibrary = bottomSheetView.findViewById(R.id.create_new_library);
 
-    private void addPlaylistToLibrary(SharedPreferenceManager sharedPreferenceManager) {
-        // We'll need to fetch the tracks for this playlist first
-        audiusRepository.getPlaylistTracks(playlistData.id(), tracks -> {
-            SavedLibrariesAudius.Library library = new SavedLibrariesAudius.Library(
-                    playlistData.id(),
-                    false,
-                    false,
-                    playlistData.playlistName(),
-                    playlistData.artwork().x480(),
-                    playlistData.description(),
-                    tracks
-            );
-            sharedPreferenceManager.addLibraryToSavedLibraries(library);
-            Snackbar.make(binding.getRoot(), "Added to Library", Snackbar.LENGTH_SHORT).show();
-            updatePlaylistInLibraryStatus();
-        }, error -> {
-            Log.e("ListActivity", "Error fetching playlist tracks: " + error);
-            Snackbar.make(binding.getRoot(), "Failed to add to library", Snackbar.LENGTH_SHORT).show();
+        // Setup RecyclerView
+        librariesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        SelectLibraryAdapter adapter = new SelectLibraryAdapter(savedPlaylists, library -> {
+            // Add current track to selected library
+            audiusRepository.getPlaylistTracks(playlistData.id(), tracks -> {
+                if (tracks != null && !tracks.isEmpty()) {
+                    // Get the first track (since we're adding from a single track view)
+                    Track trackToAdd = tracks.get(0);
+                    
+                    // Add track to library
+                    SavedLibrariesAudius.Library updatedLibrary = new SavedLibrariesAudius.Library(
+                        library.id(),
+                        false,
+                        false,
+                        library.playlistName(),
+                        library.artwork().x480(),
+                        library.description(),
+                        new ArrayList<>(Collections.singletonList(trackToAdd))
+                    );
+                    sharedPreferenceManager.addLibraryToSavedLibraries(updatedLibrary);
+                    
+                    // Show success message
+                    Snackbar.make(binding.getRoot(), "Added to " + library.playlistName(), Snackbar.LENGTH_SHORT).show();
+                    dialog.dismiss();
+                }
+            }, error -> {
+                Log.e("ListActivity", "Error fetching track: " + error);
+                Snackbar.make(binding.getRoot(), "Failed to add to library", Snackbar.LENGTH_SHORT).show();
+                dialog.dismiss();
+            });
         });
+        librariesRecyclerView.setAdapter(adapter);
+
+        // Show empty state if no libraries
+        emptyText.setVisibility(savedPlaylists.isEmpty() ? View.VISIBLE : View.GONE);
+        librariesRecyclerView.setVisibility(savedPlaylists.isEmpty() ? View.GONE : View.VISIBLE);
+
+        // Handle create new library button
+        createNewLibrary.setOnClickListener(v -> {
+            dialog.dismiss();
+            showAddLibraryDialog();
+        });
+
+        dialog.show();
+    }
+
+    private void showAddLibraryDialog() {
+        AddNewLibraryBottomSheetBinding dialogBinding = AddNewLibraryBottomSheetBinding.inflate(getLayoutInflater());
+        BottomSheetDialog dialog = new BottomSheetDialog(this, R.style.MyBottomSheetDialogTheme);
+        dialog.setContentView(dialogBinding.getRoot());
+
+        dialogBinding.cancel.setOnClickListener(v -> dialog.dismiss());
+        dialogBinding.create.setOnClickListener(v -> createNewLibrary(dialogBinding, dialog));
+
+        dialog.show();
+    }
+
+    private void createNewLibrary(AddNewLibraryBottomSheetBinding dialogBinding, BottomSheetDialog dialog) {
+        String name = dialogBinding.edittext.getText().toString().trim();
+        if (name.isEmpty()) {
+            dialogBinding.edittext.setError("Name cannot be empty");
+            return;
+        }
+
+        long currentTime = System.currentTimeMillis();
+        String playlistId = "local_" + currentTime;
+
+        Playlist newPlaylist = new Playlist(
+                new Artwork("", "", ""),  // Empty artwork initially
+                "Created on: " + formatMillis(currentTime), // Description
+                playlistId, // permalink
+                playlistId, // id
+                false, // isAlbum
+                name,  // playlist name
+                0,    // repost count
+                0,    // favorite count
+                0,    // total play count
+                new User(
+                        0,                  // albumCount
+                        "",                 // artistPickTrackId
+                        "",                 // bio
+                        new CoverPhoto("",""), // coverPhoto
+                        0,                  // followeeCount
+                        0,                  // followerCount
+                        false,              // doesFollowCurrentUser
+                        "local",            // handle
+                        "local",            // id
+                        false,              // isVerified
+                        "",                 // location
+                        "Local Library",    // name
+                        0,                  // playlistCount
+                        new ProfilePicture("","",""), // profilePicture
+                        0,                  // repostCount
+                        0,                  // trackCount
+                        false,              // isDeactivated
+                        true,               // isAvailable
+                        "",                 // ercWallet
+                        "",                 // splWallet
+                        0,                  // supporterCount
+                        0,                  // supportingCount
+                        0                   // totalAudioBalance
+                )
+        );
+
+        SharedPreferenceManager.getInstance(this).addPlaylistToSavedPlaylists(newPlaylist);
+        dialog.dismiss();
+        
+        // Show select library dialog again
+        handleAddToLibrary();
+    }
+
+    @SuppressLint("SimpleDateFormat")
+    private String formatMillis(long millis) {
+        return new SimpleDateFormat("MM-dd-yyyy HH:mm a").format(new Date(millis));
     }
 
     private void showShimmerData() {
@@ -392,6 +487,44 @@ public class ListActivity extends AppCompatActivity {
             return;
         }
 
+        // Create Playlist object from user created library
+        playlistData = new Playlist(
+            new Artwork(userPlaylist.image(), userPlaylist.image(), userPlaylist.image()),
+            userPlaylist.description(),
+            userPlaylist.id(),
+            userPlaylist.id(),
+            false,
+            userPlaylist.name(),
+            0,
+            0,
+            0,
+            new User(
+                0,
+                "",
+                "",
+                new CoverPhoto("", ""),
+                0,
+                0,
+                false,
+                "local",
+                "local",
+                false,
+                "",
+                "Local Library",
+                0,
+                new ProfilePicture("", "", ""),
+                0,
+                0,
+                false,
+                true,
+                "",
+                "",
+                0,
+                0,
+                0
+            )
+        );
+
         binding.albumTitle.setText(userPlaylist.name());
         binding.albumSubTitle.setText(userPlaylist.description());
         Picasso.get().load(Uri.parse(userPlaylist.image())).into(binding.albumCover);
@@ -400,73 +533,122 @@ public class ListActivity extends AppCompatActivity {
     }
 
     private void onMoreIconClicked() {
-        if (playlistData == null) return;
-
-        if (isUserCreated) {
-            onMoreIconClickedUserCreated();
+        if (playlistData == null){
+            Log.e("Error","!");
             return;
         }
 
-        showPlaylistBottomSheet();
+        if (isUserCreated) {
+            showUserCreatedPlaylistMoreMenu();
+        } else {
+            showAudiusPlaylistMoreMenu();
+        }
     }
 
-    private void showPlaylistBottomSheet() {
-        final BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this, R.style.MyBottomSheetDialogTheme);
-        final ActivityListMoreInfoBottomSheetBinding sheetBinding = ActivityListMoreInfoBottomSheetBinding.inflate(getLayoutInflater());
+    private void showUserCreatedPlaylistMoreMenu() {
+        View moreView = getLayoutInflater().inflate(R.layout.user_created_list_more_bottom_sheet, null);
+        BottomSheetDialog moreDialog = new BottomSheetDialog(this, R.style.MyBottomSheetDialogTheme);
+        moreDialog.setContentView(moreView);
 
-        sheetBinding.albumTitle.setText(binding.albumTitle.getText());
-        sheetBinding.albumSubTitle.setText(binding.albumSubTitle.getText());
-        Picasso.get().load(Uri.parse(playlistData.artwork().x480())).into(sheetBinding.coverImage);
+        // Handle delete playlist
+        moreView.findViewById(R.id.delete_playlist).setOnClickListener(v -> {
+            moreDialog.dismiss();
+            
+            // Show confirmation dialog
+            new MaterialAlertDialogBuilder(this, R.style.MaterialAlertDialog_App)
+                .setTitle("Delete Playlist")
+                .setMessage("Are you sure you want to delete this playlist?")
+                .setPositiveButton("Delete", (dialog, which) -> {
+                    // Get saved libraries and playlists
+                    SharedPreferenceManager sharedPreferenceManager = SharedPreferenceManager.getInstance(this);
+                    SavedLibrariesAudius savedLibraries = sharedPreferenceManager.getSavedLibrariesData();
+                    List<Playlist> savedPlaylists = sharedPreferenceManager.getSavedPlaylists();
+                    String playlistId = getIntent().getExtras().getString("id");
+                    
+                    // Remove from SavedLibrariesAudius
+                    if (savedLibraries != null && savedLibraries.lists() != null) {
+                        List<SavedLibrariesAudius.Library> updatedLibraries = new ArrayList<>();
+                        for (SavedLibrariesAudius.Library library : savedLibraries.lists()) {
+                            if (!library.id().equals(playlistId)) {
+                                updatedLibraries.add(library);
+                            }
+                        }
+                        SavedLibrariesAudius newSavedLibraries = new SavedLibrariesAudius(updatedLibraries);
+                        sharedPreferenceManager.setSavedLibrariesData(newSavedLibraries);
+                    }
 
-        setupLibraryButton(sheetBinding);
-        setupArtistSection(sheetBinding);
+                    // Remove from SavedPlaylists
+                    if (savedPlaylists != null) {
+                        List<Playlist> updatedPlaylists = new ArrayList<>();
+                        for (Playlist playlist : savedPlaylists) {
+                            if (!playlist.id().equals(playlistId)) {
+                                updatedPlaylists.add(playlist);
+                            }
+                        }
+                        sharedPreferenceManager.setSavedPlaylists(updatedPlaylists);
+                    }
+                    
+                    // Show success message and finish activity
+                    Snackbar.make(binding.getRoot(), "Playlist deleted", Snackbar.LENGTH_SHORT).show();
+                    finish();
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+        });
 
-        bottomSheetDialog.setContentView(sheetBinding.getRoot());
-        bottomSheetDialog.show();
+        moreDialog.show();
     }
 
-    private void setupLibraryButton(ActivityListMoreInfoBottomSheetBinding sheetBinding) {
+    private void showAudiusPlaylistMoreMenu() {
+        View moreView = getLayoutInflater().inflate(R.layout.activity_list_more_info_bottom_sheet, null);
+        BottomSheetDialog moreDialog = new BottomSheetDialog(this, R.style.MyBottomSheetDialogTheme);
+        moreDialog.setContentView(moreView);
+
+        // Set playlist info
+        TextView titleView = moreView.findViewById(R.id.album_title);
+        TextView subtitleView = moreView.findViewById(R.id.album_sub_title);
+        ImageView coverView = moreView.findViewById(R.id.cover_image);
+
+        titleView.setText(playlistData.playlistName());
+        subtitleView.setText(playlistData.user().name());
+        if (playlistData.artwork() != null && !playlistData.artwork().x480().isEmpty()) {
+            Picasso.get().load(Uri.parse(playlistData.artwork().x480())).into(coverView);
+        }
+
+        // Setup Add/Remove from library button
+        BottomSheetItemView addToLibraryBtn = moreView.findViewById(R.id.add_to_library);
         SharedPreferenceManager sharedPreferenceManager = SharedPreferenceManager.getInstance(this);
         SavedLibrariesAudius savedLibraries = sharedPreferenceManager.getSavedLibrariesData();
-
         boolean isInLibrary = isPlaylistInLibrary(playlistData, savedLibraries);
-        sheetBinding.addToLibrary.getTitleTextView().setText(isInLibrary ? "Remove from library" : "Add to library");
-        sheetBinding.addToLibrary.getIconImageView().setImageResource(isInLibrary ? R.drawable.round_close_24 : R.drawable.round_add_24);
 
-        sheetBinding.addToLibrary.setOnClickListener(view -> {
+        addToLibraryBtn.getTitleTextView().setText(isInLibrary ? "Remove from library" : "Add to library");
+        addToLibraryBtn.getIconImageView().setImageResource(isInLibrary ? R.drawable.round_close_24 : R.drawable.round_add_24);
+        addToLibraryBtn.setOnClickListener(view -> {
             binding.addToLibrary.performClick();
-            sheetBinding.getRoot().getParent().getParent();
+            moreDialog.dismiss();
         });
-    }
 
-    private void setupArtistSection(ActivityListMoreInfoBottomSheetBinding sheetBinding) {
+        // Setup artist section
+        LinearLayout mainLayout = moreView.findViewById(R.id.main);
         for (ArtistData artist : artistData) {
             try {
                 String imgUrl = artist.image().isEmpty() ? "" : artist.image();
                 BottomSheetItemView artistView = new BottomSheetItemView(this, artist.name(), imgUrl, artist.id());
-                sheetBinding.main.addView(artistView);
+                mainLayout.addView(artistView);
+
+                // Handle artist click
+                artistView.setOnClickListener(v -> {
+                    moreDialog.dismiss();
+                    Intent intent = new Intent(this, ArtistProfileActivity.class);
+                    intent.putExtra("id", artist.id());
+                    startActivity(intent);
+                });
             } catch (Exception e) {
                 Log.e("ListActivity", "Error setting up artist view", e);
             }
         }
-    }
 
-    private void onMoreIconClickedUserCreated() {
-        final BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this, R.style.MyBottomSheetDialogTheme);
-        final UserCreatedListActivityMoreBottomSheetBinding sheetBinding = 
-            UserCreatedListActivityMoreBottomSheetBinding.inflate(getLayoutInflater());
-
-        sheetBinding.albumTitle.setText(binding.albumTitle.getText());
-        sheetBinding.albumSubTitle.setText(binding.albumSubTitle.getText());
-        Picasso.get().load(Uri.parse(playlistData.artwork().x480())).into(sheetBinding.coverImage);
-
-        sheetBinding.removeLibrary.setOnClickListener(view -> {
-            bottomSheetDialog.dismiss();
-            binding.addToLibrary.performClick();
-        });
-
-        bottomSheetDialog.setContentView(sheetBinding.getRoot());
-        bottomSheetDialog.show();
+        moreDialog.show();
     }
 
     private void updatePlaylistInLibraryStatus() {
