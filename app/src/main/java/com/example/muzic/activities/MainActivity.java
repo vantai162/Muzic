@@ -2,6 +2,8 @@ package com.example.muzic.activities;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -32,6 +34,7 @@ import com.example.muzic.records.AudiusTrackResponse;
 import com.example.muzic.records.PlaylistResponse;
 import com.example.muzic.records.Track;
 import com.example.muzic.records.User;
+import com.example.muzic.utils.SettingsSharedPrefManager;
 import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
 import com.yarolegovich.slidingrootnav.SlidingRootNav;
@@ -324,6 +327,9 @@ public class MainActivity extends AppCompatActivity {
         // Reapply theme when activity resumes
         ((ApplicationClass) getApplication()).reapplyTheme();
         
+        // Update play bar colors based on theme
+        updatePlayBarThemeColors();
+        
         if (ApplicationClass.currentTrack != null) {
             currentTrack = ApplicationClass.currentTrack;
             updatePlayBarContent(currentTrack);
@@ -336,6 +342,55 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         }
+    }
+
+    @OptIn(markerClass = UnstableApi.class)
+    private void updatePlayBarThemeColors() {
+        SettingsSharedPrefManager settingsManager = new SettingsSharedPrefManager(this);
+        String currentTheme = settingsManager.getTheme();
+        int themeColor;
+        
+        // Get color based on current theme
+        switch (currentTheme) {
+            case "nebula":
+                themeColor = getResources().getColor(R.color.nebula, getTheme());
+                break;
+            case "aqua":
+                themeColor = getResources().getColor(R.color.aqua, getTheme());
+                break;
+            case "tangerine":
+                themeColor = getResources().getColor(R.color.tangerine, getTheme());
+                break;
+            case "crimson love":
+                themeColor = getResources().getColor(R.color.crimson_love, getTheme());
+                break;
+            case "blue depths":
+                themeColor = getResources().getColor(R.color.blue_depths, getTheme());
+                break;
+            default: // original
+                themeColor = getResources().getColor(R.color.spotify_green, getTheme());
+                break;
+        }
+
+        if (ApplicationClass.currentTrack == null) {
+            // Set background color for cover image
+            binding.playBarCoverImage.setBackgroundColor(themeColor);
+            binding.playBarCoverImage.setImageResource(R.drawable.music_note_24px);
+            binding.playBarCoverImage.setColorFilter(Color.WHITE);
+            
+            // Set text colors
+            binding.playBarMusicTitle.setTextColor(themeColor);
+            binding.playBarMusicDesc.setTextColor(themeColor);
+        } else {
+            // When track is playing, update text colors
+            binding.playBarMusicTitle.setTextColor(themeColor);
+            binding.playBarMusicDesc.setTextColor(themeColor);
+        }
+        
+        // Always update control buttons color
+        binding.playBarPlayPauseIcon.setImageTintList(ColorStateList.valueOf(themeColor));
+        binding.playBarPrevIcon.setImageTintList(ColorStateList.valueOf(themeColor));
+        binding.playBarNextIcon.setImageTintList(ColorStateList.valueOf(themeColor));
     }
 
     //khuc menu la cai ham nay ne
@@ -403,6 +458,10 @@ public class MainActivity extends AppCompatActivity {
             binding.playBarBackground.setVisibility(View.VISIBLE);
             binding.playBarMusicTitle.setText(track.title);
             binding.playBarMusicDesc.setText(track.user != null ? track.user.name : "");
+            
+            // Clear any background color and tint from theme
+            binding.playBarCoverImage.setBackgroundColor(Color.TRANSPARENT);
+            binding.playBarCoverImage.setColorFilter(null);
             
             if (track.artwork != null && track.artwork._480x480 != null) {
                 Picasso.get()
