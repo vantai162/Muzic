@@ -112,7 +112,7 @@ public class ApplicationClass extends Application {
 
     public void updateTrackQuality() {
         if (audioQualityManager != null) {
-            audioQualityManager.updatePlayerQuality();
+        audioQualityManager.updatePlayerQuality();
         }
     }
 
