@@ -518,8 +518,22 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
         bottomSheetBinding.goToAlbum.setOnClickListener(v -> {
             if (ApplicationClass.currentTrack != null && ApplicationClass.currentTrack.user != null) {
                 com.example.muzic.model.User modelUser = ApplicationClass.currentTrack.user;
+                // Convert model user to records user
+                com.example.muzic.records.User recordsUser = new com.example.muzic.records.User(
+                    0, "", "", new com.example.muzic.records.CoverPhoto("", ""),
+                    0, 0, false,
+                    modelUser.name, modelUser.id,
+                    false, "", modelUser.name,
+                    0, new com.example.muzic.records.ProfilePicture(
+                        modelUser.profile_picture != null ? modelUser.profile_picture._150x150 : "",
+                        modelUser.profile_picture != null ? modelUser.profile_picture._480x480 : "",
+                        modelUser.profile_picture != null ? modelUser.profile_picture._1000x1000 : ""
+                    ),
+                    0, 0, false, true,
+                    "", "", 0, 0, 0
+                );
                 Intent intent = new Intent(this, ArtistProfileActivity.class);
-                intent.putExtra("data", new Gson().toJson(modelUser));
+                intent.putExtra("data", new Gson().toJson(recordsUser));
                 startActivity(intent);
                 moreInfoBottomSheet.dismiss();
             } else {
