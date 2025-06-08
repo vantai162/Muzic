@@ -63,4 +63,7 @@
 
     <color name="white_70">#B3FFFFFF</color>
     <color name="primary">#1DB954</color>
+
+    <color name="shimmer_background">#1F1F1F</color>
+    <color name="shimmer_placeholder">#2A2A2A</color>
 </resources>

@@ -107,6 +107,24 @@
                         android:textColor="@color/textMain"
                         android:textSize="@dimen/_16ssp" />
 
+                    <com.facebook.shimmer.ShimmerFrameLayout
+                        android:id="@+id/songs_shimmer_container"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/_8sdp"
+                        android:orientation="horizontal">
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+                            <include layout="@layout/skeleton_item" />
+                            <include layout="@layout/skeleton_item" />
+                            <include layout="@layout/skeleton_item" />
+                        </LinearLayout>
+
+                    </com.facebook.shimmer.ShimmerFrameLayout>
+
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/popular_songs_recycler_view"
                         android:layout_width="wrap_content"
@@ -114,6 +132,7 @@
                         android:layout_marginTop="@dimen/_8sdp"
                         android:orientation="horizontal"
                         android:scrollbars="none"
+                        android:visibility="gone"
                         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                         tools:itemCount="10"
                         tools:listitem="@layout/activity_main_songs_item" />
@@ -138,6 +157,25 @@
                         android:textColor="@color/textMain"
                         android:textSize="@dimen/_16ssp" />
 
+                    <com.facebook.shimmer.ShimmerFrameLayout
+                        android:id="@+id/artists_shimmer_container"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/_8sdp"
+                        android:orientation="horizontal">
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:paddingStart="@dimen/_4sdp">
+                            <include layout="@layout/skeleton_artist_item" />
+                            <include layout="@layout/skeleton_artist_item" />
+                            <include layout="@layout/skeleton_artist_item" />
+                            <include layout="@layout/skeleton_artist_item" />
+                        </LinearLayout>
+
+                    </com.facebook.shimmer.ShimmerFrameLayout>
 
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/popular_artists_recycler_view"
@@ -145,10 +183,11 @@
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:scrollbars="none"
+                        android:visibility="gone"
+                        android:paddingStart="@dimen/_4sdp"
                         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                         tools:itemCount="10"
                         tools:listitem="@layout/activity_main_artists_item" />
-
 
                 </LinearLayout>
 

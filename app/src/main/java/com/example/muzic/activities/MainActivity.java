@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 
@@ -38,6 +39,7 @@ import com.example.muzic.records.Track;
 import com.example.muzic.records.User;
 import com.example.muzic.utils.SettingsSharedPrefManager;
 import com.example.muzic.utils.SharedPreferenceManager;
+import com.example.muzic.utils.ThemeManager;
 import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
 import com.yarolegovich.slidingrootnav.SlidingRootNav;
@@ -125,6 +127,24 @@ public class MainActivity extends AppCompatActivity {
 
         // Setup RecyclerViews
         setupRecyclerViews();
+        
+        // Setup SwipeRefreshLayout
+        binding.refreshLayout.setOnRefreshListener(() -> {
+            // Reload all data
+            loadTrendingTracks();
+            loadSavedLibraries();
+            
+            // Hide refresh animation after 1 second
+            new Handler().postDelayed(() -> {
+                binding.refreshLayout.setRefreshing(false);
+            }, 1000);
+        });
+        
+        // Set SwipeRefreshLayout colors
+        ThemeManager themeManager = new ThemeManager(this);
+        binding.refreshLayout.setColorSchemeColors(themeManager.getPrimaryColor());
+        binding.refreshLayout.setProgressBackgroundColorSchemeColor(getResources().getColor(isDarkMode() ? 
+            R.color.dark_background : android.R.color.white, getTheme()));
         
         // Setup play bar listeners
         setupPlayBarListeners();
@@ -259,6 +279,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void loadTrendingTracks() {
+        // Show shimmer and hide recycler views
+        binding.songsShimmerContainer.startShimmer();
+        binding.artistsShimmerContainer.startShimmer();
+        binding.songsShimmerContainer.setVisibility(View.VISIBLE);
+        binding.artistsShimmerContainer.setVisibility(View.VISIBLE);
+        binding.popularSongsRecyclerView.setVisibility(View.GONE);
+        binding.popularArtistsRecyclerView.setVisibility(View.GONE);
+
         audiusRepository.getTrendingTracks(15, new Callback<AudiusTrackResponse>() {
             @Override
             public void onResponse(Call<AudiusTrackResponse> call, Response<AudiusTrackResponse> response) {
@@ -276,6 +304,14 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                     popularUserAdapter.setUsers(uniqueUsers);
+
+                    // Hide shimmer and show recycler views
+                    binding.songsShimmerContainer.stopShimmer();
+                    binding.artistsShimmerContainer.stopShimmer();
+                    binding.songsShimmerContainer.setVisibility(View.GONE);
+                    binding.artistsShimmerContainer.setVisibility(View.GONE);
+                    binding.popularSongsRecyclerView.setVisibility(View.VISIBLE);
+                    binding.popularArtistsRecyclerView.setVisibility(View.VISIBLE);
 
                     // === Tạo danh sách mood playlists ===
                     Map<String, List<Track>> moodMap = new HashMap<>();
@@ -319,6 +355,11 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<AudiusTrackResponse> call, Throwable t) {
                 Log.e(TAG, "API Call Failed: " + t.getMessage());
+                // Hide shimmer and show error state if needed
+                binding.songsShimmerContainer.stopShimmer();
+                binding.artistsShimmerContainer.stopShimmer();
+                binding.songsShimmerContainer.setVisibility(View.GONE);
+                binding.artistsShimmerContainer.setVisibility(View.GONE);
             }
         });
 
@@ -450,25 +491,26 @@ public class MainActivity extends AppCompatActivity {
         return str.substring(0, 1).toUpperCase() + str.substring(1);
     }
 
-    @OptIn(markerClass = UnstableApi.class)
     @Override
     public void onConfigurationChanged(@NonNull android.content.res.Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-
-        // Restore play bar state from ApplicationClass
-        if (ApplicationClass.currentTrack != null) {
-            currentTrack = ApplicationClass.currentTrack;
-            updatePlayBarContent(currentTrack);
-        }
-        // If no current track in ApplicationClass but music is playing
-        else if (ApplicationClass.MUSIC_ID != null) {
-            fetchCurrentTrackData(ApplicationClass.MUSIC_ID, track -> {
-                if (track != null) {
-                    currentTrack = track;
-                    ApplicationClass.currentTrack = track;
-                    updatePlayBarContent(track);
-                }
-            });
+        
+        // Update theme colors
+        ApplicationClass app = (ApplicationClass) getApplication();
+        app.reapplyTheme();
+        
+        // Update play bar colors
+        updatePlayBarThemeColors();
+        
+        // Update SwipeRefreshLayout colors
+        ThemeManager themeManager = new ThemeManager(this);
+        binding.refreshLayout.setColorSchemeColors(themeManager.getPrimaryColor());
+        binding.refreshLayout.setProgressBackgroundColorSchemeColor(getResources().getColor(isDarkMode() ? 
+            R.color.dark_background : android.R.color.white, getTheme()));
+        
+        // Update playback state if needed
+        if (player != null) {
+            updatePlayControls();
         }
     }
 
@@ -698,6 +740,12 @@ public class MainActivity extends AppCompatActivity {
 
     interface OnTrackDataFetchedListener {
         void onTrackDataFetched(TrackData track);
+    }
+    
+    private boolean isDarkMode() {
+        int nightModeFlags = getResources().getConfiguration().uiMode & 
+                            android.content.res.Configuration.UI_MODE_NIGHT_MASK;
+        return nightModeFlags == android.content.res.Configuration.UI_MODE_NIGHT_YES;
     }
 }
 
