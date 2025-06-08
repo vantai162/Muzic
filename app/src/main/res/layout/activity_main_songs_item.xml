@@ -14,12 +14,12 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:padding="@dimen/_11sdp">
+        android:padding="@dimen/_8sdp">
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardView"
-            android:layout_width="@dimen/_90sdp"
-            android:layout_height="@dimen/_90sdp"
+            android:layout_width="@dimen/_50sdp"
+            android:layout_height="@dimen/_50sdp"
             android:layout_marginBottom="8dp"
             app:cardBackgroundColor="@color/background"
             app:cardCornerRadius="@dimen/_8sdp"
@@ -58,22 +58,7 @@
             android:ellipsize="marquee"
             android:singleLine="true"/>
 
-        <TextView
-            android:id="@+id/albumSubTitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:maxWidth="@dimen/_90sdp"
-            android:gravity="center"
-            android:text="Album Description"
-            android:fontFamily="@font/avenir_next_light"
-            android:textColor="@color/textSec"
-            android:textSize="@dimen/_11ssp"
-            android:scrollHorizontally="true"
-            android:ellipsize="marquee"
-            android:singleLine="true"
-            app:layout_constraintEnd_toEndOf="@+id/albumTitle"
-            app:layout_constraintStart_toStartOf="@+id/albumTitle"
-            app:layout_constraintTop_toBottomOf="@+id/albumTitle" />
+
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

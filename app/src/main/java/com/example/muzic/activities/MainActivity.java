@@ -23,6 +23,7 @@ import com.example.muzic.adapter.MoodPlaylistAdapter;
 import com.example.muzic.adapter.PopularUserAdapter;
 import com.example.muzic.adapter.TrendingPlaylistAdapter;
 import com.example.muzic.adapter.TrendingTracksAdapter;
+import com.example.muzic.adapter.MainSavedLibrariesAdapter;
 import com.example.muzic.databinding.ActivityMainBinding;
 import com.example.muzic.databinding.PlayBarBinding;
 import com.example.muzic.model.MoodPlaylist;
@@ -31,10 +32,12 @@ import com.example.muzic.network.AudiusApiClient;
 import com.example.muzic.network.AudiusApiService;
 import com.example.muzic.network.AudiusRepository;
 import com.example.muzic.records.AudiusTrackResponse;
+import com.example.muzic.records.Playlist;
 import com.example.muzic.records.PlaylistResponse;
 import com.example.muzic.records.Track;
 import com.example.muzic.records.User;
 import com.example.muzic.utils.SettingsSharedPrefManager;
+import com.example.muzic.utils.SharedPreferenceManager;
 import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
 import com.yarolegovich.slidingrootnav.SlidingRootNav;
@@ -59,12 +62,14 @@ public class MainActivity extends AppCompatActivity {
     private PopularUserAdapter popularUserAdapter;
     private TrendingPlaylistAdapter trendingPlaylistAdapter;
     private MoodPlaylistAdapter moodPlaylistAdapter;
+    private MainSavedLibrariesAdapter savedLibrariesAdapter;
     private ActivityMainBinding binding;
     private PlayBarBinding playBarBinding;
     private SlidingRootNav slidingRootNavBuilder;
     private TrackData currentTrack;
     private AudiusRepository audiusRepository;
     private Player.Listener playerListener;
+    private SharedPreferenceManager sharedPreferenceManager;
 
     @OptIn(markerClass = UnstableApi.class)
     @Override
@@ -101,8 +106,9 @@ public class MainActivity extends AppCompatActivity {
         };
         player.addListener(playerListener);
 
-        // Initialize AudiusRepository
+        // Initialize managers
         audiusRepository = new AudiusRepository();
+        sharedPreferenceManager = SharedPreferenceManager.getInstance(this);
 
         // Setup navigation drawer
         slidingRootNavBuilder = new SlidingRootNavBuilder(this)
@@ -121,6 +127,7 @@ public class MainActivity extends AppCompatActivity {
         
         // Load data
         loadTrendingTracks();
+        loadSavedLibraries();
         
         // Restore play bar state if needed
         restorePlayBarState();
@@ -157,12 +164,31 @@ public class MainActivity extends AppCompatActivity {
         trendingPlaylistAdapter = new TrendingPlaylistAdapter(this, new ArrayList<>());
         binding.popularPlaylistRecyclerView.setAdapter(trendingPlaylistAdapter);
 
+        // Saved Libraries
+        binding.savedRecyclerView.setLayoutManager(
+                new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        );
+        savedLibrariesAdapter = new MainSavedLibrariesAdapter(this, new ArrayList<>());
+        binding.savedRecyclerView.setAdapter(savedLibrariesAdapter);
+
         // Mood
         binding.moodPlaylistRecyclerView.setLayoutManager(
                 new LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL, false)
         );
         moodPlaylistAdapter = new MoodPlaylistAdapter(this, new ArrayList<>());
         binding.moodPlaylistRecyclerView.setAdapter(moodPlaylistAdapter);
+    }
+
+    private void loadSavedLibraries() {
+        if (sharedPreferenceManager != null) {
+            List<Playlist> savedPlaylists = sharedPreferenceManager.getSavedPlaylists();
+            if (savedPlaylists != null && !savedPlaylists.isEmpty()) {
+                savedLibrariesAdapter.updatePlaylists(savedPlaylists);
+                binding.savedLibrariesSection.setVisibility(View.VISIBLE);
+            } else {
+                binding.savedLibrariesSection.setVisibility(View.GONE);
+            }
+        }
     }
 
     @OptIn(markerClass = UnstableApi.class)
@@ -329,6 +355,9 @@ public class MainActivity extends AppCompatActivity {
         
         // Update play bar colors based on theme
         updatePlayBarThemeColors();
+        
+        // Reload saved libraries as they might have changed
+        loadSavedLibraries();
         
         if (ApplicationClass.currentTrack != null) {
             currentTrack = ApplicationClass.currentTrack;

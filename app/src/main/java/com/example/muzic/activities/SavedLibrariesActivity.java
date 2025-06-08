@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 import com.example.muzic.R;
 import com.example.muzic.adapter.SavedLibrariesAdapter;
@@ -19,6 +20,7 @@ import com.example.muzic.records.CoverPhoto;
 import com.example.muzic.records.Playlist;
 import com.example.muzic.records.ProfilePicture;
 import com.example.muzic.records.User;
+import com.example.muzic.records.sharedpref.SavedLibrariesAudius;
 import com.example.muzic.utils.SharedPreferenceManager;
 
 import java.text.SimpleDateFormat;
@@ -34,6 +36,7 @@ public class SavedLibrariesActivity extends AppCompatActivity {
     private ActivitySavedLibrariesBinding binding;
     private List<Playlist> savedPlaylists;
     private SavedLibrariesAdapter adapter;
+    private SharedPreferenceManager sharedPreferenceManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +44,7 @@ public class SavedLibrariesActivity extends AppCompatActivity {
         binding = ActivitySavedLibrariesBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        sharedPreferenceManager = SharedPreferenceManager.getInstance(this);
         setupRecyclerView();
         setupAddNewLibraryButton();
         loadSavedPlaylists();
@@ -50,7 +54,41 @@ public class SavedLibrariesActivity extends AppCompatActivity {
         binding.recyclerView.setLayoutManager(new LinearLayoutManager(this));
         OverScrollDecoratorHelper.setUpOverScroll(binding.recyclerView, OverScrollDecoratorHelper.ORIENTATION_VERTICAL);
         savedPlaylists = new ArrayList<>();
-        adapter = new SavedLibrariesAdapter(savedPlaylists);
+        adapter = new SavedLibrariesAdapter(savedPlaylists, playlist -> {
+            // Show delete confirmation dialog on long click
+            new MaterialAlertDialogBuilder(this, R.style.MaterialAlertDialog_App)
+                .setTitle("Delete Playlist")
+                .setMessage("Are you sure you want to delete this playlist?")
+                .setPositiveButton("Delete", (dialog, which) -> {
+                    // Remove from both storage systems
+                    sharedPreferenceManager.removePlaylistFromSavedPlaylists(playlist.id());
+                    
+                    // Remove from SavedLibrariesAudius
+                    SavedLibrariesAudius savedLibraries = sharedPreferenceManager.getSavedLibrariesData();
+                    if (savedLibraries != null && savedLibraries.lists() != null) {
+                        List<SavedLibrariesAudius.Library> updatedLibraries = new ArrayList<>();
+                        for (SavedLibrariesAudius.Library library : savedLibraries.lists()) {
+                            if (!library.id().equals(playlist.id())) {
+                                updatedLibraries.add(library);
+                            }
+                        }
+                        SavedLibrariesAudius newSavedLibraries = new SavedLibrariesAudius(updatedLibraries);
+                        sharedPreferenceManager.setSavedLibrariesData(newSavedLibraries);
+                    }
+
+                    // Update UI
+                    int position = savedPlaylists.indexOf(playlist);
+                    if (position != -1) {
+                        savedPlaylists.remove(position);
+                        adapter.notifyItemRemoved(position);
+                        updateEmptyState();
+                    }
+                    
+                    Snackbar.make(binding.getRoot(), "Playlist deleted", Snackbar.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+        });
         binding.recyclerView.setAdapter(adapter);
     }
 
@@ -116,7 +154,22 @@ public class SavedLibrariesActivity extends AppCompatActivity {
                 )
         );
 
-        SharedPreferenceManager.getInstance(this).addPlaylistToSavedPlaylists(newPlaylist);
+        // Add to both storage systems
+        sharedPreferenceManager.addPlaylistToSavedPlaylists(newPlaylist);
+        
+        // Create and add to SavedLibrariesAudius
+        SavedLibrariesAudius.Library newLibrary = new SavedLibrariesAudius.Library(
+            playlistId,
+            false,
+            false,
+            name,
+            "",  // No artwork initially
+            "Created on: " + formatMillis(currentTime),
+            new ArrayList<>()  // Empty tracks list
+        );
+        sharedPreferenceManager.addLibraryToSavedLibraries(newLibrary);
+
+        // Update UI
         savedPlaylists.add(newPlaylist);
         adapter.notifyItemInserted(savedPlaylists.size() - 1);
         
@@ -126,12 +179,44 @@ public class SavedLibrariesActivity extends AppCompatActivity {
     }
 
     private void loadSavedPlaylists() {
-        List<Playlist> playlists = SharedPreferenceManager.getInstance(this).getSavedPlaylists();
-        if (playlists != null) {
-            savedPlaylists.clear();
-            savedPlaylists.addAll(playlists);
-            adapter.notifyDataSetChanged();
+        // Load from new storage system
+        List<Playlist> playlists = sharedPreferenceManager.getSavedPlaylists();
+        
+        // Also check old storage system
+        SavedLibrariesAudius oldLibraries = sharedPreferenceManager.getSavedLibrariesData();
+        if (oldLibraries != null && oldLibraries.lists() != null) {
+            for (SavedLibrariesAudius.Library library : oldLibraries.lists()) {
+                // Check if this library is already in the new system
+                boolean exists = playlists.stream()
+                    .anyMatch(p -> p.id().equals(library.id()));
+                
+                if (!exists) {
+                    // Convert old library to new Playlist format
+                    Playlist convertedPlaylist = new Playlist(
+                        new Artwork("", "", ""),
+                        library.description(),
+                        library.id(),
+                        library.id(),
+                        false,
+                        library.name(),
+                        0, 0, 0,
+                        new User(0, "", "", new CoverPhoto("",""), 0, 0, false,
+                            "local", "local", false, "", "Local Library", 0,
+                            new ProfilePicture("","",""), 0, 0, false, true,
+                            "", "", 0, 0, 0)
+                    );
+                    playlists.add(convertedPlaylist);
+                    
+                    // Add to new storage system
+                    sharedPreferenceManager.addPlaylistToSavedPlaylists(convertedPlaylist);
+                }
+            }
         }
+
+        // Update UI
+        savedPlaylists.clear();
+        savedPlaylists.addAll(playlists);
+        adapter.notifyDataSetChanged();
         updateEmptyState();
     }
 
