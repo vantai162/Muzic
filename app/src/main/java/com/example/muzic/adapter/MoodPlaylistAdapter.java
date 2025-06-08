@@ -110,6 +110,12 @@ public class MoodPlaylistAdapter extends RecyclerView.Adapter<MoodPlaylistAdapte
             case "Melancholy":
                 imageRes = R.drawable.sad;
                 break;
+            case "Excited":
+                imageRes = R.drawable.party;
+                break;
+            case "Cool":
+                imageRes = R.drawable.sentimental_value1;
+                break;
             default:
                 imageRes = R.drawable.bolt_24px;
                 break;

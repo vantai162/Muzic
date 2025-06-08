@@ -9,9 +9,11 @@ import androidx.media3.exoplayer.DefaultLoadControl;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector;
 import androidx.media3.common.TrackSelectionParameters;
+import androidx.media3.common.util.UnstableApi;
 
 import com.example.muzic.ApplicationClass;
 
+@UnstableApi
 public class AudioQualityManager {
     private final SettingsSharedPrefManager settingsManager;
     private final Context context;

@@ -8,7 +8,9 @@ import com.example.muzic.ApplicationClass;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import androidx.media3.common.util.UnstableApi;
 
+@UnstableApi
 public class MediaPlayerUtil {
     private static MediaPlayerUtil instance;
     private Context context;

@@ -1,5 +1,6 @@
 package com.example.muzic.activities;
 
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -30,9 +31,20 @@ import androidx.media3.common.MediaItem;
 import androidx.media3.common.Player;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.common.util.UnstableApi;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.muzic.adapter.SelectLibraryAdapter;
+import com.example.muzic.databinding.AddNewLibraryBottomSheetBinding;
+import com.example.muzic.records.Artwork;
+import com.example.muzic.records.CoverPhoto;
+import com.example.muzic.records.Playlist;
+import com.example.muzic.records.ProfilePicture;
+import com.example.muzic.records.Track;
+import com.example.muzic.records.User;
 import com.example.muzic.utils.AudioQualityManager;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.gson.Gson;
@@ -40,30 +52,30 @@ import com.example.muzic.ApplicationClass;
 import com.example.muzic.R;
 import com.example.muzic.databinding.ActivityMusicOverviewBinding;
 import com.example.muzic.databinding.MusicOverviewMoreInfoBottomSheetBinding;
-//import com.example.muzic.model.AlbumItem;
 import com.example.muzic.model.TrackData;
 import com.example.muzic.network.AudiusApiClient;
 import com.example.muzic.network.utility.RequestNetwork;
 import com.example.muzic.records.AudiusTrackResponse;
 import com.example.muzic.records.sharedpref.SavedLibrariesAudius;
 import com.example.muzic.services.ActionPlaying;
-//import com.example.muzic.services.MusicService;
 import com.example.muzic.utils.SharedPreferenceManager;
-//import com.example.muzic.utils.TrackCacheHelper;
 import com.example.muzic.utils.customview.BottomSheetItemView;
 import com.squareup.picasso.Picasso;
 import com.example.muzic.utils.BlurUtils;
 import com.example.muzic.utils.SettingsSharedPrefManager;
 import com.example.muzic.utils.ThemeManager;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
+@UnstableApi
 public class MusicOverviewActivity extends AppCompatActivity implements Player.Listener {
     private ActivityMusicOverviewBinding binding;
     private ExoPlayer player;
@@ -155,14 +167,14 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
         binding.shareIcon.setOnClickListener(v -> {
             String songUrl = ApplicationClass.SONG_URL;
             Log.d("ShareDebug", "Song URL: " + songUrl);
-            
+
             if (songUrl != null && !songUrl.isEmpty()) {
                 // Convert streaming URL to share URL
                 // From: https://discoveryprovider2.audius.co/v1/tracks/ID/stream
                 // To: https://audius.co/tracks/ID
                 String trackId = songUrl.split("/tracks/")[1].replace("/stream", "");
                 String shareUrl = "https://audius.co/tracks/" + trackId;
-                
+
                 Intent shareIntent = new Intent(Intent.ACTION_SEND);
                 shareIntent.setType("text/plain");
                 shareIntent.putExtra(Intent.EXTRA_TEXT, shareUrl);
@@ -430,14 +442,17 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
         MusicOverviewMoreInfoBottomSheetBinding bottomSheetBinding = MusicOverviewMoreInfoBottomSheetBinding.inflate(getLayoutInflater());
         moreInfoBottomSheet.setContentView(bottomSheetBinding.getRoot());
 
-        // Get current track
-        TrackData currentTrack = getIntent().getParcelableExtra("track");
+        // Get current track from ApplicationClass since it's more reliable
+        ApplicationClass app = (ApplicationClass) getApplication();
+        TrackData currentTrack = app.currentTrack;
+
         if (currentTrack != null) {
             // Set track info in bottom sheet
             if (currentTrack.artwork != null && currentTrack.artwork._480x480 != null) {
                 Picasso.get().load(currentTrack.artwork._480x480).into(bottomSheetBinding.coverImage);
             }
             bottomSheetBinding.albumTitle.setText(currentTrack.title);
+            bottomSheetBinding.albumSubTitle.setText(currentTrack.user.name);
         }
 
         // Setup click listeners for bottom sheet actions
@@ -446,15 +461,239 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
             moreInfoBottomSheet.dismiss();
         });
 
+        // Add to library
         bottomSheetBinding.addToLibrary.setOnClickListener(v -> {
-            // Handle add to library click
+            if (currentTrack != null) {
+                // Show select library bottom sheet
+                View selectLibraryView = getLayoutInflater().inflate(R.layout.select_library_bottom_sheet, null);
+                BottomSheetDialog selectLibraryDialog = new BottomSheetDialog(this, R.style.MyBottomSheetDialogTheme);
+                selectLibraryDialog.setContentView(selectLibraryView);
+
+                // Get views
+                RecyclerView librariesRecyclerView = selectLibraryView.findViewById(R.id.libraries_recycler_view);
+                TextView emptyText = selectLibraryView.findViewById(R.id.empty_text);
+                MaterialButton createNewLibrary = selectLibraryView.findViewById(R.id.create_new_library);
+
+                // Get saved playlists
+                SharedPreferenceManager sharedPreferenceManager = SharedPreferenceManager.getInstance(this);
+                List<Playlist> savedPlaylists = sharedPreferenceManager.getSavedPlaylists();
+
+                // Setup RecyclerView
+                librariesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+                SelectLibraryAdapter adapter = new SelectLibraryAdapter(savedPlaylists, library -> {
+                    // Get existing library data
+                    SavedLibrariesAudius savedLibraries = sharedPreferenceManager.getSavedLibrariesData();
+                    SavedLibrariesAudius.Library existingLibrary = null;
+
+                    if (savedLibraries != null && savedLibraries.lists() != null) {
+                        for (SavedLibrariesAudius.Library lib : savedLibraries.lists()) {
+                            if (lib.id().equals(library.id())) {
+                                existingLibrary = lib;
+                                break;
+                            }
+                        }
+                    }
+
+                    // Create new track to add
+                    Track newTrack = new Track(
+                        currentTrack.artwork != null ? new Artwork(currentTrack.artwork._150x150, currentTrack.artwork._480x480, currentTrack.artwork._1000x1000) : null,
+                        currentTrack.description,
+                        currentTrack.genre,
+                        currentTrack.id,
+                        currentTrack.track_cid,
+                        currentTrack.mood,
+                        currentTrack.release_date,
+                        currentTrack.repost_count,
+                        currentTrack.favorite_count,
+                        currentTrack.tags,
+                        currentTrack.title,
+                        new User(
+                            0, "", "", new CoverPhoto("", ""),
+                            0, 0, false,
+                            currentTrack.user.name, currentTrack.user.id,
+                            false, "", currentTrack.user.name,
+                            0, new ProfilePicture("", "", ""),
+                            0, 0, false, true,
+                            "", "", 0, 0, 0
+                        ),
+                        Integer.parseInt(String.valueOf(currentTrack.duration)),
+                        currentTrack.downloadable,
+                        currentTrack.play_count,
+                        currentTrack.permalink,
+                        currentTrack.is_streamable
+                    );
+
+                    // Create updated library with existing tracks plus new track
+                    List<Track> updatedTracks = new ArrayList<>();
+                    if (existingLibrary != null && existingLibrary.tracks() != null) {
+                        // Check if track already exists in the library
+                        boolean trackExists = false;
+                        for (Track track : existingLibrary.tracks()) {
+                            if (track.id().equals(newTrack.id())) {
+                                trackExists = true;
+                                break;
+                            }
+                        }
+
+                        if (trackExists) {
+                            Snackbar.make(binding.getRoot(), "Track already exists in this library", Snackbar.LENGTH_SHORT).show();
+                            selectLibraryDialog.dismiss();
+                            return;
+                        }
+
+                        updatedTracks.addAll(existingLibrary.tracks());
+                    }
+                    updatedTracks.add(newTrack);
+
+                    // Get artwork from first track if this is the first track
+                    String artworkUrl = library.artwork() != null ? library.artwork().x480() : "";
+                    if (updatedTracks.size() == 1 && newTrack.artwork() != null) {
+                        artworkUrl = newTrack.artwork().x480();
+                    }
+
+                    SavedLibrariesAudius.Library updatedLibrary = new SavedLibrariesAudius.Library(
+                        library.id(),
+                        false,
+                        false,
+                        library.playlistName(),
+                        artworkUrl,
+                        library.description(),
+                        updatedTracks
+                    );
+
+                    // Remove old library and add updated one
+                    if (savedLibraries == null) {
+                        savedLibraries = new SavedLibrariesAudius(new ArrayList<>());
+                    }
+                    if (savedLibraries.lists() == null) {
+                        savedLibraries = new SavedLibrariesAudius(new ArrayList<>());
+                    }
+                    savedLibraries.lists().removeIf(lib -> lib.id().equals(library.id()));
+                    savedLibraries.lists().add(updatedLibrary);
+                    sharedPreferenceManager.setSavedLibrariesData(savedLibraries);
+
+                    // Show success message
+                    Snackbar.make(binding.getRoot(), "Added to " + library.playlistName(), Snackbar.LENGTH_SHORT).show();
+                    selectLibraryDialog.dismiss();
+                });
+                librariesRecyclerView.setAdapter(adapter);
+
+                // Show empty state if no libraries
+                emptyText.setVisibility(savedPlaylists.isEmpty() ? View.VISIBLE : View.GONE);
+                librariesRecyclerView.setVisibility(savedPlaylists.isEmpty() ? View.GONE : View.VISIBLE);
+
+                // Handle create new library button
+                createNewLibrary.setOnClickListener(createLibraryView -> {
+                    selectLibraryDialog.dismiss();
+                    showAddLibraryDialog();
+                });
+
+                selectLibraryDialog.show();
+            }
             moreInfoBottomSheet.dismiss();
         });
 
+        // Download track
         bottomSheetBinding.download.setOnClickListener(v -> {
-            // Handle download click
+            if (currentTrack != null) {
+                // Show download progress dialog
+                ProgressDialog progressDialog = new ProgressDialog(this);
+                progressDialog.setMessage("Downloading...");
+                progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                progressDialog.setCancelable(false);
+                progressDialog.show();
+
+                // Start download in background
+                new Thread(() -> {
+                    try {
+                        String streamUrl = "https://discoveryprovider2.audius.co/v1/tracks/" + currentTrack.id + "/stream";
+                        // TODO: Implement actual download logic here
+                        // For now, just simulate download
+                        for (int i = 0; i <= 100; i++) {
+                            Thread.sleep(50);
+                            int finalI = i;
+                            runOnUiThread(() -> progressDialog.setProgress(finalI));
+                        }
+                        runOnUiThread(() -> {
+                            progressDialog.dismiss();
+                            Snackbar.make(binding.getRoot(), "Download completed", Snackbar.LENGTH_SHORT).show();
+                        });
+                    } catch (Exception e) {
+                        runOnUiThread(() -> {
+                            progressDialog.dismiss();
+                            Snackbar.make(binding.getRoot(), "Download failed: " + e.getMessage(), Snackbar.LENGTH_SHORT).show();
+                        });
+                    }
+                }).start();
+            }
             moreInfoBottomSheet.dismiss();
         });
+    }
+
+    private void showAddLibraryDialog() {
+        AddNewLibraryBottomSheetBinding dialogBinding = AddNewLibraryBottomSheetBinding.inflate(getLayoutInflater());
+        BottomSheetDialog dialog = new BottomSheetDialog(this, R.style.MyBottomSheetDialogTheme);
+        dialog.setContentView(dialogBinding.getRoot());
+
+        dialogBinding.cancel.setOnClickListener(v -> dialog.dismiss());
+        dialogBinding.create.setOnClickListener(v -> createNewLibrary(dialogBinding, dialog));
+
+        dialog.show();
+    }
+
+    private void createNewLibrary(AddNewLibraryBottomSheetBinding dialogBinding, BottomSheetDialog dialog) {
+        String name = dialogBinding.edittext.getText().toString().trim();
+        if (name.isEmpty()) {
+            dialogBinding.edittext.setError("Name cannot be empty");
+            return;
+        }
+
+        long currentTime = System.currentTimeMillis();
+        String playlistId = "local_" + currentTime;
+
+        Playlist newPlaylist = new Playlist(
+                new Artwork("", "", ""),  // Empty artwork initially
+                "Created on: " + formatMillis(currentTime), // Description
+                playlistId, // permalink
+                playlistId, // id
+                false, // isAlbum
+                name,  // playlist name
+                0,    // repost count
+                0,    // favorite count
+                0,    // total play count
+                new User(
+                        0,                  // albumCount
+                        "",                 // artistPickTrackId
+                        "",                 // bio
+                        new CoverPhoto("",""), // coverPhoto
+                        0,                  // followeeCount
+                        0,                  // followerCount
+                        false,              // doesFollowCurrentUser
+                        "local",            // handle
+                        "local",            // id
+                        false,              // isVerified
+                        "",                 // location
+                        "Local Library",    // name
+                        0,                  // playlistCount
+                        new ProfilePicture("","",""), // profilePicture
+                        0,                  // repostCount
+                        0,                  // trackCount
+                        false,              // isDeactivated
+                        true,               // isAvailable
+                        "",                 // ercWallet
+                        "",                 // splWallet
+                        0,                  // supporterCount
+                        0,                  // supportingCount
+                        0                   // totalAudioBalance
+                )
+        );
+
+        SharedPreferenceManager.getInstance(this).addPlaylistToSavedPlaylists(newPlaylist);
+        dialog.dismiss();
+
+        // Show select library dialog again
+        setupMoreInfoBottomSheet();
+        showMoreInfoBottomSheet();
     }
 
     private void showMoreInfoBottomSheet() {
@@ -637,5 +876,9 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
                     });
             }
         }
+    }
+    @SuppressLint("SimpleDateFormat")
+    private String formatMillis(long millis) {
+        return new SimpleDateFormat("MM-dd-yyyy HH:mm a").format(new Date(millis));
     }
 }

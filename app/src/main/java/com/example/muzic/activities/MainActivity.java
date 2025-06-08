@@ -51,6 +51,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+@UnstableApi
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "AudiusAPI";
     private ExoPlayer player;
