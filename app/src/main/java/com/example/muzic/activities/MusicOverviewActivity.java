@@ -438,8 +438,8 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
 
     @OptIn(markerClass = UnstableApi.class)
     private void setupMoreInfoBottomSheet() {
-        moreInfoBottomSheet = new BottomSheetDialog(this);
         MusicOverviewMoreInfoBottomSheetBinding bottomSheetBinding = MusicOverviewMoreInfoBottomSheetBinding.inflate(getLayoutInflater());
+        moreInfoBottomSheet = new BottomSheetDialog(this);
         moreInfoBottomSheet.setContentView(bottomSheetBinding.getRoot());
 
         // Get current track from ApplicationClass since it's more reliable
@@ -457,8 +457,15 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
 
         // Setup click listeners for bottom sheet actions
         bottomSheetBinding.goToAlbum.setOnClickListener(v -> {
-            // Handle go to user click
-            moreInfoBottomSheet.dismiss();
+            if (ApplicationClass.currentTrack != null && ApplicationClass.currentTrack.user != null) {
+                com.example.muzic.model.User modelUser = ApplicationClass.currentTrack.user;
+                Intent intent = new Intent(this, ArtistProfileActivity.class);
+                intent.putExtra("data", new Gson().toJson(modelUser));
+                startActivity(intent);
+                moreInfoBottomSheet.dismiss();
+            } else {
+                Toast.makeText(this, "Artist information not available", Toast.LENGTH_SHORT).show();
+            }
         });
 
         // Add to library
