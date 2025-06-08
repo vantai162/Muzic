@@ -121,6 +121,15 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
         player.addListener(this);
         handler = new Handler(Looper.getMainLooper());
 
+        // Initialize shuffle and repeat buttons with default state
+        int defaultColor = getResources().getColor(isDarkMode() ? R.color.textSecDark : R.color.textSec, getTheme());
+        binding.shuffleIcon.setImageTintList(ColorStateList.valueOf(defaultColor));
+        binding.repeatIcon.setImageTintList(ColorStateList.valueOf(defaultColor));
+        isShuffleEnabled = false;
+        repeatMode = Player.REPEAT_MODE_OFF;
+        player.setShuffleModeEnabled(false);
+        player.setRepeatMode(Player.REPEAT_MODE_OFF);
+
         // Setup more info bottom sheet
         setupMoreInfoBottomSheet();
 
@@ -188,28 +197,33 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
         binding.shuffleIcon.setOnClickListener(v -> {
             isShuffleEnabled = !isShuffleEnabled;
             player.setShuffleModeEnabled(isShuffleEnabled);
+            ThemeManager themeManager = new ThemeManager(this);
             binding.shuffleIcon.setImageTintList(ColorStateList.valueOf(
-                    isShuffleEnabled ? getColor(R.color.textMain) : getColor(R.color.textSec)
+                isShuffleEnabled ? themeManager.getPrimaryColor() : 
+                getResources().getColor(isDarkMode() ? R.color.textSecDark : R.color.textSec, getTheme())
             ));
         });
 
         // Repeat button
         binding.repeatIcon.setOnClickListener(v -> {
+            ThemeManager themeManager = new ThemeManager(this);
             switch (repeatMode) {
                 case Player.REPEAT_MODE_OFF:
                     repeatMode = Player.REPEAT_MODE_ONE;
                     binding.repeatIcon.setScaleX(-1);
-                    binding.repeatIcon.setImageTintList(ColorStateList.valueOf(getColor(R.color.textMain)));
+                    binding.repeatIcon.setImageTintList(ColorStateList.valueOf(themeManager.getPrimaryColor()));
                     break;
                 case Player.REPEAT_MODE_ONE:
                     repeatMode = Player.REPEAT_MODE_ALL;
                     binding.repeatIcon.setScaleX(1);
-                    binding.repeatIcon.setImageTintList(ColorStateList.valueOf(getColor(R.color.textMain)));
+                    binding.repeatIcon.setImageTintList(ColorStateList.valueOf(themeManager.getPrimaryColor()));
                     break;
                 default:
                     repeatMode = Player.REPEAT_MODE_OFF;
                     binding.repeatIcon.setScaleX(1);
-                    binding.repeatIcon.setImageTintList(ColorStateList.valueOf(getColor(R.color.textSec)));
+                    binding.repeatIcon.setImageTintList(ColorStateList.valueOf(
+                        getResources().getColor(isDarkMode() ? R.color.textSecDark : R.color.textSec, getTheme())
+                    ));
                     break;
             }
             player.setRepeatMode(repeatMode);
@@ -819,14 +833,20 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
         binding.totalDuration.setTextColor(secondaryTextColor);
         binding.trackQuality.setTextColor(secondaryTextColor);
 
-        // Update icons tint with theme color
+        // Update icons tint based on their states
         ColorStateList iconTint = themeManager.getColorStateList();
-        binding.shuffleIcon.setImageTintList(iconTint);
-        binding.repeatIcon.setImageTintList(iconTint);
         binding.prevIcon.setImageTintList(iconTint);
         binding.nextIcon.setImageTintList(iconTint);
         binding.shareIcon.setImageTintList(iconTint);
         binding.moreIcon.setImageTintList(iconTint);
+
+        // Update shuffle and repeat icons based on their states
+        binding.shuffleIcon.setImageTintList(ColorStateList.valueOf(
+            isShuffleEnabled ? themeManager.getPrimaryColor() : secondaryTextColor
+        ));
+        binding.repeatIcon.setImageTintList(ColorStateList.valueOf(
+            repeatMode != Player.REPEAT_MODE_OFF ? themeManager.getPrimaryColor() : secondaryTextColor
+        ));
 
         // Update seekbar colors
         binding.seekbar.setProgressTintList(iconTint);

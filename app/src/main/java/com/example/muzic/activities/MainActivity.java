@@ -97,6 +97,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onPlaybackStateChanged(int state) {
                 updatePlayControls();
+                // Check if playback has ended
+                if (state == Player.STATE_ENDED) {
+                    playNextTrack();
+                }
             }
 
             @Override
