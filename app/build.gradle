@@ -96,4 +96,6 @@ dependencies {
 
     // Add Glide Transformations
     implementation 'jp.wasabeef:glide-transformations:4.3.0'
+
+    implementation 'com.facebook.shimmer:shimmer:0.5.0'
 }
