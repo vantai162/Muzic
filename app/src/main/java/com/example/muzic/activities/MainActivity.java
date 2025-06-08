@@ -372,7 +372,6 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
 
-        // If no track is playing, update play bar with theme colors
         if (ApplicationClass.currentTrack == null) {
             // Set background color for cover image
             binding.playBarCoverImage.setBackgroundColor(themeColor);
@@ -382,12 +381,16 @@ public class MainActivity extends AppCompatActivity {
             // Set text colors
             binding.playBarMusicTitle.setTextColor(themeColor);
             binding.playBarMusicDesc.setTextColor(themeColor);
-            
-            // Update control buttons
-            binding.playBarPlayPauseIcon.setImageTintList(ColorStateList.valueOf(themeColor));
-            binding.playBarPrevIcon.setImageTintList(ColorStateList.valueOf(themeColor));
-            binding.playBarNextIcon.setImageTintList(ColorStateList.valueOf(themeColor));
+        } else {
+            // When track is playing, update text colors
+            binding.playBarMusicTitle.setTextColor(themeColor);
+            binding.playBarMusicDesc.setTextColor(themeColor);
         }
+        
+        // Always update control buttons color
+        binding.playBarPlayPauseIcon.setImageTintList(ColorStateList.valueOf(themeColor));
+        binding.playBarPrevIcon.setImageTintList(ColorStateList.valueOf(themeColor));
+        binding.playBarNextIcon.setImageTintList(ColorStateList.valueOf(themeColor));
     }
 
     //khuc menu la cai ham nay ne
