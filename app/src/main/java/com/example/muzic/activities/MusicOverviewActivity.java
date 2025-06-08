@@ -516,22 +516,69 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
 
         // Setup click listeners for bottom sheet actions
         bottomSheetBinding.goToAlbum.setOnClickListener(v -> {
-            if (ApplicationClass.currentTrack != null && ApplicationClass.currentTrack.user != null) {
-                com.example.muzic.model.User modelUser = ApplicationClass.currentTrack.user;
-                // Convert model user to records user
-                com.example.muzic.records.User recordsUser = new com.example.muzic.records.User(
-                    0, "", "", new com.example.muzic.records.CoverPhoto("", ""),
-                    0, 0, false,
-                    modelUser.name, modelUser.id,
-                    false, "", modelUser.name,
-                    0, new com.example.muzic.records.ProfilePicture(
-                        modelUser.profile_picture != null ? modelUser.profile_picture._150x150 : "",
-                        modelUser.profile_picture != null ? modelUser.profile_picture._480x480 : "",
-                        modelUser.profile_picture != null ? modelUser.profile_picture._1000x1000 : ""
+            if (ApplicationClass.currentTrack != null) {
+                TrackData curTrack = ApplicationClass.currentTrack;
+                // Fallback profile picture nếu bị null
+                String fallbackPic = curTrack.artwork != null ? curTrack.artwork._480x480 : "";
+                ProfilePicture profilePicture;
+                if (curTrack.user.profile_picture != null) {
+                    profilePicture = new ProfilePicture(
+                        curTrack.user.profile_picture._150x150 != null ? curTrack.user.profile_picture._150x150 : fallbackPic,
+                        curTrack.user.profile_picture._480x480 != null ? curTrack.user.profile_picture._480x480 : fallbackPic,
+                        curTrack.user.profile_picture._1000x1000 != null ? curTrack.user.profile_picture._1000x1000 : fallbackPic
+                    );
+                } else {
+                    profilePicture = new ProfilePicture(fallbackPic, fallbackPic, fallbackPic);
+                }
+                // Tạo records.Track từ currentTrack
+                Track recordsTrack = new Track(
+                    curTrack.artwork != null ? new Artwork(curTrack.artwork._150x150, curTrack.artwork._480x480, curTrack.artwork._1000x1000) : null,
+                    curTrack.description,
+                    curTrack.genre,
+                    curTrack.id,
+                    curTrack.track_cid,
+                    curTrack.mood,
+                    curTrack.release_date,
+                    curTrack.repost_count,
+                    curTrack.favorite_count,
+                    curTrack.tags,
+                    curTrack.title,
+                    new User(
+                        curTrack.user.album_count,
+                        curTrack.user.artist_pick_track_id,
+                        curTrack.user.bio,
+                        new CoverPhoto(
+                            curTrack.user.cover_photo != null ? curTrack.user.cover_photo._640x : "",
+                            curTrack.user.cover_photo != null ? curTrack.user.cover_photo._2000x : ""
+                        ),
+                        curTrack.user.followee_count,
+                        curTrack.user.follower_count,
+                        curTrack.user.does_follow_current_user,
+                        curTrack.user.handle,
+                        curTrack.user.id,
+                        curTrack.user.is_verified,
+                        curTrack.user.location,
+                        curTrack.user.name,
+                        curTrack.user.playlist_count,
+                        profilePicture,
+                        curTrack.user.repost_count,
+                        curTrack.user.track_count,
+                        curTrack.user.is_deactivated,
+                        curTrack.user.is_available,
+                        curTrack.user.erc_wallet,
+                        curTrack.user.spl_wallet,
+                        curTrack.user.supporter_count,
+                        curTrack.user.supporting_count,
+                        curTrack.user.total_audio_balance
                     ),
-                    0, 0, false, true,
-                    "", "", 0, 0, 0
+                    Integer.parseInt(String.valueOf(curTrack.duration)),
+                    curTrack.downloadable,
+                    curTrack.play_count,
+                    curTrack.permalink,
+                    curTrack.is_streamable
                 );
+                // Lấy artist từ records.Track
+                User recordsUser = recordsTrack.user();
                 Intent intent = new Intent(this, ArtistProfileActivity.class);
                 intent.putExtra("data", new Gson().toJson(recordsUser));
                 startActivity(intent);
