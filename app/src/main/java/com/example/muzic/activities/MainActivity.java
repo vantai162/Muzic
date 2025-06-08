@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.OptIn;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.media3.common.MediaItem;
+import androidx.media3.common.Player;
 import androidx.media3.common.util.UnstableApi;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -60,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
     private SlidingRootNav slidingRootNavBuilder;
     private TrackData currentTrack;
     private AudiusRepository audiusRepository;
+    private Player.Listener playerListener;
 
     @OptIn(markerClass = UnstableApi.class)
     @Override
@@ -81,6 +83,20 @@ public class MainActivity extends AppCompatActivity {
             player = new ExoPlayer.Builder(this).build();
             ApplicationClass.player = player;
         }
+
+        // Add player listener
+        playerListener = new Player.Listener() {
+            @Override
+            public void onPlaybackStateChanged(int state) {
+                updatePlayControls();
+            }
+
+            @Override
+            public void onIsPlayingChanged(boolean isPlaying) {
+                updatePlayControls();
+            }
+        };
+        player.addListener(playerListener);
 
         // Initialize AudiusRepository
         audiusRepository = new AudiusRepository();
@@ -292,6 +308,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        // Remove listeners before clearing player reference
+        if (player != null) {
+            player.removeListener(playerListener);
+        }
         // Don't release the player since it's shared
         player = null;
     }
@@ -366,11 +386,13 @@ public class MainActivity extends AppCompatActivity {
 
     private void updatePlayControls() {
         if (player != null) {
-            binding.playBarPlayPauseIcon.setImageResource(
-                player.isPlaying() ? 
-                R.drawable.baseline_pause_24 : 
-                R.drawable.play_arrow_24px
-            );
+            runOnUiThread(() -> {
+                binding.playBarPlayPauseIcon.setImageResource(
+                    player.isPlaying() ? 
+                    R.drawable.baseline_pause_24 : 
+                    R.drawable.play_arrow_24px
+                );
+            });
         }
     }
 
@@ -586,3 +608,4 @@ public class MainActivity extends AppCompatActivity {
         void onTrackDataFetched(TrackData track);
     }
 }
+

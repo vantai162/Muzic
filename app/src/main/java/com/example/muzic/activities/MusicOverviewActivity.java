@@ -163,6 +163,27 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
         // More info button
         binding.moreIcon.setOnClickListener(v -> showMoreInfoBottomSheet());
 
+        // Share button
+        binding.shareIcon.setOnClickListener(v -> {
+            String songUrl = ApplicationClass.SONG_URL;
+            Log.d("ShareDebug", "Song URL: " + songUrl);
+
+            if (songUrl != null && !songUrl.isEmpty()) {
+                // Convert streaming URL to share URL
+                // From: https://discoveryprovider2.audius.co/v1/tracks/ID/stream
+                // To: https://audius.co/tracks/ID
+                String trackId = songUrl.split("/tracks/")[1].replace("/stream", "");
+                String shareUrl = "https://audius.co/tracks/" + trackId;
+
+                Intent shareIntent = new Intent(Intent.ACTION_SEND);
+                shareIntent.setType("text/plain");
+                shareIntent.putExtra(Intent.EXTRA_TEXT, shareUrl);
+                startActivity(Intent.createChooser(shareIntent, "Share track via"));
+            } else {
+                Toast.makeText(this, "Cannot share this track", Toast.LENGTH_SHORT).show();
+            }
+        });
+
         // Shuffle button
         binding.shuffleIcon.setOnClickListener(v -> {
             isShuffleEnabled = !isShuffleEnabled;
@@ -415,6 +436,7 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
         updateBackgroundBlur();
     }
 
+    @OptIn(markerClass = UnstableApi.class)
     private void setupMoreInfoBottomSheet() {
         moreInfoBottomSheet = new BottomSheetDialog(this);
         MusicOverviewMoreInfoBottomSheetBinding bottomSheetBinding = MusicOverviewMoreInfoBottomSheetBinding.inflate(getLayoutInflater());
@@ -462,7 +484,7 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
                     // Get existing library data
                     SavedLibrariesAudius savedLibraries = sharedPreferenceManager.getSavedLibrariesData();
                     SavedLibrariesAudius.Library existingLibrary = null;
-                    
+
                     if (savedLibraries != null && savedLibraries.lists() != null) {
                         for (SavedLibrariesAudius.Library lib : savedLibraries.lists()) {
                             if (lib.id().equals(library.id())) {
@@ -512,13 +534,13 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
                                 break;
                             }
                         }
-                        
+
                         if (trackExists) {
                             Snackbar.make(binding.getRoot(), "Track already exists in this library", Snackbar.LENGTH_SHORT).show();
                             selectLibraryDialog.dismiss();
                             return;
                         }
-                        
+
                         updatedTracks.addAll(existingLibrary.tracks());
                     }
                     updatedTracks.add(newTrack);
@@ -549,7 +571,7 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
                     savedLibraries.lists().removeIf(lib -> lib.id().equals(library.id()));
                     savedLibraries.lists().add(updatedLibrary);
                     sharedPreferenceManager.setSavedLibrariesData(savedLibraries);
-                    
+
                     // Show success message
                     Snackbar.make(binding.getRoot(), "Added to " + library.playlistName(), Snackbar.LENGTH_SHORT).show();
                     selectLibraryDialog.dismiss();
@@ -668,7 +690,7 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
 
         SharedPreferenceManager.getInstance(this).addPlaylistToSavedPlaylists(newPlaylist);
         dialog.dismiss();
-        
+
         // Show select library dialog again
         setupMoreInfoBottomSheet();
         showMoreInfoBottomSheet();
