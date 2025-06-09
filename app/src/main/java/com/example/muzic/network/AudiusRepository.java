@@ -152,5 +152,10 @@ public class AudiusRepository {
             }
         });
     }
+
+    public void getUserTracks(String userId, Callback<AudiusTrackResponse> callback) {
+        Call<AudiusTrackResponse> call = apiService.getUserTracks(userId);
+        call.enqueue(callback);
+    }
 }
 

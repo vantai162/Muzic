@@ -108,16 +108,14 @@ public class ArtistProfileActivity extends AppCompatActivity {
             }
 
             // Then fetch fresh data from API using AudiusRepository
-            Log.d(TAG, "Fetching fresh artist data for handle: " + artist.handle());
-            audiusRepository.getTrendingTracks(50, new retrofit2.Callback<AudiusTrackResponse>() {
+            Log.d(TAG, "Fetching all tracks for artist id: " + artist.id());
+            audiusRepository.getUserTracks(artist.id(), new retrofit2.Callback<AudiusTrackResponse>() {
                 @Override
                 public void onResponse(@NonNull retrofit2.Call<AudiusTrackResponse> call, 
                                      @NonNull retrofit2.Response<AudiusTrackResponse> response) {
                     if (response.isSuccessful() && response.body() != null) {
-                        List<Track> allTracks = response.body().data();
-                        List<Track> artistTracks = filterArtistTracks(allTracks);
+                        List<Track> artistTracks = response.body().data();
                         Log.d(TAG, "Fetched " + artistTracks.size() + " tracks for artist");
-                        
                         if (artistTracks.isEmpty()) {
                             showError("No songs found for this artist");
                         } else {

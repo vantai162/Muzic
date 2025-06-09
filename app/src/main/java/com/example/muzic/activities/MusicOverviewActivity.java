@@ -42,6 +42,7 @@ import com.example.muzic.records.Playlist;
 import com.example.muzic.records.ProfilePicture;
 import com.example.muzic.records.Track;
 import com.example.muzic.records.User;
+import com.example.muzic.records.UserResponse;
 import com.example.muzic.utils.AudioQualityManager;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
@@ -64,6 +65,8 @@ import com.squareup.picasso.Picasso;
 import com.example.muzic.utils.BlurUtils;
 import com.example.muzic.utils.SettingsSharedPrefManager;
 import com.example.muzic.utils.ThemeManager;
+import com.example.muzic.network.AudiusApiService;
+import com.example.muzic.records.AudiusUserResponse;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -74,6 +77,12 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+import java.io.IOException;
 
 @UnstableApi
 public class MusicOverviewActivity extends AppCompatActivity implements Player.Listener {
@@ -518,71 +527,52 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
         bottomSheetBinding.goToAlbum.setOnClickListener(v -> {
             if (ApplicationClass.currentTrack != null) {
                 TrackData curTrack = ApplicationClass.currentTrack;
-                // Fallback profile picture nếu bị null
-                String fallbackPic = curTrack.artwork != null ? curTrack.artwork._480x480 : "";
-                ProfilePicture profilePicture;
-                if (curTrack.user.profile_picture != null) {
-                    profilePicture = new ProfilePicture(
-                        curTrack.user.profile_picture._150x150 != null ? curTrack.user.profile_picture._150x150 : fallbackPic,
-                        curTrack.user.profile_picture._480x480 != null ? curTrack.user.profile_picture._480x480 : fallbackPic,
-                        curTrack.user.profile_picture._1000x1000 != null ? curTrack.user.profile_picture._1000x1000 : fallbackPic
-                    );
-                } else {
-                    profilePicture = new ProfilePicture(fallbackPic, fallbackPic, fallbackPic);
+                // Validate user id
+                Log.d("MusicOverview", "curTrack.user: " + (curTrack.user != null ? new Gson().toJson(curTrack.user) : "null"));
+                Log.d("MusicOverview", "curTrack.user.id: " + (curTrack.user != null ? curTrack.user.id : "null"));
+                if (curTrack.user == null || curTrack.user.id == null || curTrack.user.id.isEmpty()) {
+                    Log.e("MusicOverview", "Invalid artist id");
+                    Toast.makeText(MusicOverviewActivity.this, "Artist id not available", Toast.LENGTH_SHORT).show();
+                    return;
                 }
-                // Tạo records.Track từ currentTrack
-                Track recordsTrack = new Track(
-                    curTrack.artwork != null ? new Artwork(curTrack.artwork._150x150, curTrack.artwork._480x480, curTrack.artwork._1000x1000) : null,
-                    curTrack.description,
-                    curTrack.genre,
-                    curTrack.id,
-                    curTrack.track_cid,
-                    curTrack.mood,
-                    curTrack.release_date,
-                    curTrack.repost_count,
-                    curTrack.favorite_count,
-                    curTrack.tags,
-                    curTrack.title,
-                    new User(
-                        curTrack.user.album_count,
-                        curTrack.user.artist_pick_track_id,
-                        curTrack.user.bio,
-                        new CoverPhoto(
-                            curTrack.user.cover_photo != null ? curTrack.user.cover_photo._640x : "",
-                            curTrack.user.cover_photo != null ? curTrack.user.cover_photo._2000x : ""
-                        ),
-                        curTrack.user.followee_count,
-                        curTrack.user.follower_count,
-                        curTrack.user.does_follow_current_user,
-                        curTrack.user.handle,
-                        curTrack.user.id,
-                        curTrack.user.is_verified,
-                        curTrack.user.location,
-                        curTrack.user.name,
-                        curTrack.user.playlist_count,
-                        profilePicture,
-                        curTrack.user.repost_count,
-                        curTrack.user.track_count,
-                        curTrack.user.is_deactivated,
-                        curTrack.user.is_available,
-                        curTrack.user.erc_wallet,
-                        curTrack.user.spl_wallet,
-                        curTrack.user.supporter_count,
-                        curTrack.user.supporting_count,
-                        curTrack.user.total_audio_balance
-                    ),
-                    Integer.parseInt(String.valueOf(curTrack.duration)),
-                    curTrack.downloadable,
-                    curTrack.play_count,
-                    curTrack.permalink,
-                    curTrack.is_streamable
-                );
-                // Lấy artist từ records.Track
-                User recordsUser = recordsTrack.user();
-                Intent intent = new Intent(this, ArtistProfileActivity.class);
-                intent.putExtra("data", new Gson().toJson(recordsUser));
-                startActivity(intent);
-                moreInfoBottomSheet.dismiss();
+                Log.d("MusicOverview", "Fetching artist data for id: " + curTrack.user.id);
+                // Fetch user data directly from API by id
+                AudiusApiService apiService = AudiusApiClient.getInstance();
+                apiService.getUserById(curTrack.user.id).enqueue(new Callback<UserResponse>() {
+                    @Override
+                    public void onResponse(@NonNull Call<UserResponse> call, @NonNull Response<UserResponse> response) {
+                        try {
+                            String raw = response.errorBody() != null ? response.errorBody().string() : new Gson().toJson(response.body());
+                            Log.d("MusicOverview", "Raw user API response: " + raw);
+                        } catch (Exception e) {
+                            Log.e("MusicOverview", "Error reading raw response", e);
+                        }
+                        if (response.isSuccessful() && response.body() != null && response.body().data() != null) {
+                            User user = response.body().data();
+                            Log.d("MusicOverview", "Fetched user: " + new Gson().toJson(user));
+                            Log.d("MusicOverview", "User id: " + user.id());
+                            Intent intent = new Intent(MusicOverviewActivity.this, ArtistProfileActivity.class);
+                            intent.putExtra("data", new Gson().toJson(user));
+                            startActivity(intent);
+                            moreInfoBottomSheet.dismiss();
+                        } else {
+                            Log.e("MusicOverview", "User API failed. Code: " + response.code());
+                            if (response.errorBody() != null) {
+                                try {
+                                    Log.e("MusicOverview", "Error body: " + response.errorBody().string());
+                                } catch (IOException e) {
+                                    Log.e("MusicOverview", "Error reading error body", e);
+                                }
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<UserResponse> call, @NonNull Throwable t) {
+                        Log.e("MusicOverview", "API call failed", t);
+                        Toast.makeText(MusicOverviewActivity.this, "Failed to load artist information: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
             } else {
                 Toast.makeText(this, "Artist information not available", Toast.LENGTH_SHORT).show();
             }

@@ -3,6 +3,8 @@ package com.example.muzic.network;
 import com.example.muzic.records.AudiusTrackResponse;
 import com.example.muzic.records.AudiusUserResponse;
 import com.example.muzic.records.PlaylistResponse;
+import com.example.muzic.records.User;
+import com.example.muzic.records.UserResponse;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -14,6 +16,9 @@ public interface AudiusApiService {
 
     @GET("/v1/users/{handle}")
     Call<AudiusUserResponse> getUserByHandle(@Path("handle") String handle);
+
+    @GET("/v1/users/{id}")
+    Call<UserResponse> getUserById(@Path("id") String id);
 
     @GET("/v1/tracks/trending")
     Call<AudiusTrackResponse> getTrendingTracks(@Query("limit") int limit);
@@ -34,4 +39,7 @@ public interface AudiusApiService {
 
     @GET("v1/playlists/{playlist_id}/tracks")
     Call<AudiusTrackResponse> getPlaylistTracks(@Path("playlist_id") String playlistId);
+
+    @GET("/v1/users/{id}/tracks")
+    Call<AudiusTrackResponse> getUserTracks(@Path("id") String id);
 }
