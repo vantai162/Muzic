@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -37,6 +38,7 @@ import com.example.muzic.records.Playlist;
 import com.example.muzic.records.PlaylistResponse;
 import com.example.muzic.records.Track;
 import com.example.muzic.records.User;
+import com.example.muzic.services.MusicService;
 import com.example.muzic.utils.SettingsSharedPrefManager;
 import com.example.muzic.utils.SharedPreferenceManager;
 import com.example.muzic.utils.ThemeManager;
@@ -253,6 +255,14 @@ public class MainActivity extends AppCompatActivity {
         ApplicationClass app = (ApplicationClass) getApplication();
         app.updatePlaylist(playlist, trendingTracksAdapter.getCurrentTrackIndex());
         app.playCurrentTrack();
+
+        // Start MusicService
+        Intent serviceIntent = new Intent(this, MusicService.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(serviceIntent);
+        } else {
+            startService(serviceIntent);
+        }
     }
 
     private void togglePlayPause() {
