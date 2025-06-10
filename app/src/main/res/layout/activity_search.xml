@@ -95,12 +95,6 @@
                 android:text="Songs"
                 android:checkable="true" />
 
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chip_albums"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Albums"
-                android:checkable="true" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip_playlists"
@@ -113,7 +107,7 @@
                 android:id="@+id/chip_artists"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Artists"
+                android:text="Users"
                 android:checkable="true" />
 
         </com.google.android.material.chip.ChipGroup>

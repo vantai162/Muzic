@@ -74,6 +74,9 @@
         <activity 
             android:name=".activities.ArtistProfileActivity"
             android:exported="false" />
+        <activity
+            android:name=".activities.SearchActivity"
+            android:exported="false" />
 
     </application>
 
