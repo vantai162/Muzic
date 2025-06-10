@@ -42,4 +42,14 @@ public interface AudiusApiService {
 
     @GET("/v1/users/{id}/tracks")
     Call<AudiusTrackResponse> getUserTracks(@Path("id") String id);
+
+    // Search endpoints
+    @GET("/v1/tracks/search")
+    Call<AudiusTrackResponse> searchTracks(@Query("query") String query);
+
+    @GET("/v1/playlists/search")
+    Call<PlaylistResponse> searchPlaylists(@Query("query") String query);
+
+    @GET("/v1/users/search")
+    Call<AudiusUserResponse> searchUsers(@Query("query") String query);
 }

@@ -125,6 +125,13 @@ public class MainActivity extends AppCompatActivity {
                 .withDragDistance(250)
                 .inject();
         binding.profileIcon.setOnClickListener(view -> slidingRootNavBuilder.openMenu(true));
+        
+        // Add search button click handler
+        binding.searchIcon.setOnClickListener(view -> {
+            Intent intent = new Intent(MainActivity.this, SearchActivity.class);
+            startActivity(intent);
+        });
+
         onDrawerItemsClicked();
 
         // Setup RecyclerViews
