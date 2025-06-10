@@ -8,6 +8,7 @@
 
     <!-- Media playback permissions -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.MEDIA_CONTENT_CONTROL"
         tools:ignore="ProtectedPermissions" />
@@ -74,6 +75,23 @@
         <activity 
             android:name=".activities.ArtistProfileActivity"
             android:exported="false" />
+
+        <service
+            android:name=".services.MusicService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback" />
+
+        <receiver
+            android:name=".services.NotificationReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="next" />
+                <action android:name="prev" />
+                <action android:name="play" />
+            </intent-filter>
+        </receiver>
 
     </application>
 
