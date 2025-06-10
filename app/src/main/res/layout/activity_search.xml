@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     tools:context=".activities.SearchActivity"
-    android:background="@color/background">
+    android:background="?android:attr/colorBackground">
 
     <LinearLayout
         android:id="@+id/toolbar"
@@ -25,7 +25,8 @@
             android:layout_height="@dimen/_25sdp"
             android:src="@drawable/round_arrow_back_24"
             android:onClick="backPress"
-            android:contentDescription="back" />
+            android:contentDescription="back"
+            app:tint="?android:attr/textColorPrimary" />
 
         <EditText
             android:id="@+id/edittext"
@@ -35,6 +36,8 @@
             android:importantForAutofill="no"
             android:background="@android:color/transparent"
             android:hint="@android:string/search_go"
+            android:textColorHint="?android:attr/textColorSecondary"
+            android:textColor="?android:attr/textColorPrimary"
             android:inputType="text"
             android:paddingVertical="@dimen/_4sdp"
             android:paddingHorizontal="@dimen/_12sdp"
@@ -48,7 +51,8 @@
             android:src="@drawable/baseline_clear_24"
             android:contentDescription="clear"
             android:visibility="gone"
-            android:padding="4dp" />
+            android:padding="4dp"
+            app:tint="?android:attr/textColorPrimary" />
 
     </LinearLayout>
 
@@ -86,6 +90,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="All"
+                android:textColor="?android:attr/textColorPrimary"
                 android:checkable="true" />
 
             <com.google.android.material.chip.Chip
@@ -93,14 +98,15 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Songs"
+                android:textColor="?android:attr/textColorPrimary"
                 android:checkable="true" />
-
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip_playlists"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Playlists"
+                android:textColor="?android:attr/textColorPrimary"
                 android:checkable="true" />
 
             <com.google.android.material.chip.Chip
@@ -108,6 +114,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Users"
+                android:textColor="?android:attr/textColorPrimary"
                 android:checkable="true" />
 
         </com.google.android.material.chip.ChipGroup>
@@ -139,6 +146,5 @@
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>
