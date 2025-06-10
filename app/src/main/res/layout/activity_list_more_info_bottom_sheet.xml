@@ -30,7 +30,7 @@
                 android:id="@+id/album_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@color/white"
+                android:textColor="?android:attr/textColorPrimary"
                 android:textSize="@dimen/_14ssp"
                 android:textStyle="bold"
                 android:maxLines="1"
@@ -40,7 +40,7 @@
                 android:id="@+id/album_sub_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@color/white"
+                android:textColor="?android:attr/textColorSecondary"
                 android:textSize="@dimen/_12ssp"
                 android:maxLines="1"
                 android:ellipsize="end" />
@@ -59,7 +59,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Artists"
-        android:textColor="@color/white"
+        android:textColor="?android:attr/textColorPrimary"
         android:textSize="@dimen/_14ssp"
         android:textStyle="bold"
         android:layout_marginBottom="@dimen/_8sdp" />

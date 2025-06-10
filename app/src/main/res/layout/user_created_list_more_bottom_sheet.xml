@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/_16sdp"
         android:text="More Options"
-        android:textColor="@color/white"
+        android:textColor="?android:attr/textColorPrimary"
         android:textSize="@dimen/_16ssp"
         android:textStyle="bold" />
 
@@ -37,7 +37,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/_8sdp"
             android:text="Delete Playlist"
-            android:textColor="@color/white"
+            android:textColor="?android:attr/textColorPrimary"
             android:textSize="@dimen/_14ssp" />
 
     </LinearLayout>
