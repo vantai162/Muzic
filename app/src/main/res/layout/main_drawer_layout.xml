@@ -71,6 +71,14 @@
         app:srcPadding="@dimen/_4sdp" />
 
     <com.example.muzic.utils.customview.BottomSheetItemView
+        android:id="@+id/login"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:title="Log In"
+        android:src="@drawable/baseline_person_24"
+        app:srcPadding="@dimen/_4sdp" />
+
+    <com.example.muzic.utils.customview.BottomSheetItemView
         android:id="@+id/settings"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

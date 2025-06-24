@@ -360,10 +360,10 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
 
-                    Log.d("MoodPlaylist", "Mood playlists size: " + moodPlaylists.size());
-                    for (MoodPlaylist playlist : moodPlaylists) {
-                        Log.d("MoodPlaylist", "Title: " + playlist.getMood());
-                    }
+                    //Log.d("MoodPlaylist", "Mood playlists size: " + moodPlaylists.size());
+                    //for (MoodPlaylist playlist : moodPlaylists) {
+                        //Log.d("MoodPlaylist", "Title: " + playlist.getMood());
+                    //}
                     // Cập nhật adapter
                     moodPlaylistAdapter.setMoodPlaylists(moodPlaylists);
                 }
@@ -495,6 +495,11 @@ public class MainActivity extends AppCompatActivity {
 
         slidingRootNavBuilder.getLayout().findViewById(R.id.library).setOnClickListener(view -> {
             startActivity(new Intent(MainActivity.this, SavedLibrariesActivity.class));
+            slidingRootNavBuilder.closeMenu();
+        });
+
+        slidingRootNavBuilder.getLayout().findViewById(R.id.login).setOnClickListener(view -> {
+            startActivity(new Intent(MainActivity.this, LoginActivity.class));
             slidingRootNavBuilder.closeMenu();
         });
 
