@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "742919845019",
+    "project_id": "muzic-1302",
+    "storage_bucket": "muzic-1302.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:742919845019:android:293f287ae585501071023e",
+        "android_client_info": {
+          "package_name": "com.example.muzic"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD2dfxCIeJ-gEX6aw3hoKjV3fY0ojL_6iU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
