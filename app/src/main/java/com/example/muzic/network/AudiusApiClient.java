@@ -13,14 +13,14 @@ import java.util.concurrent.TimeUnit;
 
 public class AudiusApiClient {
 
-    private static final String BASE_URL = "https://discoveryprovider.audius.co/";
+    private static final String BASE_URL = "https://discoveryprovider3.audius.co/";
     private static final String APP_NAME = "MUZIC"; // ← Đặt tên app của bạn ở đây
     private static AudiusApiService apiService;
 
     // Timeout constants
-    private static final int CONNECT_TIMEOUT = 15;  // seconds
-    private static final int READ_TIMEOUT = 15;     // seconds
-    private static final int WRITE_TIMEOUT = 15;    // seconds
+    private static final int CONNECT_TIMEOUT = 150;  // seconds
+    private static final int READ_TIMEOUT = 150;     // seconds
+    private static final int WRITE_TIMEOUT = 150;    // seconds
     private static final int MAX_RETRIES = 3;
 
     public static AudiusApiService getInstance() {

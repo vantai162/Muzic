@@ -1,23 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-
     <!-- Internet permissions -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-
-    <!-- Media playback permissions -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" /> <!-- Media playback permissions -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.MEDIA_CONTENT_CONTROL"
-        tools:ignore="ProtectedPermissions" />
-
-    <!-- Storage permissions -->
+    <uses-permission
+        android:name="android.permission.MEDIA_CONTENT_CONTROL"
+        tools:ignore="ProtectedPermissions" /> <!-- Storage permissions -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-
-    <!-- Notification permissions -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" /> <!-- Notification permissions -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
@@ -32,7 +26,9 @@
         android:theme="@style/Theme.SaavnMp3"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
-
+        <activity
+            android:name=".activities.LoginActivity"
+            android:exported="false" />
         <!-- Main Activity -->
         <activity
             android:name=".activities.MainActivity"
@@ -41,42 +37,41 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.intent.action.MUSIC_PLAYER" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
                 <category android:name="android.intent.category.APP_MUSIC" />
             </intent-filter>
-        </activity>
-
-        <!-- List Activity -->
+        </activity> <!-- List Activity -->
         <activity
             android:name=".activities.ListActivity"
             android:exported="false"
-            android:launchMode="singleTop" />
-
-        <!-- Music Player Activity -->
+            android:launchMode="singleTop" /> <!-- Music Player Activity -->
         <activity
             android:name=".activities.MusicOverviewActivity"
             android:configChanges="uiMode|orientation|screenSize|screenLayout|smallestScreenSize"
             android:exported="false"
             android:launchMode="singleTop"
-            android:theme="@style/Theme.SaavnMp3.NoAnimation">
-        </activity>
-
+            android:theme="@style/Theme.SaavnMp3.NoAnimation" />
         <activity
             android:name=".activities.AboutActivity"
             android:exported="false" />
         <activity
             android:name=".activities.SettingsActivity"
             android:exported="false" />
-
         <activity
             android:name=".activities.SavedLibrariesActivity"
             android:exported="false" />
-
-        <activity 
+        <activity
             android:name=".activities.ArtistProfileActivity"
             android:exported="false" />
         <activity
             android:name=".activities.SearchActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.LoginActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.RegisterActivity"
             android:exported="false" />
 
         <service
@@ -95,7 +90,6 @@
                 <action android:name="play" />
             </intent-filter>
         </receiver>
-
     </application>
 
 </manifest>

@@ -66,4 +66,11 @@
 
     <color name="shimmer_background">#1F1F1F</color>
     <color name="shimmer_placeholder">#2A2A2A</color>
+    <color name="colorAccent">@color/spotify_green</color>
+
+    <!-- Register Screen Colors -->
+    <color name="register_background">#212121</color>
+    <color name="register_accent">#FF9800</color>
+    <color name="register_text_label">#BDBDBD</color>
+    <color name="register_hint_text">#757575</color>
 </resources>
