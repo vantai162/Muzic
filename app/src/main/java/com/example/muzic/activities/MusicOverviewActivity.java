@@ -599,99 +599,100 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
                 librariesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
                 SelectLibraryAdapter adapter = new SelectLibraryAdapter(savedPlaylists, library -> {
                     // Get existing library data
-                    SavedLibrariesAudius savedLibraries = sharedPreferenceManager.getSavedLibrariesData();
-                    SavedLibrariesAudius.Library existingLibrary = null;
+                    sharedPreferenceManager.getSavedLibrariesData().addOnSuccessListener(savedLibraries -> {
+                        SavedLibrariesAudius.Library existingLibrary = null;
 
-                    if (savedLibraries != null && savedLibraries.lists() != null) {
-                        for (SavedLibrariesAudius.Library lib : savedLibraries.lists()) {
-                            if (lib.id().equals(library.id())) {
-                                existingLibrary = lib;
-                                break;
-                            }
-                        }
-                    }
-
-                    // Create new track to add
-                    Track newTrack = new Track(
-                        currentTrack.artwork != null ? new Artwork(currentTrack.artwork._150x150, currentTrack.artwork._480x480, currentTrack.artwork._1000x1000) : null,
-                        currentTrack.description,
-                        currentTrack.genre,
-                        currentTrack.id,
-                        currentTrack.track_cid,
-                        currentTrack.mood,
-                        currentTrack.release_date,
-                        currentTrack.repost_count,
-                        currentTrack.favorite_count,
-                        currentTrack.tags,
-                        currentTrack.title,
-                        new User(
-                            0, "", "", new CoverPhoto("", ""),
-                            0, 0, false,
-                            currentTrack.user.name, currentTrack.user.id,
-                            false, "", currentTrack.user.name,
-                            0, new ProfilePicture("", "", ""),
-                            0, 0, false, true,
-                            "", "", 0, 0, 0
-                        ),
-                        Integer.parseInt(String.valueOf(currentTrack.duration)),
-                        currentTrack.downloadable,
-                        currentTrack.play_count,
-                        currentTrack.permalink,
-                        currentTrack.is_streamable
-                    );
-
-                    // Create updated library with existing tracks plus new track
-                    List<Track> updatedTracks = new ArrayList<>();
-                    if (existingLibrary != null && existingLibrary.tracks() != null) {
-                        // Check if track already exists in the library
-                        boolean trackExists = false;
-                        for (Track track : existingLibrary.tracks()) {
-                            if (track.id().equals(newTrack.id())) {
-                                trackExists = true;
-                                break;
+                        if (savedLibraries != null && savedLibraries.lists() != null) {
+                            for (SavedLibrariesAudius.Library lib : savedLibraries.lists()) {
+                                if (lib.id().equals(library.id())) {
+                                    existingLibrary = lib;
+                                    break;
+                                }
                             }
                         }
 
-                        if (trackExists) {
-                            Snackbar.make(binding.getRoot(), "Track already exists in this library", Snackbar.LENGTH_SHORT).show();
-                            selectLibraryDialog.dismiss();
-                            return;
+                        // Create new track to add
+                        Track newTrack = new Track(
+                                currentTrack.artwork != null ? new Artwork(currentTrack.artwork._150x150, currentTrack.artwork._480x480, currentTrack.artwork._1000x1000) : null,
+                                currentTrack.description,
+                                currentTrack.genre,
+                                currentTrack.id,
+                                currentTrack.track_cid,
+                                currentTrack.mood,
+                                currentTrack.release_date,
+                                currentTrack.repost_count,
+                                currentTrack.favorite_count,
+                                currentTrack.tags,
+                                currentTrack.title,
+                                new User(
+                                        0, "", "", new CoverPhoto("", ""),
+                                        0, 0, false,
+                                        currentTrack.user.name, currentTrack.user.id,
+                                        false, "", currentTrack.user.name,
+                                        0, new ProfilePicture("", "", ""),
+                                        0, 0, false, true,
+                                        "", "", 0, 0, 0
+                                ),
+                                Integer.parseInt(String.valueOf(currentTrack.duration)),
+                                currentTrack.downloadable,
+                                currentTrack.play_count,
+                                currentTrack.permalink,
+                                currentTrack.is_streamable
+                        );
+
+                        // Create updated library with existing tracks plus new track
+                        List<Track> updatedTracks = new ArrayList<>();
+                        if (existingLibrary != null && existingLibrary.tracks() != null) {
+                            // Check if track already exists in the library
+                            boolean trackExists = false;
+                            for (Track track : existingLibrary.tracks()) {
+                                if (track.id().equals(newTrack.id())) {
+                                    trackExists = true;
+                                    break;
+                                }
+                            }
+
+                            if (trackExists) {
+                                Snackbar.make(binding.getRoot(), "Track already exists in this library", Snackbar.LENGTH_SHORT).show();
+                                selectLibraryDialog.dismiss();
+                                return;
+                            }
+
+                            updatedTracks.addAll(existingLibrary.tracks());
+                        }
+                        updatedTracks.add(newTrack);
+
+                        // Get artwork from first track if this is the first track
+                        String artworkUrl = library.artwork() != null ? library.artwork().x480() : "";
+                        if (updatedTracks.size() == 1 && newTrack.artwork() != null) {
+                            artworkUrl = newTrack.artwork().x480();
                         }
 
-                        updatedTracks.addAll(existingLibrary.tracks());
-                    }
-                    updatedTracks.add(newTrack);
+                        SavedLibrariesAudius.Library updatedLibrary = new SavedLibrariesAudius.Library(
+                                library.id(),
+                                false,
+                                false,
+                                library.playlistName(),
+                                artworkUrl,
+                                library.description(),
+                                updatedTracks
+                        );
 
-                    // Get artwork from first track if this is the first track
-                    String artworkUrl = library.artwork() != null ? library.artwork().x480() : "";
-                    if (updatedTracks.size() == 1 && newTrack.artwork() != null) {
-                        artworkUrl = newTrack.artwork().x480();
-                    }
+                        // Remove old library and add updated one
+                        if (savedLibraries == null) {
+                            savedLibraries = new SavedLibrariesAudius(new ArrayList<>());
+                        }
+                        if (savedLibraries.lists() == null) {
+                            savedLibraries = new SavedLibrariesAudius(new ArrayList<>());
+                        }
+                        savedLibraries.lists().removeIf(lib -> lib.id().equals(library.id()));
+                        savedLibraries.lists().add(updatedLibrary);
+                        sharedPreferenceManager.setSavedLibrariesData(savedLibraries);
 
-                    SavedLibrariesAudius.Library updatedLibrary = new SavedLibrariesAudius.Library(
-                        library.id(),
-                        false,
-                        false,
-                        library.playlistName(),
-                        artworkUrl,
-                        library.description(),
-                        updatedTracks
-                    );
-
-                    // Remove old library and add updated one
-                    if (savedLibraries == null) {
-                        savedLibraries = new SavedLibrariesAudius(new ArrayList<>());
-                    }
-                    if (savedLibraries.lists() == null) {
-                        savedLibraries = new SavedLibrariesAudius(new ArrayList<>());
-                    }
-                    savedLibraries.lists().removeIf(lib -> lib.id().equals(library.id()));
-                    savedLibraries.lists().add(updatedLibrary);
-                    sharedPreferenceManager.setSavedLibrariesData(savedLibraries);
-
-                    // Show success message
-                    Snackbar.make(binding.getRoot(), "Added to " + library.playlistName(), Snackbar.LENGTH_SHORT).show();
-                    selectLibraryDialog.dismiss();
+                        // Show success message
+                        Snackbar.make(binding.getRoot(), "Added to " + library.playlistName(), Snackbar.LENGTH_SHORT).show();
+                        selectLibraryDialog.dismiss();
+                    });
                 });
                 librariesRecyclerView.setAdapter(adapter);
 

@@ -8,29 +8,32 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.OptIn;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.media3.common.util.UnstableApi;
 
 import com.example.muzic.R;
-//import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuth;
 
 public class LoginActivity extends AppCompatActivity {
-    private EditText name;
+    private EditText email;
     private EditText password;
     private Button login;
     private TextView registerPrompt;
-   // private FirebaseAuth mAuth;
+    private FirebaseAuth mAuth;
 
+    @OptIn(markerClass = UnstableApi.class)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        name = findViewById(R.id.et_name);
+        email = findViewById(R.id.et_email);
         password = findViewById(R.id.et_password);
         login = findViewById(R.id.btn_login);
         registerPrompt = findViewById(R.id.tv_register_prompt);
 
-        //mAuth = FirebaseAuth.getInstance();
+        mAuth = FirebaseAuth.getInstance();
 
         registerPrompt.setOnClickListener(v -> {
             startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
@@ -38,30 +41,24 @@ public class LoginActivity extends AppCompatActivity {
         });
 
         login.setOnClickListener(v -> {
-            String txtName = name.getText().toString();
+            String txtEmail = email.getText().toString();
             String txtPassword = password.getText().toString();
 
-            if (TextUtils.isEmpty(txtName) || TextUtils.isEmpty(txtPassword)) {
+            if (TextUtils.isEmpty(txtEmail) || TextUtils.isEmpty(txtPassword)) {
                 Toast.makeText(LoginActivity.this, "All fields are required", Toast.LENGTH_SHORT).show();
             } else {
-                //loginUser(txtName, txtPassword);
+                mAuth.signInWithEmailAndPassword(txtEmail, txtPassword)
+                        .addOnCompleteListener(task -> {
+                            if (task.isSuccessful()) {
+                                Toast.makeText(this, "Login succesful!", Toast.LENGTH_SHORT).show();
+                                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                startActivity(intent);
+                            } else {
+                                Toast.makeText(this, "Login failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
+                            }
+                        });
             }
         });
     }
-
-    /*private void loginUser(String name, String password) {
-        String email = name.replaceAll("\\s", "") + "@muzic.app";
-
-        mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                Toast.makeText(LoginActivity.this, "Login successful!", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(intent);
-                finish();
-            } else {
-                Toast.makeText(LoginActivity.this, "Login failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
-            }
-        });
-    }*/
 }

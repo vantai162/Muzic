@@ -465,71 +465,71 @@ public class ListActivity extends AppCompatActivity {
         binding.addMoreSongs.setVisibility(View.VISIBLE);
 
         SharedPreferenceManager sharedPreferenceManager = SharedPreferenceManager.getInstance(this);
-        SavedLibrariesAudius savedLibraries = sharedPreferenceManager.getSavedLibrariesData();
-        
-        if (savedLibraries == null || savedLibraries.lists().isEmpty()) {
-            finish();
-            return;
-        }
-
-        String playlistId = getIntent().getExtras().getString("id");
-        SavedLibrariesAudius.Library userPlaylist = null;
-        
-        for (SavedLibrariesAudius.Library library : savedLibraries.lists()) {
-            if (library.id().equals(playlistId)) {
-                userPlaylist = library;
-                break;
+        sharedPreferenceManager.getSavedLibrariesData().addOnSuccessListener(savedLibraries -> {
+            if (savedLibraries == null || savedLibraries.lists().isEmpty()) {
+                finish();
+                return;
             }
-        }
 
-        if (userPlaylist == null) {
-            finish();
-            return;
-        }
+            String playlistId = getIntent().getExtras().getString("id");
+            SavedLibrariesAudius.Library userPlaylist = null;
 
-        // Create Playlist object from user created library
-        playlistData = new Playlist(
-            new Artwork(userPlaylist.image(), userPlaylist.image(), userPlaylist.image()),
-            userPlaylist.description(),
-            userPlaylist.id(),
-            userPlaylist.id(),
-            false,
-            userPlaylist.name(),
-            0,
-            0,
-            0,
-            new User(
-                0,
-                "",
-                "",
-                new CoverPhoto("", ""),
-                0,
-                0,
-                false,
-                "local",
-                "local",
-                false,
-                "",
-                "Local Library",
-                0,
-                new ProfilePicture("", "", ""),
-                0,
-                0,
-                false,
-                true,
-                "",
-                "",
-                0,
-                0,
-                0
-            )
-        );
+            for (SavedLibrariesAudius.Library library : savedLibraries.lists()) {
+                if (library.id().equals(playlistId)) {
+                    userPlaylist = library;
+                    break;
+                }
+            }
 
-        binding.albumTitle.setText(userPlaylist.name());
-        binding.albumSubTitle.setText(userPlaylist.description());
-        Picasso.get().load(Uri.parse(userPlaylist.image())).into(binding.albumCover);
-        
-        binding.recyclerView.setAdapter(new UserCreatedSongsListAdapter(userPlaylist.tracks()));
+            if (userPlaylist == null) {
+                finish();
+                return;
+            }
+
+            // Create Playlist object from user created library
+            playlistData = new Playlist(
+                    new Artwork(userPlaylist.image(), userPlaylist.image(), userPlaylist.image()),
+                    userPlaylist.description(),
+                    userPlaylist.id(),
+                    userPlaylist.id(),
+                    false,
+                    userPlaylist.name(),
+                    0,
+                    0,
+                    0,
+                    new User(
+                            0,
+                            "",
+                            "",
+                            new CoverPhoto("", ""),
+                            0,
+                            0,
+                            false,
+                            "local",
+                            "local",
+                            false,
+                            "",
+                            "Local Library",
+                            0,
+                            new ProfilePicture("", "", ""),
+                            0,
+                            0,
+                            false,
+                            true,
+                            "",
+                            "",
+                            0,
+                            0,
+                            0
+                    )
+            );
+
+            binding.albumTitle.setText(userPlaylist.name());
+            binding.albumSubTitle.setText(userPlaylist.description());
+            Picasso.get().load(Uri.parse(userPlaylist.image())).into(binding.albumCover);
+
+            binding.recyclerView.setAdapter(new UserCreatedSongsListAdapter(userPlaylist.tracks()));
+        });
     }
 
     private void onMoreIconClicked() {
@@ -561,36 +561,37 @@ public class ListActivity extends AppCompatActivity {
                 .setPositiveButton("Delete", (dialog, which) -> {
                     // Get saved libraries and playlists
                     SharedPreferenceManager sharedPreferenceManager = SharedPreferenceManager.getInstance(this);
-                    SavedLibrariesAudius savedLibraries = sharedPreferenceManager.getSavedLibrariesData();
-                    List<Playlist> savedPlaylists = sharedPreferenceManager.getSavedPlaylists();
-                    String playlistId = getIntent().getExtras().getString("id");
-                    
-                    // Remove from SavedLibrariesAudius
-                    if (savedLibraries != null && savedLibraries.lists() != null) {
-                        List<SavedLibrariesAudius.Library> updatedLibraries = new ArrayList<>();
-                        for (SavedLibrariesAudius.Library library : savedLibraries.lists()) {
-                            if (!library.id().equals(playlistId)) {
-                                updatedLibraries.add(library);
-                            }
-                        }
-                        SavedLibrariesAudius newSavedLibraries = new SavedLibrariesAudius(updatedLibraries);
-                        sharedPreferenceManager.setSavedLibrariesData(newSavedLibraries);
-                    }
+                    sharedPreferenceManager.getSavedLibrariesData().addOnSuccessListener(savedLibraries -> {
+                        List<Playlist> savedPlaylists = sharedPreferenceManager.getSavedPlaylists();
+                        String playlistId = getIntent().getExtras().getString("id");
 
-                    // Remove from SavedPlaylists
-                    if (savedPlaylists != null) {
-                        List<Playlist> updatedPlaylists = new ArrayList<>();
-                        for (Playlist playlist : savedPlaylists) {
-                            if (!playlist.id().equals(playlistId)) {
-                                updatedPlaylists.add(playlist);
+                        // Remove from SavedLibrariesAudius
+                        if (savedLibraries != null && savedLibraries.lists() != null) {
+                            List<SavedLibrariesAudius.Library> updatedLibraries = new ArrayList<>();
+                            for (SavedLibrariesAudius.Library library : savedLibraries.lists()) {
+                                if (!library.id().equals(playlistId)) {
+                                    updatedLibraries.add(library);
+                                }
                             }
+                            SavedLibrariesAudius newSavedLibraries = new SavedLibrariesAudius(updatedLibraries);
+                            sharedPreferenceManager.setSavedLibrariesData(newSavedLibraries);
                         }
-                        sharedPreferenceManager.setSavedPlaylists(updatedPlaylists);
-                    }
-                    
-                    // Show success message and finish activity
-                    Snackbar.make(binding.getRoot(), "Playlist deleted", Snackbar.LENGTH_SHORT).show();
-                    finish();
+
+                        // Remove from SavedPlaylists
+                        if (savedPlaylists != null) {
+                            List<Playlist> updatedPlaylists = new ArrayList<>();
+                            for (Playlist playlist : savedPlaylists) {
+                                if (!playlist.id().equals(playlistId)) {
+                                    updatedPlaylists.add(playlist);
+                                }
+                            }
+                            sharedPreferenceManager.setSavedPlaylists(updatedPlaylists);
+                        }
+
+                        // Show success message and finish activity
+                        Snackbar.make(binding.getRoot(), "Playlist deleted", Snackbar.LENGTH_SHORT).show();
+                        finish();
+                    });
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
@@ -618,14 +619,15 @@ public class ListActivity extends AppCompatActivity {
         // Setup Add/Remove from library button
         BottomSheetItemView addToLibraryBtn = moreView.findViewById(R.id.add_to_library);
         SharedPreferenceManager sharedPreferenceManager = SharedPreferenceManager.getInstance(this);
-        SavedLibrariesAudius savedLibraries = sharedPreferenceManager.getSavedLibrariesData();
-        boolean isInLibrary = isPlaylistInLibrary(playlistData, savedLibraries);
+        sharedPreferenceManager.getSavedLibrariesData().addOnSuccessListener(savedLibraries -> {
+            boolean isInLibrary = isPlaylistInLibrary(playlistData, savedLibraries);
 
-        addToLibraryBtn.getTitleTextView().setText(isInLibrary ? "Remove from library" : "Add to library");
-        addToLibraryBtn.getIconImageView().setImageResource(isInLibrary ? R.drawable.round_close_24 : R.drawable.round_add_24);
-        addToLibraryBtn.setOnClickListener(view -> {
-            binding.addToLibrary.performClick();
-            moreDialog.dismiss();
+            addToLibraryBtn.getTitleTextView().setText(isInLibrary ? "Remove from library" : "Add to library");
+            addToLibraryBtn.getIconImageView().setImageResource(isInLibrary ? R.drawable.round_close_24 : R.drawable.round_add_24);
+            addToLibraryBtn.setOnClickListener(view -> {
+                binding.addToLibrary.performClick();
+                moreDialog.dismiss();
+            });
         });
 
         // Setup artist section
@@ -653,13 +655,13 @@ public class ListActivity extends AppCompatActivity {
 
     private void updatePlaylistInLibraryStatus() {
         SharedPreferenceManager sharedPreferenceManager = SharedPreferenceManager.getInstance(this);
-        SavedLibrariesAudius savedLibraries = sharedPreferenceManager.getSavedLibrariesData();
-        
-        binding.addToLibrary.setImageResource(
-            isPlaylistInLibrary(playlistData, savedLibraries) ? 
-            R.drawable.round_done_24 : 
-            R.drawable.round_add_24
-        );
+        sharedPreferenceManager.getSavedLibrariesData().addOnSuccessListener(savedLibraries -> {
+            binding.addToLibrary.setImageResource(
+                    isPlaylistInLibrary(playlistData, savedLibraries) ?
+                            R.drawable.round_done_24 :
+                            R.drawable.round_add_24
+            );
+        });
     }
 
     private boolean isPlaylistInLibrary(Playlist playlist, SavedLibrariesAudius savedLibraries) {
