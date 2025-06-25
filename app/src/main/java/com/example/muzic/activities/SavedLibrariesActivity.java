@@ -64,17 +64,18 @@ public class SavedLibrariesActivity extends AppCompatActivity {
                     sharedPreferenceManager.removePlaylistFromSavedPlaylists(playlist.id());
                     
                     // Remove from SavedLibrariesAudius
-                    SavedLibrariesAudius savedLibraries = sharedPreferenceManager.getSavedLibrariesData();
-                    if (savedLibraries != null && savedLibraries.lists() != null) {
-                        List<SavedLibrariesAudius.Library> updatedLibraries = new ArrayList<>();
-                        for (SavedLibrariesAudius.Library library : savedLibraries.lists()) {
-                            if (!library.id().equals(playlist.id())) {
-                                updatedLibraries.add(library);
+                    sharedPreferenceManager.getSavedLibrariesData().addOnSuccessListener(savedLibraries -> {
+                        if (savedLibraries != null && savedLibraries.lists() != null) {
+                            List<SavedLibrariesAudius.Library> updatedLibraries = new ArrayList<>();
+                            for (SavedLibrariesAudius.Library library : savedLibraries.lists()) {
+                                if (!library.id().equals(playlist.id())) {
+                                    updatedLibraries.add(library);
+                                }
                             }
+                            SavedLibrariesAudius newSavedLibraries = new SavedLibrariesAudius(updatedLibraries);
+                            sharedPreferenceManager.setSavedLibrariesData(newSavedLibraries);
                         }
-                        SavedLibrariesAudius newSavedLibraries = new SavedLibrariesAudius(updatedLibraries);
-                        sharedPreferenceManager.setSavedLibrariesData(newSavedLibraries);
-                    }
+                    });
 
                     // Update UI
                     int position = savedPlaylists.indexOf(playlist);
@@ -183,35 +184,36 @@ public class SavedLibrariesActivity extends AppCompatActivity {
         List<Playlist> playlists = sharedPreferenceManager.getSavedPlaylists();
         
         // Also check old storage system
-        SavedLibrariesAudius oldLibraries = sharedPreferenceManager.getSavedLibrariesData();
-        if (oldLibraries != null && oldLibraries.lists() != null) {
-            for (SavedLibrariesAudius.Library library : oldLibraries.lists()) {
-                // Check if this library is already in the new system
-                boolean exists = playlists.stream()
-                    .anyMatch(p -> p.id().equals(library.id()));
-                
-                if (!exists) {
-                    // Convert old library to new Playlist format
-                    Playlist convertedPlaylist = new Playlist(
-                        new Artwork("", "", ""),
-                        library.description(),
-                        library.id(),
-                        library.id(),
-                        false,
-                        library.name(),
-                        0, 0, 0,
-                        new User(0, "", "", new CoverPhoto("",""), 0, 0, false,
-                            "local", "local", false, "", "Local Library", 0,
-                            new ProfilePicture("","",""), 0, 0, false, true,
-                            "", "", 0, 0, 0)
-                    );
-                    playlists.add(convertedPlaylist);
-                    
-                    // Add to new storage system
-                    sharedPreferenceManager.addPlaylistToSavedPlaylists(convertedPlaylist);
+        sharedPreferenceManager.getSavedLibrariesData().addOnSuccessListener(oldLibraries -> {
+            if (oldLibraries != null && oldLibraries.lists() != null) {
+                for (SavedLibrariesAudius.Library library : oldLibraries.lists()) {
+                    // Check if this library is already in the new system
+                    boolean exists = playlists.stream()
+                            .anyMatch(p -> p.id().equals(library.id()));
+
+                    if (!exists) {
+                        // Convert old library to new Playlist format
+                        Playlist convertedPlaylist = new Playlist(
+                                new Artwork("", "", ""),
+                                library.description(),
+                                library.id(),
+                                library.id(),
+                                false,
+                                library.name(),
+                                0, 0, 0,
+                                new User(0, "", "", new CoverPhoto("",""), 0, 0, false,
+                                        "local", "local", false, "", "Local Library", 0,
+                                        new ProfilePicture("","",""), 0, 0, false, true,
+                                        "", "", 0, 0, 0)
+                        );
+                        playlists.add(convertedPlaylist);
+
+                        // Add to new storage system
+                        sharedPreferenceManager.addPlaylistToSavedPlaylists(convertedPlaylist);
+                    }
                 }
             }
-        }
+        });
 
         // Update UI
         savedPlaylists.clear();

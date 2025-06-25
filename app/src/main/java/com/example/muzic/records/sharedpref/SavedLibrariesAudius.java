@@ -16,6 +16,6 @@ public record SavedLibrariesAudius(
             @SerializedName("name") String name,
             @SerializedName("image") String image,
             @SerializedName("description") String description,
-            @SerializedName("tracks") List<Track> tracks // ← Dùng model có sẵn
+            @SerializedName("tracks") List<Track> tracks
     ) {}
 }
