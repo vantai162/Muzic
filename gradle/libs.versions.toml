@@ -26,6 +26,7 @@ slidingrootnav = "v1.1.1"
 sspAndroid = "1.1.1"
 swiperefreshlayout = "1.2.0-alpha01"
 ffmpegandroid = "0.3.2"
+firebaseDatabase = "21.0.0"
 
 [libraries]
 compiler = { module = "com.github.bumptech.glide:compiler", version.ref = "compiler" }
@@ -57,6 +58,7 @@ slidingrootnav = { module = "com.github.yarolegovich:SlidingRootNav", version.re
 ssp-android = { module = "com.intuit.ssp:ssp-android", version.ref = "sspAndroid" }
 swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version.ref = "swiperefreshlayout" }
 ffmpegandroid = { group = "com.writingminds", name = "FFmpegAndroid", version.ref = "ffmpegandroid" }
+firebase-database = { group = "com.google.firebase", name = "firebase-database", version.ref = "firebaseDatabase" }
 
 # Media3 Exoplayer related dependencies
 [bundles]
