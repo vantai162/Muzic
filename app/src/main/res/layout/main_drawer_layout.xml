@@ -45,6 +45,7 @@
                 android:textColor="@color/textMain" />
 
             <TextView
+                android:id="@+id/tv_welcome"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="From UIT with love"
@@ -63,6 +64,14 @@
         android:layout_marginVertical="@dimen/_8sdp" />
 
     <com.example.muzic.utils.customview.BottomSheetItemView
+        android:id="@+id/user"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:title="User"
+        android:src="@drawable/baseline_person_24"
+        app:srcPadding="@dimen/_4sdp" />
+
+    <com.example.muzic.utils.customview.BottomSheetItemView
         android:id="@+id/library"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -75,7 +84,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:title="Log In"
-        android:src="@drawable/baseline_person_24"
+        android:src="@drawable/ic_logout"
         app:srcPadding="@dimen/_4sdp" />
 
     <com.example.muzic.utils.customview.BottomSheetItemView
