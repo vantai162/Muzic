@@ -9,6 +9,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.OptIn;
@@ -47,6 +49,8 @@ import com.example.muzic.utils.SettingsSharedPrefManager;
 import com.example.muzic.utils.SharedPreferenceManager;
 import com.example.muzic.utils.ThemeManager;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
 import com.yarolegovich.slidingrootnav.SlidingRootNav;
@@ -458,6 +462,9 @@ public class MainActivity extends AppCompatActivity implements Player.Listener {
         
         // Update play bar colors based on theme
         updatePlayBarThemeColors();
+
+        // Setup slidingRootNav
+        onDrawerItemsClicked();
         
         // Reload saved libraries as they might have changed
         loadSavedLibraries();
@@ -541,12 +548,65 @@ public class MainActivity extends AppCompatActivity implements Player.Listener {
             slidingRootNavBuilder.closeMenu();
         });
 
+        View userView = slidingRootNavBuilder.getLayout().findViewById(R.id.user);
+        View libView = slidingRootNavBuilder.getLayout().findViewById(R.id.library);
+        View loginView = slidingRootNavBuilder.getLayout().findViewById(R.id.login);
+
+        TextView loginText = loginView.findViewById(R.id.text);
+        TextView welcome = slidingRootNavBuilder.getLayout().findViewById(R.id.tv_welcome);
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (user == null) {
+            userView.setVisibility(View.GONE);
+            libView.setVisibility(View.GONE);
+        } else {
+            userView.setVisibility(View.VISIBLE);
+            userView.setOnClickListener(v -> {
+                startActivity(new Intent(this, UserActivity.class));
+                slidingRootNavBuilder.closeMenu();
+            });
+            loginText.setText("Log out");
+
+            libView.setVisibility(View.VISIBLE);
+            libView.setOnClickListener(v -> {
+                startActivity(new Intent(this, SavedLibrariesActivity.class));
+                slidingRootNavBuilder.closeMenu();
+            });
+
+            FirebaseFirestore db = FirebaseFirestore.getInstance();
+            String userID = user.getUid();
+
+            db.collection("users")
+                    .document(userID)
+                    .get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists()) {
+                            String welcomeName = documentSnapshot.getString("name");
+                            if (welcomeName != null) {
+                                welcome.setText("Welcome back " + welcomeName);
+                            } else {
+                                welcome.setText("Welcome back");
+                            }
+                        } else {
+                            welcome.setText("Welcome back");
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        welcome.setText("Welcome back");
+                    });
+        }
+
         slidingRootNavBuilder.getLayout().findViewById(R.id.logo).setOnClickListener(view -> slidingRootNavBuilder.closeMenu());
 
-        slidingRootNavBuilder.getLayout().findViewById(R.id.library).setOnClickListener(view -> {
-            startActivity(new Intent(MainActivity.this, SavedLibrariesActivity.class));
-            slidingRootNavBuilder.closeMenu();
-        });
+//        slidingRootNavBuilder.getLayout().findViewById(R.id.library).setOnClickListener(view -> {
+//            if (user == null) {
+//                Toast.makeText(MainActivity.this, "You need to log in!", Toast.LENGTH_SHORT).show();
+//            } else {
+//                startActivity(new Intent(MainActivity.this, SavedLibrariesActivity.class));
+//                slidingRootNavBuilder.closeMenu();
+//            }
+//        });
 
         slidingRootNavBuilder.getLayout().findViewById(R.id.login).setOnClickListener(view -> {
             if (FirebaseAuth.getInstance().getCurrentUser() == null) {

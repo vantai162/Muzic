@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -58,29 +59,29 @@ public class UserActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         applyThemeMode();
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_register);
+        binding = ActivityUserBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         mAuth = FirebaseAuth.getInstance();
         FirebaseUser user = mAuth.getCurrentUser();
         db = FirebaseFirestore.getInstance();
         String userID = mAuth.getUid();
 
-        name = findViewById(R.id.et_name);
-        password = findViewById(R.id.et_password);
-        update = findViewById(R.id.btn_sign_up);
-        newpassword = findViewById(R.id.et_new_password);
-        confirmnewpassword = findViewById(R.id.et_confirm_new_password);
+        // Kiểm tra user và userID null
+        if (user == null || userID == null) {
+            Toast.makeText(this, "Bạn cần đăng nhập lại!", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
 
         // Setup spinner
-        genderSpinner = findViewById(R.id.spinner_gender);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
                 R.array.gender_array, R.layout.spinner_selected_item);
         adapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
-        genderSpinner.setAdapter(adapter);
+        binding.spinnerGender.setAdapter(adapter);
 
         // Setup datepicker
-        tvDob = findViewById(R.id.tv_dob);
-        tvDob.setOnClickListener(v -> {
+        binding.tvDob.setOnClickListener(v -> {
             Calendar calendar = Calendar.getInstance();
             int year = calendar.get(Calendar.YEAR);
             int month = calendar.get(Calendar.MONTH);
@@ -89,7 +90,7 @@ public class UserActivity extends AppCompatActivity {
             DatePickerDialog datePickerDialog = new DatePickerDialog(this,
                     (view, selectedYear, selectedMonth, selectedDay) -> {
                         String dob = selectedDay + "/" + (selectedMonth + 1) + "/" + selectedYear;
-                        tvDob.setText(dob);
+                        binding.tvDob.setText(dob);
                     }, year, month, day);
             datePickerDialog.show();
         });
@@ -119,11 +120,9 @@ public class UserActivity extends AppCompatActivity {
                         oldGender = documentSnapshot.getString("gender");
                         oldBirthday = documentSnapshot.getString("birthday");
 
-                        if (name != null) {
-                            binding.userName.setText(oldName);
-                            name.setText(oldName);
-                            binding.collapsingToolbarLayout.setTitle(oldName);
-                        }
+                        binding.userName.setText(oldName);
+                        binding.etName.setText(oldName);
+                        binding.collapsingToolbarLayout.setTitle(oldName);
 
                         if (profilePicture != null && !profilePicture.isEmpty()) {
                             Picasso.get()
@@ -138,12 +137,12 @@ public class UserActivity extends AppCompatActivity {
                         if (oldGender != null) {
                             int position = adapter.getPosition(oldGender);
                             if (position >= 0) {
-                                genderSpinner.setSelection(position);
+                                binding.spinnerGender.setSelection(position);
                             }
                         }
 
                         if (oldBirthday != null) {
-                            tvDob.setText(oldBirthday);
+                            binding.tvDob.setText(oldBirthday);
                         }
                     } else {
                         Toast.makeText(this, "User not found!", Toast.LENGTH_SHORT).show();
@@ -156,14 +155,14 @@ public class UserActivity extends AppCompatActivity {
                 });
 
         // Setup button cập nhật
-        update.setOnClickListener(v -> {
-            String txtName = name.getText().toString().trim();
-            String gender = genderSpinner.getSelectedItem().toString();
-            String birth = tvDob.getText().toString().trim();
+        binding.btnUpdate.setOnClickListener(v -> {
+            String txtName = binding.etName.getText().toString().trim();
+            String gender = binding.spinnerGender.getSelectedItem().toString();
+            String birth = binding.tvDob.getText().toString().trim();
 
-            String txtPassword = password.getText().toString().trim();
-            String txtNewPassword = newpassword.getText().toString().trim();
-            String txtConfirmNewPassword = confirmnewpassword.getText().toString().trim();
+            String txtPassword = binding.etPassword.getText().toString().trim();
+            String txtNewPassword = binding.etNewPassword.getText().toString().trim();
+            String txtConfirmNewPassword = binding.etConfirmNewPassword.getText().toString().trim();
 
             Map<String, Object> updates = new HashMap<>();
 
@@ -190,6 +189,10 @@ public class UserActivity extends AppCompatActivity {
                                            !TextUtils.isEmpty(txtConfirmNewPassword);
 
             if (wantToChangePassword) {
+                if (user == null) {
+                    Toast.makeText(this, "Bạn cần đăng nhập lại!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 if (txtNewPassword.length() < 8) {
                     Toast.makeText(this, "Password must be at least 8 characters", Toast.LENGTH_SHORT).show();
                     return;
@@ -206,9 +209,9 @@ public class UserActivity extends AppCompatActivity {
                             user.updatePassword(txtNewPassword)
                                     .addOnSuccessListener(aVoid -> {
                                         Toast.makeText(this, "Your password has been changed successfully", Toast.LENGTH_SHORT).show();
-                                        password.setText("");
-                                        newpassword.setText("");
-                                        confirmnewpassword.setText("");
+                                        binding.etPassword.setText("");
+                                        binding.etNewPassword.setText("");
+                                        binding.etConfirmNewPassword.setText("");
                                     })
                                     .addOnFailureListener(e -> {
                                         Toast.makeText(this, "Failed to change password: " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -221,6 +224,15 @@ public class UserActivity extends AppCompatActivity {
                 Toast.makeText(this, "All password fields are required", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            finish();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private void applyThemeMode() {
