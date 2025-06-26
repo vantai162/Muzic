@@ -59,7 +59,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 @UnstableApi
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements Player.Listener {
     private static final String TAG = "AudiusAPI";
     private ExoPlayer player;
     private TrendingTracksAdapter trendingTracksAdapter;
@@ -412,6 +412,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        if (player != null) {
+            player.addListener(this);
+            updatePlayControls();
+        }
         // Reapply theme when activity resumes
         ((ApplicationClass) getApplication()).reapplyTheme();
         
@@ -432,6 +436,14 @@ public class MainActivity extends AppCompatActivity {
                     updatePlayBarContent(track);
                 }
             });
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (player != null) {
+            player.removeListener(this);
         }
     }
 
@@ -768,6 +780,11 @@ public class MainActivity extends AppCompatActivity {
         int nightModeFlags = getResources().getConfiguration().uiMode & 
                             android.content.res.Configuration.UI_MODE_NIGHT_MASK;
         return nightModeFlags == android.content.res.Configuration.UI_MODE_NIGHT_YES;
+    }
+
+    @Override
+    public void onIsPlayingChanged(boolean isPlaying) {
+        runOnUiThread(this::updatePlayControls);
     }
 }
 

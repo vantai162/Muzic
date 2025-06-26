@@ -33,9 +33,9 @@ import java.util.List;
 public class ApplicationClass extends Application {
     public static final String CHANNEL_ID_1 = "channel_1";
     public static final String CHANNEL_ID_2 = "channel_2";
-    public static final String ACTION_NEXT = "next";
-    public static final String ACTION_PREV = "prev";
-    public static final String ACTION_PLAY = "play";
+    public static final String ACTION_NEXT = "com.example.muzic.NEXT";
+    public static final String ACTION_PREV = "com.example.muzic.PREV";
+    public static final String ACTION_PLAY = "com.example.muzic.PLAY";
     public static final MediaPlayerUtil mediaPlayerUtil = MediaPlayerUtil.getInstance();
     //public static TrackResponse CURRENT_TRACK = null;
 

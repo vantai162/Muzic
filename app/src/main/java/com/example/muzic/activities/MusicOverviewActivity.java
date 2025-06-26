@@ -507,11 +507,18 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
     @Override
     protected void onResume() {
         super.onResume();
-        // Update blur effect when activity resumes
-        updateBackgroundBlur();
-        // Update play/pause button state
         if (player != null) {
+            player.addListener(this);
             updatePlayPauseButton(player.isPlaying());
+        }
+        updateBackgroundBlur();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (player != null) {
+            player.removeListener(this);
         }
     }
 
@@ -1078,5 +1085,10 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
         ApplicationClass app = (ApplicationClass) getApplication();
         app.currentPlaylist = playlist;
         app.currentTrackIndex = currentTrackIndex;
+    }
+
+    @Override
+    public void onIsPlayingChanged(boolean isPlaying) {
+        runOnUiThread(() -> updatePlayPauseButton(isPlaying));
     }
 }

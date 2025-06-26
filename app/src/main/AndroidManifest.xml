@@ -83,11 +83,11 @@
         <receiver
             android:name=".services.NotificationReceiver"
             android:enabled="true"
-            android:exported="false">
+            android:exported="true">
             <intent-filter>
-                <action android:name="next" />
-                <action android:name="prev" />
-                <action android:name="play" />
+                <action android:name="com.example.muzic.PLAY" />
+                <action android:name="com.example.muzic.NEXT" />
+                <action android:name="com.example.muzic.PREV" />
             </intent-filter>
         </receiver>
     </application>

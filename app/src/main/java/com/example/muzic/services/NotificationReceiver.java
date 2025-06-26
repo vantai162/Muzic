@@ -17,9 +17,10 @@ public class NotificationReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        String actionName = intent.getAction();
+        android.util.Log.d("NotificationReceiver", "Received action: " + actionName);
         ApplicationClass app = (ApplicationClass) context.getApplicationContext();
         ExoPlayer player = app.getExoPlayer();
-        String actionName = intent.getAction();
 
         if (actionName != null) {
             // Execute action on main thread to avoid any synchronization issues

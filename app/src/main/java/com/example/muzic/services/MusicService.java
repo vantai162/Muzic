@@ -222,55 +222,53 @@ public class MusicService extends Service {
         TrackData currentTrack = ApplicationClass.currentTrack;
         if (currentTrack == null) return;
 
-        RemoteViews notificationLayout = new RemoteViews(getPackageName(), R.layout.notification_small);
-
-        // Set title & artist
-        notificationLayout.setTextViewText(R.id.notification_title, currentTrack.title);
-        notificationLayout.setTextViewText(R.id.notification_artist, currentTrack.user != null ? currentTrack.user.name : "");
-
-        // Set play/pause icon
-        int playPauseIcon = player.isPlaying() ? R.drawable.baseline_pause_24 : R.drawable.play_arrow_24px;
-        notificationLayout.setImageViewResource(R.id.notification_play_pause, playPauseIcon);
-
-        // Set click actions
-        notificationLayout.setOnClickPendingIntent(R.id.notification_prev, getPendingIntent(ApplicationClass.ACTION_PREV));
-        notificationLayout.setOnClickPendingIntent(R.id.notification_play_pause, getPendingIntent(ApplicationClass.ACTION_PLAY));
-        notificationLayout.setOnClickPendingIntent(R.id.notification_next, getPendingIntent(ApplicationClass.ACTION_NEXT));
-
-        // Set default album art (trước khi load ảnh)
-        notificationLayout.setImageViewResource(R.id.notification_album_art, R.drawable.ic_launcher_foreground);
-
-        // Tạo notification cơ bản và startForeground NGAY LẬP TỨC
-        Intent intent = new Intent(this, MainActivity.class)
-            .setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        // Create pending intent for notification click
+        Intent intent = new Intent(this, MainActivity.class);
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, intent,
             PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
-        Notification notification = new NotificationCompat.Builder(this, ApplicationClass.CHANNEL_ID_1)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, ApplicationClass.CHANNEL_ID_1)
             .setSmallIcon(R.drawable.music_note_24px)
+            .setContentTitle(currentTrack.title)
+            .setContentText(currentTrack.user != null ? currentTrack.user.name : "")
             .setContentIntent(contentIntent)
-            .setCustomContentView(notificationLayout)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setOnlyAlertOnce(true)
             .setAutoCancel(false)
             .setOngoing(true)
-            .setShowWhen(false)
-            .build();
+            .setShowWhen(false);
 
-        // LUÔN gọi startForeground NGAY LẬP TỨC
-        startForeground(1, notification);
+        // Add media controls
+        builder.addAction(R.drawable.skip_previous_24px, "Previous", getPendingIntent(ApplicationClass.ACTION_PREV));
+        builder.addAction(player.isPlaying() ? R.drawable.baseline_pause_24 : R.drawable.play_arrow_24px,
+            player.isPlaying() ? "Pause" : "Play",
+            getPendingIntent(ApplicationClass.ACTION_PLAY));
+        builder.addAction(R.drawable.skip_next_24px, "Next", getPendingIntent(ApplicationClass.ACTION_NEXT));
 
-        // Sau đó mới load ảnh và update notification nếu có ảnh
+        // Set media style
+        androidx.media.app.NotificationCompat.MediaStyle mediaStyle =
+            new androidx.media.app.NotificationCompat.MediaStyle()
+                .setMediaSession(mediaSession.getSessionToken())
+                .setShowActionsInCompactView(0, 1, 2);
+        builder.setStyle(mediaStyle);
+
+        // Set default large icon (before loading artwork)
+        builder.setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher_foreground));
+
+        // Start foreground with basic notification
+        startForeground(1, builder.build());
+
+        // Load artwork in background and update notification if available
         if (currentTrack.artwork != null && currentTrack.artwork._480x480 != null) {
             executorService.execute(() -> {
                 try {
                     Bitmap artwork = Picasso.get().load(currentTrack.artwork._480x480).get();
                     mainHandler.post(() -> {
-                        notificationLayout.setImageViewBitmap(R.id.notification_album_art, artwork);
+                        builder.setLargeIcon(artwork);
                         NotificationManager notificationManager =
                             (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-                        notificationManager.notify(1, notification);
+                        notificationManager.notify(1, builder.build());
                     });
                 } catch (IOException e) {
                     e.printStackTrace();
