@@ -6,7 +6,9 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.res.ColorStateList;
+import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -99,6 +101,7 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
     private BottomSheetDialog moreInfoBottomSheet;
     private SettingsSharedPrefManager settingsManager;
     private ImageView backgroundImageView;
+    private boolean isBlurring = false;
 
     @OptIn(markerClass = UnstableApi.class)
     @Override
@@ -299,7 +302,18 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
     }
 
     @OptIn(markerClass = UnstableApi.class)
+    private void startMusicServiceIfNeeded() {
+        Intent serviceIntent = new Intent(this, com.example.muzic.services.MusicService.class);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            startForegroundService(serviceIntent);
+        } else {
+            startService(serviceIntent);
+        }
+    }
+
+    @OptIn(markerClass = UnstableApi.class)
     private void updateTrackUI(TrackData track) {
+        startMusicServiceIfNeeded();
         binding.title.setText(track.title);
         binding.description.setText(track.user.name);
         if (track.artwork != null && track.artwork._480x480 != null) {
@@ -400,10 +414,12 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
 
     @OptIn(markerClass = UnstableApi.class)
     private void togglePlayPause() {
-        if (player.isPlaying()) {
+        boolean wasPlaying = player.isPlaying();
+        if (wasPlaying) {
             player.pause();
         } else {
             player.play();
+            startMusicServiceIfNeeded();
         }
         updatePlayPauseButton(player.isPlaying());
     }
@@ -411,6 +427,7 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
     @OptIn(markerClass = UnstableApi.class)
     @UnstableApi
     private void playNextTrack() {
+        startMusicServiceIfNeeded();
         if (playlist == null || playlist.isEmpty()) return;
         
         currentTrackIndex = (currentTrackIndex + 1) % playlist.size();
@@ -431,6 +448,7 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
 
     @OptIn(markerClass = UnstableApi.class)
     private void playPreviousTrack() {
+        startMusicServiceIfNeeded();
         if (playlist == null || playlist.isEmpty()) return;
         
         currentTrackIndex = (currentTrackIndex - 1 + playlist.size()) % playlist.size();
@@ -836,22 +854,37 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
         boolean isBlurEnabled = settingsManager.getBlurPlayerBackground();
         View darkOverlay = findViewById(R.id.darkOverlay);
         View backgroundContainer = findViewById(R.id.background_container);
-        
-        if (isBlurEnabled && binding.coverImage.getDrawable() != null) {
-            // Set background container to transparent
-            backgroundContainer.setBackgroundColor(Color.TRANSPARENT);
-            
-            // Show and update background image with blur
-            backgroundImageView.setVisibility(View.VISIBLE);
-            BlurUtils.applyBlur(this, binding.coverImage, backgroundImageView);
-            
+
+        if (isBlurEnabled) {
+            Drawable drawable = binding.coverImage.getDrawable();
+            if (drawable == null) {
+                // Blur ảnh mặc định NGAY LẬP TỨC nếu chưa có cover
+                Bitmap defaultBitmap = android.graphics.BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher_foreground);
+                backgroundImageView.setVisibility(View.VISIBLE);
+                isBlurring = true;
+                com.example.muzic.utils.BlurUtils.applyBlur(this, defaultBitmap, backgroundImageView);
+            } else {
+                // Blur ảnh cover hiện tại
+                backgroundImageView.setVisibility(View.VISIBLE);
+                isBlurring = true;
+                com.example.muzic.utils.BlurUtils.applyBlur(this, binding.coverImage, backgroundImageView);
+            }
+            // CHỈ set background container TRANSPARENT nếu đã blur xong
+            if (isBlurring) {
+                // Đang blur, giữ màu nền trắng hoặc dark_background
+                int bgColor = isDarkMode() ? getResources().getColor(R.color.dark_background, getTheme()) : getResources().getColor(android.R.color.white, getTheme());
+                backgroundContainer.setBackgroundColor(bgColor);
+            } else {
+                backgroundContainer.setBackgroundColor(android.graphics.Color.TRANSPARENT);
+            }
+
             // Show dark overlay for better contrast
             darkOverlay.setVisibility(View.VISIBLE);
-            
+
             // Make system bars transparent
-            getWindow().setStatusBarColor(Color.TRANSPARENT);
-            getWindow().setNavigationBarColor(Color.TRANSPARENT);
-            
+            getWindow().setStatusBarColor(android.graphics.Color.TRANSPARENT);
+            getWindow().setNavigationBarColor(android.graphics.Color.TRANSPARENT);
+
             // Set system UI visibility based on theme
             if (isDarkMode()) {
                 getWindow().getDecorView().setSystemUiVisibility(
@@ -868,26 +901,26 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
                     View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
                 );
             }
-            
+
             // Update text and icon colors for blur mode
             updateTextColors(true);
 
             // Set back button to white for better visibility on blur background
-            binding.backButton.setImageTintList(ColorStateList.valueOf(Color.WHITE));
-            
+            binding.backButton.setImageTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.WHITE));
+
         } else {
             // Reset background container to theme color
             int backgroundColor = getBackgroundColor();
             backgroundContainer.setBackgroundColor(backgroundColor);
-            
+
             // Hide blur elements
             backgroundImageView.setVisibility(View.GONE);
             darkOverlay.setVisibility(View.GONE);
-            
+
             // Reset system bars to theme color
             getWindow().setStatusBarColor(backgroundColor);
             getWindow().setNavigationBarColor(backgroundColor);
-            
+
             // Set system UI visibility based on theme
             if (isDarkMode()) {
                 getWindow().getDecorView().setSystemUiVisibility(0); // Clear all flags for dark mode
@@ -897,15 +930,15 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
                     View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
                 );
             }
-            
+
             // Clear any existing blur
-            BlurUtils.clearBlur(backgroundImageView);
-            
+            com.example.muzic.utils.BlurUtils.clearBlur(backgroundImageView);
+
             // Reset text and icon colors for normal mode
             updateTextColors(false);
 
             // Reset back button color based on theme
-            binding.backButton.setImageTintList(ColorStateList.valueOf(
+            binding.backButton.setImageTintList(android.content.res.ColorStateList.valueOf(
                 getResources().getColor(isDarkMode() ? android.R.color.white : R.color.textMain, getTheme())
             ));
         }
