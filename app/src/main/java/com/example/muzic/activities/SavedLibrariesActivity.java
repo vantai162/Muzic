@@ -60,10 +60,7 @@ public class SavedLibrariesActivity extends AppCompatActivity {
                 .setTitle("Delete Playlist")
                 .setMessage("Are you sure you want to delete this playlist?")
                 .setPositiveButton("Delete", (dialog, which) -> {
-                    // Remove from both storage systems
-                    sharedPreferenceManager.removePlaylistFromSavedPlaylists(playlist.id());
-                    
-                    // Remove from SavedLibrariesAudius
+                    // Remove from SavedLibrariesAudius (Firestore)
                     sharedPreferenceManager.getSavedLibrariesData().addOnSuccessListener(savedLibraries -> {
                         if (savedLibraries != null && savedLibraries.lists() != null) {
                             List<SavedLibrariesAudius.Library> updatedLibraries = new ArrayList<>();
@@ -74,18 +71,17 @@ public class SavedLibrariesActivity extends AppCompatActivity {
                             }
                             SavedLibrariesAudius newSavedLibraries = new SavedLibrariesAudius(updatedLibraries);
                             sharedPreferenceManager.setSavedLibrariesData(newSavedLibraries);
+
+                            // Update UI
+                            int position = savedPlaylists.indexOf(playlist);
+                            if (position != -1) {
+                                savedPlaylists.remove(position);
+                                adapter.notifyItemRemoved(position);
+                                updateEmptyState();
+                            }
+                            Snackbar.make(binding.getRoot(), "Playlist deleted", Snackbar.LENGTH_SHORT).show();
                         }
                     });
-
-                    // Update UI
-                    int position = savedPlaylists.indexOf(playlist);
-                    if (position != -1) {
-                        savedPlaylists.remove(position);
-                        adapter.notifyItemRemoved(position);
-                        updateEmptyState();
-                    }
-                    
-                    Snackbar.make(binding.getRoot(), "Playlist deleted", Snackbar.LENGTH_SHORT).show();
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
@@ -155,10 +151,7 @@ public class SavedLibrariesActivity extends AppCompatActivity {
                 )
         );
 
-        // Add to both storage systems
-        sharedPreferenceManager.addPlaylistToSavedPlaylists(newPlaylist);
-        
-        // Create and add to SavedLibrariesAudius
+        // Add to SavedLibrariesAudius (Firestore)
         SavedLibrariesAudius.Library newLibrary = new SavedLibrariesAudius.Library(
             playlistId,
             false,
@@ -173,53 +166,37 @@ public class SavedLibrariesActivity extends AppCompatActivity {
         // Update UI
         savedPlaylists.add(newPlaylist);
         adapter.notifyItemInserted(savedPlaylists.size() - 1);
-        
         updateEmptyState();
         Snackbar.make(binding.getRoot(), "Library created successfully", Snackbar.LENGTH_SHORT).show();
         dialog.dismiss();
     }
 
     private void loadSavedPlaylists() {
-        // Load from new storage system
-        List<Playlist> playlists = sharedPreferenceManager.getSavedPlaylists();
-        
-        // Also check old storage system
+        // Chỉ lấy từ Firestore (SavedLibrariesAudius)
         sharedPreferenceManager.getSavedLibrariesData().addOnSuccessListener(oldLibraries -> {
+            savedPlaylists.clear();
             if (oldLibraries != null && oldLibraries.lists() != null) {
                 for (SavedLibrariesAudius.Library library : oldLibraries.lists()) {
-                    // Check if this library is already in the new system
-                    boolean exists = playlists.stream()
-                            .anyMatch(p -> p.id().equals(library.id()));
-
-                    if (!exists) {
-                        // Convert old library to new Playlist format
-                        Playlist convertedPlaylist = new Playlist(
-                                new Artwork("", "", ""),
-                                library.description(),
-                                library.id(),
-                                library.id(),
-                                false,
-                                library.name(),
-                                0, 0, 0,
-                                new User(0, "", "", new CoverPhoto("",""), 0, 0, false,
-                                        "local", "local", false, "", "Local Library", 0,
-                                        new ProfilePicture("","",""), 0, 0, false, true,
-                                        "", "", 0, 0, 0)
-                        );
-                        playlists.add(convertedPlaylist);
-
-                        // Add to new storage system
-                        sharedPreferenceManager.addPlaylistToSavedPlaylists(convertedPlaylist);
-                    }
+                    // Convert old library to new Playlist format
+                    Playlist convertedPlaylist = new Playlist(
+                            new Artwork("", "", ""),
+                            library.description(),
+                            library.id(),
+                            library.id(),
+                            false,
+                            library.name(),
+                            0, 0, 0,
+                            new User(0, "", "", new CoverPhoto("",""), 0, 0, false,
+                                    "local", "local", false, "", "Local Library", 0,
+                                    new ProfilePicture("","",""), 0, 0, false, true,
+                                    "", "", 0, 0, 0)
+                    );
+                    savedPlaylists.add(convertedPlaylist);
                 }
             }
+            adapter.notifyDataSetChanged();
+            updateEmptyState();
         });
-
-        // Update UI
-        savedPlaylists.clear();
-        savedPlaylists.addAll(playlists);
-        adapter.notifyDataSetChanged();
-        updateEmptyState();
     }
 
     private void updateEmptyState() {
