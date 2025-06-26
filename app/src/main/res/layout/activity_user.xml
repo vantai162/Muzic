@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background"
+    android:background="?android:colorBackground"
     tools:context=".activities.UserActivity">
 
     <com.google.android.material.appbar.AppBarLayout
@@ -185,7 +185,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                android:text="New password"
+                android:text="Password"
                 android:textColor="@color/register_text_label"
                 android:textSize="16sp"
                 app:layout_constraintStart_toStartOf="parent"
@@ -197,7 +197,7 @@
                 android:layout_height="56dp"
                 android:layout_marginTop="8dp"
                 android:background="@drawable/bg_edit_text_register"
-                android:hint="Enter your new Password"
+                android:hint="Enter your Password"
                 android:textColorHint="@color/register_hint_text"
                 android:textColor="@color/white"
                 android:inputType="textPassword"

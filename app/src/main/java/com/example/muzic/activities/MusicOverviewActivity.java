@@ -86,6 +86,8 @@ import retrofit2.Response;
 
 import java.io.IOException;
 
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 @UnstableApi
 public class MusicOverviewActivity extends AppCompatActivity implements Player.Listener {
     private ActivityMusicOverviewBinding binding;
@@ -102,6 +104,16 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
     private SettingsSharedPrefManager settingsManager;
     private ImageView backgroundImageView;
     private boolean isBlurring = false;
+
+    private final android.content.BroadcastReceiver uiReceiver = new android.content.BroadcastReceiver() {
+        @Override
+        public void onReceive(android.content.Context context, Intent intent) {
+            String action = intent.getStringExtra("action");
+            // Nếu cần, xử lý logic đặc biệt ở đây
+            // Ví dụ: updatePlayPauseButton(player.isPlaying()); hoặc các side-effect khác
+            updatePlayPauseButton(player.isPlaying());
+        }
+    };
 
     @OptIn(markerClass = UnstableApi.class)
     @Override
@@ -511,6 +523,7 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
             player.addListener(this);
             updatePlayPauseButton(player.isPlaying());
         }
+        LocalBroadcastManager.getInstance(this).registerReceiver(uiReceiver, new android.content.IntentFilter("com.example.muzic.ACTION_UI_UPDATE"));
         updateBackgroundBlur();
     }
 
@@ -520,6 +533,7 @@ public class MusicOverviewActivity extends AppCompatActivity implements Player.L
         if (player != null) {
             player.removeListener(this);
         }
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(uiReceiver);
     }
 
     @Override

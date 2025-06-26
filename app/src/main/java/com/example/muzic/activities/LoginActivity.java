@@ -14,6 +14,8 @@ import androidx.media3.common.util.UnstableApi;
 
 import com.example.muzic.R;
 import com.google.firebase.auth.FirebaseAuth;
+import com.example.muzic.utils.SettingsSharedPrefManager;
+import com.example.muzic.utils.ThemeManager;
 
 public class LoginActivity extends AppCompatActivity {
     private EditText email;
@@ -25,6 +27,7 @@ public class LoginActivity extends AppCompatActivity {
     @OptIn(markerClass = UnstableApi.class)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        applyThemeMode();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
@@ -60,5 +63,17 @@ public class LoginActivity extends AppCompatActivity {
                         });
             }
         });
+    }
+
+    private void applyThemeMode() {
+        SettingsSharedPrefManager settings = new SettingsSharedPrefManager(this);
+        String mode = settings.getDarkMode();
+        if (mode.equals("on")) {
+            ThemeManager.applyNightMode(true);
+        } else if (mode.equals("off")) {
+            ThemeManager.applyNightMode(false);
+        } else {
+            ThemeManager.applySystemDefaultMode();
+        }
     }
 }

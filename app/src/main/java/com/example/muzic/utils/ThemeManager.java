@@ -77,4 +77,13 @@ public class ThemeManager {
         int blue = Color.blue(color);
         return Color.argb(alpha, red, green, blue);
     }
+
+    // --- Static helpers for global theme switching ---
+    public static void applyNightMode(boolean night) {
+        AppCompatDelegate.setDefaultNightMode(night ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
+    }
+
+    public static void applySystemDefaultMode() {
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+    }
 } 
