@@ -16,6 +16,7 @@ import android.os.Looper;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
+import android.widget.RemoteViews;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
@@ -212,7 +213,7 @@ public class MusicService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        // Update notification immediately when service starts
+        // Luôn cập nhật notification khi service được start
         updateNotificationImmediate();
         return START_NOT_STICKY;
     }
@@ -222,12 +223,10 @@ public class MusicService extends Service {
         if (currentTrack == null) return;
 
         // Create pending intent for notification click
-        Intent intent = new Intent(this, MainActivity.class)
-            .setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, intent, 
+        Intent intent = new Intent(this, MainActivity.class);
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, intent,
             PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
-        // Create notification builder
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, ApplicationClass.CHANNEL_ID_1)
             .setSmallIcon(R.drawable.music_note_24px)
             .setContentTitle(currentTrack.title)
@@ -240,48 +239,34 @@ public class MusicService extends Service {
             .setOngoing(true)
             .setShowWhen(false);
 
-        // Add media controls with fresh PendingIntents
-        builder.addAction(R.drawable.skip_previous_24px, "Previous", 
-            getPendingIntent(ApplicationClass.ACTION_PREV));
-        builder.addAction(player.isPlaying() ? 
-            R.drawable.baseline_pause_24 : R.drawable.play_arrow_24px,
+        // Add media controls
+        builder.addAction(R.drawable.skip_previous_24px, "Previous", getPendingIntent(ApplicationClass.ACTION_PREV));
+        builder.addAction(player.isPlaying() ? R.drawable.baseline_pause_24 : R.drawable.play_arrow_24px,
             player.isPlaying() ? "Pause" : "Play",
             getPendingIntent(ApplicationClass.ACTION_PLAY));
-        builder.addAction(R.drawable.skip_next_24px, "Next", 
-            getPendingIntent(ApplicationClass.ACTION_NEXT));
+        builder.addAction(R.drawable.skip_next_24px, "Next", getPendingIntent(ApplicationClass.ACTION_NEXT));
 
         // Set media style
-        androidx.media.app.NotificationCompat.MediaStyle mediaStyle = 
+        androidx.media.app.NotificationCompat.MediaStyle mediaStyle =
             new androidx.media.app.NotificationCompat.MediaStyle()
                 .setMediaSession(mediaSession.getSessionToken())
                 .setShowActionsInCompactView(0, 1, 2);
         builder.setStyle(mediaStyle);
 
-        // Start foreground service with notification
+        // Set default large icon (before loading artwork)
+        builder.setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher_foreground));
+
+        // Start foreground with basic notification
         startForeground(1, builder.build());
 
-        // Load artwork in background
+        // Load artwork in background and update notification if available
         if (currentTrack.artwork != null && currentTrack.artwork._480x480 != null) {
             executorService.execute(() -> {
                 try {
-                    Bitmap artwork = Picasso.get()
-                        .load(currentTrack.artwork._480x480)
-                        .get();
-
-                    // Update notification with artwork on main thread
+                    Bitmap artwork = Picasso.get().load(currentTrack.artwork._480x480).get();
                     mainHandler.post(() -> {
                         builder.setLargeIcon(artwork);
-
-                        // Update media metadata
-                        MediaMetadataCompat.Builder metadataBuilder = new MediaMetadataCompat.Builder()
-                            .putString(MediaMetadataCompat.METADATA_KEY_TITLE, currentTrack.title)
-                            .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, 
-                                currentTrack.user != null ? currentTrack.user.name : "")
-                            .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, artwork);
-                        mediaSession.setMetadata(metadataBuilder.build());
-
-                        // Update notification
-                        NotificationManager notificationManager = 
+                        NotificationManager notificationManager =
                             (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
                         notificationManager.notify(1, builder.build());
                     });

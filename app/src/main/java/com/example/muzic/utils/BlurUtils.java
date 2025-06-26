@@ -31,6 +31,20 @@ public class BlurUtils {
             .into(target);
     }
 
+    public static void applyBlur(Context context, android.graphics.Bitmap bitmap, ImageView target) {
+        if (bitmap == null) return;
+        MultiTransformation<android.graphics.Bitmap> multiTransformation = new MultiTransformation<>(
+            new CenterCrop(),
+            new BlurTransformation(BLUR_RADIUS, BLUR_SAMPLING)
+        );
+        Glide.with(context)
+            .load(bitmap)
+            .transform(multiTransformation)
+            .transition(DrawableTransitionOptions.withCrossFade(200))
+            .override(2048, 2048)
+            .into(target);
+    }
+
     public static void clearBlur(ImageView view) {
         if (view != null) {
             Glide.with(view.getContext()).clear(view);
