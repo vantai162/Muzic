@@ -24,6 +24,8 @@ import com.example.muzic.databinding.ActivityUserBinding;
 import com.example.muzic.model.Library;
 import com.example.muzic.records.sharedpref.SavedLibrariesAudius;
 import com.example.muzic.utils.FirebaseConverters;
+import com.example.muzic.utils.SettingsSharedPrefManager;
+import com.example.muzic.utils.ThemeManager;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
@@ -54,6 +56,7 @@ public class UserActivity extends AppCompatActivity {
     @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        applyThemeMode();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
@@ -218,5 +221,17 @@ public class UserActivity extends AppCompatActivity {
                 Toast.makeText(this, "All password fields are required", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void applyThemeMode() {
+        SettingsSharedPrefManager settings = new SettingsSharedPrefManager(this);
+        String mode = settings.getDarkMode();
+        if (mode.equals("on")) {
+            ThemeManager.applyNightMode(true);
+        } else if (mode.equals("off")) {
+            ThemeManager.applyNightMode(false);
+        } else {
+            ThemeManager.applySystemDefaultMode();
+        }
     }
 }

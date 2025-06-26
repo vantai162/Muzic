@@ -51,6 +51,7 @@ import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
 import com.yarolegovich.slidingrootnav.SlidingRootNav;
 import com.yarolegovich.slidingrootnav.SlidingRootNavBuilder;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -79,6 +80,15 @@ public class MainActivity extends AppCompatActivity implements Player.Listener {
     private AudiusRepository audiusRepository;
     private Player.Listener playerListener;
     private SharedPreferenceManager sharedPreferenceManager;
+    private final android.content.BroadcastReceiver uiReceiver = new android.content.BroadcastReceiver() {
+        @Override
+        public void onReceive(android.content.Context context, Intent intent) {
+            String action = intent.getStringExtra("action");
+            // Nếu cần, xử lý logic đặc biệt ở đây
+            // Ví dụ: updatePlayControls(); hoặc các side-effect khác
+            updatePlayControls();
+        }
+    };
 
     @OptIn(markerClass = UnstableApi.class)
     @Override
@@ -442,6 +452,7 @@ public class MainActivity extends AppCompatActivity implements Player.Listener {
             player.addListener(this);
             updatePlayControls();
         }
+        LocalBroadcastManager.getInstance(this).registerReceiver(uiReceiver, new android.content.IntentFilter("com.example.muzic.ACTION_UI_UPDATE"));
         // Reapply theme when activity resumes
         ((ApplicationClass) getApplication()).reapplyTheme();
         
@@ -471,6 +482,7 @@ public class MainActivity extends AppCompatActivity implements Player.Listener {
         if (player != null) {
             player.removeListener(this);
         }
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(uiReceiver);
     }
 
     @OptIn(markerClass = UnstableApi.class)

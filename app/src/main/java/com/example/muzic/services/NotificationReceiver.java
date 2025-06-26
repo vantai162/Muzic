@@ -8,6 +8,7 @@ import android.os.Handler;
 import android.os.Looper;
 import androidx.media3.common.util.UnstableApi;
 import androidx.media3.exoplayer.ExoPlayer;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.example.muzic.ApplicationClass;
 
@@ -23,6 +24,11 @@ public class NotificationReceiver extends BroadcastReceiver {
         ExoPlayer player = app.getExoPlayer();
 
         if (actionName != null) {
+            // Gửi LocalBroadcast để Activity nhận và xử lý UI
+            Intent uiIntent = new Intent("com.example.muzic.ACTION_UI_UPDATE");
+            uiIntent.putExtra("action", actionName);
+            LocalBroadcastManager.getInstance(context).sendBroadcast(uiIntent);
+
             // Execute action on main thread to avoid any synchronization issues
             mainHandler.post(() -> {
                 switch (actionName) {
