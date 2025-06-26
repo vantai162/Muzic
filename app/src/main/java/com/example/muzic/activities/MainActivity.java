@@ -529,8 +529,6 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(MainActivity.this, LoginActivity.class));
                 slidingRootNavBuilder.closeMenu();
             } else {
-                sharedPreferenceManager.clear();
-
                 FirebaseAuth.getInstance().signOut();
 
                 Intent intent = new Intent(MainActivity.this, MainActivity.class);

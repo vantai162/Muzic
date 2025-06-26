@@ -8,6 +8,7 @@ import com.example.muzic.model.TrackData;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.gson.Gson;
@@ -23,6 +24,7 @@ import com.example.muzic.records.sharedpref.SavedLibrariesAudius;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class SharedPreferenceManager {
@@ -104,8 +106,6 @@ public class SharedPreferenceManager {
 
     // Legacy Library related methods - Keep these for backward compatibility
     public void setSavedLibrariesData(SavedLibrariesAudius savedLibraries) {
-        saveToPreferences(KEY_SAVED_LIBRARIES, savedLibraries);
-
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         String userID = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
@@ -135,8 +135,15 @@ public class SharedPreferenceManager {
 
     public Task<SavedLibrariesAudius> getSavedLibrariesData() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        String userID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         TaskCompletionSource<SavedLibrariesAudius> source = new TaskCompletionSource<>();
+
+        if (user == null) {
+            // Xử lý khi chưa đăng nhập
+            source.setException(new Exception("User not logged in"));
+            return source.getTask();
+        }
+        String userID = user.getUid();
 
         db.collection("users")
                 .document(userID)
@@ -155,17 +162,10 @@ public class SharedPreferenceManager {
 
                     SavedLibrariesAudius result = new SavedLibrariesAudius(recordLibraries);
 
-                    saveToPreferences(KEY_SAVED_LIBRARIES, result);
-
                     source.setResult(result);
                 })
                 .addOnFailureListener(e -> {
-                    SavedLibrariesAudius cached = getFromPreferences(KEY_SAVED_LIBRARIES, SavedLibrariesAudius.class);
-                    if (cached != null) {
-                        source.setResult(cached);
-                    } else {
-                        source.setResult(new SavedLibrariesAudius(List.of()));
-                    }
+                    source.setResult(new SavedLibrariesAudius(List.of()));
                 });
 
         return source.getTask();
@@ -245,7 +245,6 @@ public class SharedPreferenceManager {
 
     public void clearUserData() {
         sharedPreferences.edit()
-                .remove(KEY_SAVED_PLAYLISTS)
                 .remove(KEY_SAVED_LIBRARIES)
                 .remove(KEY_HOME_TRENDING_TRACKS)
                 .remove(KEY_HOME_TRENDING_PLAYLISTS)

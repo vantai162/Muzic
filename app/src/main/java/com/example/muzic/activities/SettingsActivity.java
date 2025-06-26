@@ -5,9 +5,11 @@ import android.view.View;
 import android.widget.Toast;
 import android.content.res.ColorStateList;
 
+import androidx.annotation.OptIn;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.media3.common.util.UnstableApi;
 
 import com.example.muzic.ApplicationClass;
 import com.example.muzic.R;
@@ -19,6 +21,7 @@ import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.google.android.material.radiobutton.MaterialRadioButton;
 import com.google.android.material.button.MaterialButton;
 
+@UnstableApi
 public class SettingsActivity extends AppCompatActivity {
 
     ActivitySettingsBinding binding;
@@ -30,6 +33,7 @@ public class SettingsActivity extends AppCompatActivity {
     private static final String KEY_BLUR_BACKGROUND = "blur_background_state";
     private static final String KEY_EXPLICIT = "explicit_state";
 
+    @OptIn(markerClass = UnstableApi.class)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
