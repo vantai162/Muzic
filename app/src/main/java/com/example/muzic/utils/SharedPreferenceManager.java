@@ -238,4 +238,18 @@ public class SharedPreferenceManager {
     public boolean hasCache(String key) {
         return sharedPreferences.contains(key);
     }
+
+    public void clear() {
+        sharedPreferences.edit().clear().apply();
+    }
+
+    public void clearUserData() {
+        sharedPreferences.edit()
+                .remove(KEY_SAVED_PLAYLISTS)
+                .remove(KEY_SAVED_LIBRARIES)
+                .remove(KEY_HOME_TRENDING_TRACKS)
+                .remove(KEY_HOME_TRENDING_PLAYLISTS)
+                .remove(KEY_HOME_TRENDING_ARTISTS)
+                .apply();
+    }
 }

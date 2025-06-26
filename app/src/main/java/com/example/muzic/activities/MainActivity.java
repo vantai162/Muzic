@@ -46,6 +46,7 @@ import com.example.muzic.services.MusicService;
 import com.example.muzic.utils.SettingsSharedPrefManager;
 import com.example.muzic.utils.SharedPreferenceManager;
 import com.example.muzic.utils.ThemeManager;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
 import com.yarolegovich.slidingrootnav.SlidingRootNav;
@@ -524,8 +525,21 @@ public class MainActivity extends AppCompatActivity {
         });
 
         slidingRootNavBuilder.getLayout().findViewById(R.id.login).setOnClickListener(view -> {
-            startActivity(new Intent(MainActivity.this, LoginActivity.class));
-            slidingRootNavBuilder.closeMenu();
+            if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+                startActivity(new Intent(MainActivity.this, LoginActivity.class));
+                slidingRootNavBuilder.closeMenu();
+            } else {
+                sharedPreferenceManager.clear();
+
+                FirebaseAuth.getInstance().signOut();
+
+                Intent intent = new Intent(MainActivity.this, MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                slidingRootNavBuilder.closeMenu();
+                finish();
+            }
+
         });
 
         slidingRootNavBuilder.getLayout().findViewById(R.id.about).setOnClickListener(view -> {

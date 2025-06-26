@@ -1,142 +1,198 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fillViewport="true"
     android:background="@color/register_background"
-    android:padding="32dp"
     tools:context=".activities.RegisterActivity">
 
-    <TextView
-        android:id="@+id/tv_get_started"
-        android:layout_width="wrap_content"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:fontFamily="@font/avenir_next_bold"
-        android:text="Get Started"
-        android:textColor="@color/white"
-        android:textSize="34sp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="32dp"/>
+        android:padding="32dp">
 
-    <TextView
-        android:id="@+id/label_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="48dp"
-        android:text="Name"
-        android:textColor="@color/register_text_label"
-        android:textSize="16sp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_get_started" />
+        <TextView
+            android:id="@+id/tv_get_started"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/avenir_next_bold"
+            android:text="Get Started"
+            android:textColor="@color/white"
+            android:textSize="34sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginTop="32dp"/>
 
-    <EditText
-        android:id="@+id/et_name"
-        android:layout_width="0dp"
-        android:layout_height="56dp"
-        android:layout_marginTop="8dp"
-        android:background="@drawable/bg_edit_text_register"
-        android:hint="Enter your name"
-        android:textColorHint="@color/register_hint_text"
-        android:textColor="@color/white"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:singleLine="true"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/label_name" />
+        <TextView
+            android:id="@+id/label_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="48dp"
+            android:text="Name"
+            android:textColor="@color/register_text_label"
+            android:textSize="16sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_get_started" />
 
-    <TextView
-        android:id="@+id/label_email"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="Email"
-        android:textColor="@color/register_text_label"
-        android:textSize="16sp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/et_name" />
+        <EditText
+            android:id="@+id/et_name"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_edit_text_register"
+            android:hint="Enter your name"
+            android:textColorHint="@color/register_hint_text"
+            android:textColor="@color/white"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:singleLine="true"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/label_name" />
 
-    <EditText
-        android:id="@+id/et_email"
-        android:layout_width="0dp"
-        android:layout_height="56dp"
-        android:layout_marginTop="8dp"
-        android:background="@drawable/bg_edit_text_register"
-        android:hint="Enter your email"
-        android:inputType="textEmailAddress"
-        android:textColorHint="@color/register_hint_text"
-        android:textColor="@color/white"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:singleLine="true"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/label_email" />
+        <TextView
+            android:id="@+id/label_email"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Email"
+            android:textColor="@color/register_text_label"
+            android:textSize="16sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/et_name" />
 
-    <TextView
-        android:id="@+id/label_password"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="Password"
-        android:textColor="@color/register_text_label"
-        android:textSize="16sp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/et_email" />
+        <EditText
+            android:id="@+id/et_email"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_edit_text_register"
+            android:hint="Enter your email"
+            android:inputType="textEmailAddress"
+            android:textColorHint="@color/register_hint_text"
+            android:textColor="@color/white"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:singleLine="true"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/label_email" />
 
-    <EditText
-        android:id="@+id/et_password"
-        android:layout_width="0dp"
-        android:layout_height="56dp"
-        android:layout_marginTop="8dp"
-        android:background="@drawable/bg_edit_text_register"
-        android:hint="Enter your Password"
-        android:textColorHint="@color/register_hint_text"
-        android:textColor="@color/white"
-        android:inputType="textPassword"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/label_password" />
+        <TextView
+            android:id="@+id/label_gender"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Gender"
+            android:textColor="@color/register_text_label"
+            android:textSize="16sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/et_email" />
 
-    <TextView
-        android:id="@+id/tv_password_hint"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Must be at least 8 characters!"
-        android:textColor="@color/register_text_label"
-        android:textSize="12sp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/et_password" />
+        <Spinner
+            android:id="@+id/spinner_gender"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_edit_text_register"
+            android:popupBackground="@color/white"
+            android:textAlignment="center"
+            app:layout_constraintTop_toBottomOf="@id/label_gender"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
-    <Button
-        android:id="@+id/btn_sign_up"
-        android:layout_width="0dp"
-        android:layout_height="56dp"
-        android:layout_marginTop="32dp"
-        android:background="@drawable/bg_button_register"
-        android:text="Sign Up"
-        android:textAllCaps="false"
-        android:textColor="@color/white"
-        android:textSize="18sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_password_hint" />
+        <TextView
+            android:id="@+id/label_dob"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Date of Birth"
+            android:textColor="@color/register_text_label"
+            android:textSize="16sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/spinner_gender" />
 
-    <TextView
-        android:id="@+id/tv_login_prompt"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Already have an account? Log in"
-        android:textColor="@color/register_text_label"
-        android:textSize="14sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginBottom="32dp"/>
+        <TextView
+            android:id="@+id/tv_dob"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_edit_text_register"
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:text="Select your birth date"
+            android:textColorHint="@color/register_hint_text"
+            android:textColor="@color/white"
+            app:layout_constraintTop_toBottomOf="@id/label_dob"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <TextView
+            android:id="@+id/label_password"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Password"
+            android:textColor="@color/register_text_label"
+            android:textSize="16sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_dob" />
+
+        <EditText
+            android:id="@+id/et_password"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_edit_text_register"
+            android:hint="Enter your Password"
+            android:textColorHint="@color/register_hint_text"
+            android:textColor="@color/white"
+            android:inputType="textPassword"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/label_password" />
+
+        <TextView
+            android:id="@+id/tv_password_hint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Must be at least 8 characters!"
+            android:textColor="@color/register_text_label"
+            android:textSize="12sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/et_password" />
+
+        <Button
+            android:id="@+id/btn_sign_up"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_marginTop="32dp"
+            android:background="@drawable/bg_button_register"
+            android:text="Sign Up"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_password_hint" />
+
+        <TextView
+            android:id="@+id/tv_login_prompt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Already have an account? Log in"
+            android:textColor="@color/register_text_label"
+            android:textSize="14sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginBottom="32dp"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>
