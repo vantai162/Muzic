@@ -29,15 +29,19 @@ import com.example.muzic.adapter.MainSavedLibrariesAdapter;
 import com.example.muzic.databinding.ActivityMainBinding;
 import com.example.muzic.databinding.PlayBarBinding;
 import com.example.muzic.model.MoodPlaylist;
+import com.example.muzic.records.ProfilePicture;
 import com.example.muzic.model.TrackData;
 import com.example.muzic.network.AudiusApiClient;
 import com.example.muzic.network.AudiusApiService;
 import com.example.muzic.network.AudiusRepository;
+import com.example.muzic.records.Artwork;
 import com.example.muzic.records.AudiusTrackResponse;
+import com.example.muzic.records.CoverPhoto;
 import com.example.muzic.records.Playlist;
 import com.example.muzic.records.PlaylistResponse;
 import com.example.muzic.records.Track;
 import com.example.muzic.records.User;
+import com.example.muzic.records.sharedpref.SavedLibrariesAudius;
 import com.example.muzic.services.MusicService;
 import com.example.muzic.utils.SettingsSharedPrefManager;
 import com.example.muzic.utils.SharedPreferenceManager;
@@ -214,13 +218,34 @@ public class MainActivity extends AppCompatActivity {
 
     private void loadSavedLibraries() {
         if (sharedPreferenceManager != null) {
-            List<Playlist> savedPlaylists = sharedPreferenceManager.getSavedPlaylists();
-            if (savedPlaylists != null && !savedPlaylists.isEmpty()) {
-                savedLibrariesAdapter.updatePlaylists(savedPlaylists);
-                binding.savedLibrariesSection.setVisibility(View.VISIBLE);
-            } else {
-                binding.savedLibrariesSection.setVisibility(View.GONE);
-            }
+            sharedPreferenceManager.getSavedLibrariesData().addOnSuccessListener(savedLibraries -> {
+                List<Playlist> savedPlaylists = new ArrayList<>();
+                if (savedLibraries != null && savedLibraries.lists() != null) {
+                    for (SavedLibrariesAudius.Library library : savedLibraries.lists()) {
+                        // Convert Library sang Playlist
+                        Playlist convertedPlaylist = new Playlist(
+                            new Artwork("", "", ""),
+                            library.description(),
+                            library.id(),
+                            library.id(),
+                            false,
+                            library.name(),
+                            0, 0, 0,
+                            new User(0, "", "", new CoverPhoto("",""), 0, 0, false,
+                                    "local", "local", false, "", "Local Library", 0,
+                                    new ProfilePicture("","",""), 0, 0, false, true,
+                                    "", "", 0, 0, 0)
+                        );
+                        savedPlaylists.add(convertedPlaylist);
+                    }
+                }
+                if (!savedPlaylists.isEmpty()) {
+                    savedLibrariesAdapter.updatePlaylists(savedPlaylists);
+                    binding.savedLibrariesSection.setVisibility(View.VISIBLE);
+                } else {
+                    binding.savedLibrariesSection.setVisibility(View.GONE);
+                }
+            });
         }
     }
 

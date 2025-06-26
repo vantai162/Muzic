@@ -35,11 +35,9 @@ public class SharedPreferenceManager {
     private static final String KEY_PLAYLIST_PREFIX = "playlist:";
     private static final String KEY_ARTIST_PREFIX = "artist:";
     private static final String KEY_SAVED_LIBRARIES = "saved_libraries";
-    private static final String KEY_SAVED_PLAYLISTS = "saved_playlists";
     private static final String KEY_HOME_TRENDING_TRACKS = "home_trending_tracks";
     private static final String KEY_HOME_TRENDING_PLAYLISTS = "home_trending_playlists";
     private static final String KEY_HOME_TRENDING_ARTISTS = "home_trending_artists";
-    private static final String PLAYLISTS_KEY = "saved_playlists";
 
     public static SharedPreferenceManager getInstance(Context context) {
         if (instance == null) {
@@ -204,50 +202,6 @@ public class SharedPreferenceManager {
                 savedLibraries.lists().remove(index);
             }
         });
-    }
-
-    // New Modern Playlist methods
-    public List<Playlist> getSavedPlaylists() {
-        String json = sharedPreferences.getString(KEY_SAVED_PLAYLISTS, null);
-        if (json == null) return new ArrayList<>();
-        
-        Type type = new TypeToken<List<Playlist>>(){}.getType();
-        try {
-            List<Playlist> playlists = gson.fromJson(json, type);
-            return playlists != null ? playlists : new ArrayList<>();
-        } catch (Exception e) {
-            return new ArrayList<>();
-        }
-    }
-
-    public void setSavedPlaylists(List<Playlist> playlists) {
-        if (playlists == null) playlists = new ArrayList<>();
-        saveToPreferences(KEY_SAVED_PLAYLISTS, playlists);
-    }
-
-    public void addPlaylistToSavedPlaylists(Playlist playlist) {
-        List<Playlist> playlists = getSavedPlaylists();
-        playlists.add(playlist);
-        setSavedPlaylists(playlists);
-    }
-
-    public void removePlaylistFromSavedPlaylists(String playlistId) {
-        List<Playlist> playlists = getSavedPlaylists();
-        playlists.removeIf(p -> p.id().equals(playlistId));
-        setSavedPlaylists(playlists);
-    }
-
-    public void removePlaylistFromSavedPlaylists(int index) {
-        List<Playlist> playlists = getSavedPlaylists();
-        if (index >= 0 && index < playlists.size()) {
-            playlists.remove(index);
-            setSavedPlaylists(playlists);
-        }
-    }
-
-    public boolean isPlaylistSaved(String playlistId) {
-        List<Playlist> playlists = getSavedPlaylists();
-        return playlists.stream().anyMatch(p -> p.id().equals(playlistId));
     }
 
     // Cache clearing methods

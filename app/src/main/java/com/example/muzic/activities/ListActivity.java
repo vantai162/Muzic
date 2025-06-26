@@ -154,62 +154,82 @@ public class ListActivity extends AppCompatActivity {
         if (playlistData == null) return;
 
         SharedPreferenceManager sharedPreferenceManager = SharedPreferenceManager.getInstance(this);
-        List<Playlist> savedPlaylists = sharedPreferenceManager.getSavedPlaylists();
-
-        // Show select library bottom sheet
-        View bottomSheetView = getLayoutInflater().inflate(R.layout.select_library_bottom_sheet, null);
-        BottomSheetDialog dialog = new BottomSheetDialog(this, R.style.MyBottomSheetDialogTheme);
-        dialog.setContentView(bottomSheetView);
-
-        // Get views
-        RecyclerView librariesRecyclerView = bottomSheetView.findViewById(R.id.libraries_recycler_view);
-        TextView emptyText = bottomSheetView.findViewById(R.id.empty_text);
-        MaterialButton createNewLibrary = bottomSheetView.findViewById(R.id.create_new_library);
-
-        // Setup RecyclerView
-        librariesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        SelectLibraryAdapter adapter = new SelectLibraryAdapter(savedPlaylists, library -> {
-            // Add current track to selected library
-            audiusRepository.getPlaylistTracks(playlistData.id(), tracks -> {
-                if (tracks != null && !tracks.isEmpty()) {
-                    // Get the first track (since we're adding from a single track view)
-                    Track trackToAdd = tracks.get(0);
-                    
-                    // Add track to library
-                    SavedLibrariesAudius.Library updatedLibrary = new SavedLibrariesAudius.Library(
+        // Lấy danh sách library từ Firestore
+        sharedPreferenceManager.getSavedLibrariesData().addOnSuccessListener(savedLibraries -> {
+            List<Playlist> savedPlaylists = new ArrayList<>();
+            if (savedLibraries != null && savedLibraries.lists() != null) {
+                for (SavedLibrariesAudius.Library library : savedLibraries.lists()) {
+                    // Convert Library sang Playlist để dùng cho adapter
+                    Playlist convertedPlaylist = new Playlist(
+                        new Artwork("", "", ""),
+                        library.description(),
+                        library.id(),
                         library.id(),
                         false,
-                        false,
-                        library.playlistName(),
-                        library.artwork().x480(),
-                        library.description(),
-                        new ArrayList<>(Collections.singletonList(trackToAdd))
+                        library.name(),
+                        0, 0, 0,
+                        new User(0, "", "", new CoverPhoto("",""), 0, 0, false,
+                                "local", "local", false, "", "Local Library", 0,
+                                new ProfilePicture("","",""), 0, 0, false, true,
+                                "", "", 0, 0, 0)
                     );
-                    sharedPreferenceManager.addLibraryToSavedLibraries(updatedLibrary);
-                    
-                    // Show success message
-                    Snackbar.make(binding.getRoot(), "Added to " + library.playlistName(), Snackbar.LENGTH_SHORT).show();
-                    dialog.dismiss();
+                    savedPlaylists.add(convertedPlaylist);
                 }
-            }, error -> {
-                Log.e("ListActivity", "Error fetching track: " + error);
-                Snackbar.make(binding.getRoot(), "Failed to add to library", Snackbar.LENGTH_SHORT).show();
-                dialog.dismiss();
+            }
+
+            // Show select library bottom sheet
+            View bottomSheetView = getLayoutInflater().inflate(R.layout.select_library_bottom_sheet, null);
+            BottomSheetDialog dialog = new BottomSheetDialog(this, R.style.MyBottomSheetDialogTheme);
+            dialog.setContentView(bottomSheetView);
+
+            // Get views
+            RecyclerView librariesRecyclerView = bottomSheetView.findViewById(R.id.libraries_recycler_view);
+            TextView emptyText = bottomSheetView.findViewById(R.id.empty_text);
+            MaterialButton createNewLibrary = bottomSheetView.findViewById(R.id.create_new_library);
+
+            // Setup RecyclerView
+            librariesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+            SelectLibraryAdapter adapter = new SelectLibraryAdapter(savedPlaylists, library -> {
+                // Add current track to selected library
+                audiusRepository.getPlaylistTracks(playlistData.id(), tracks -> {
+                    if (tracks != null && !tracks.isEmpty()) {
+                        // Get the first track (since we're adding from a single track view)
+                        Track trackToAdd = tracks.get(0);
+                        // Add track to library
+                        SavedLibrariesAudius.Library updatedLibrary = new SavedLibrariesAudius.Library(
+                            library.id(),
+                            false,
+                            false,
+                            library.playlistName(),
+                            library.artwork().x480(),
+                            library.description(),
+                            new ArrayList<>(Collections.singletonList(trackToAdd))
+                        );
+                        sharedPreferenceManager.addLibraryToSavedLibraries(updatedLibrary);
+                        // Show success message
+                        Snackbar.make(binding.getRoot(), "Added to " + library.playlistName(), Snackbar.LENGTH_SHORT).show();
+                        dialog.dismiss();
+                    }
+                }, error -> {
+                    Log.e("ListActivity", "Error fetching track: " + error);
+                    Snackbar.make(binding.getRoot(), "Failed to add to library", Snackbar.LENGTH_SHORT).show();
+                    dialog.dismiss();
+                });
             });
+            librariesRecyclerView.setAdapter(adapter);
+
+            // Show empty state if no libraries
+            emptyText.setVisibility(savedPlaylists.isEmpty() ? View.VISIBLE : View.GONE);
+            librariesRecyclerView.setVisibility(savedPlaylists.isEmpty() ? View.GONE : View.VISIBLE);
+
+            // Handle create new library button
+            createNewLibrary.setOnClickListener(v -> {
+                dialog.dismiss();
+                showAddLibraryDialog();
+            });
+
+            dialog.show();
         });
-        librariesRecyclerView.setAdapter(adapter);
-
-        // Show empty state if no libraries
-        emptyText.setVisibility(savedPlaylists.isEmpty() ? View.VISIBLE : View.GONE);
-        librariesRecyclerView.setVisibility(savedPlaylists.isEmpty() ? View.GONE : View.VISIBLE);
-
-        // Handle create new library button
-        createNewLibrary.setOnClickListener(v -> {
-            dialog.dismiss();
-            showAddLibraryDialog();
-        });
-
-        dialog.show();
     }
 
     private void showAddLibraryDialog() {
@@ -233,46 +253,19 @@ public class ListActivity extends AppCompatActivity {
         long currentTime = System.currentTimeMillis();
         String playlistId = "local_" + currentTime;
 
-        Playlist newPlaylist = new Playlist(
-                new Artwork("", "", ""),  // Empty artwork initially
-                "Created on: " + formatMillis(currentTime), // Description
-                playlistId, // permalink
-                playlistId, // id
-                false, // isAlbum
-                name,  // playlist name
-                0,    // repost count
-                0,    // favorite count
-                0,    // total play count
-                new User(
-                        0,                  // albumCount
-                        "",                 // artistPickTrackId
-                        "",                 // bio
-                        new CoverPhoto("",""), // coverPhoto
-                        0,                  // followeeCount
-                        0,                  // followerCount
-                        false,              // doesFollowCurrentUser
-                        "local",            // handle
-                        "local",            // id
-                        false,              // isVerified
-                        "",                 // location
-                        "Local Library",    // name
-                        0,                  // playlistCount
-                        new ProfilePicture("","",""), // profilePicture
-                        0,                  // repostCount
-                        0,                  // trackCount
-                        false,              // isDeactivated
-                        true,               // isAvailable
-                        "",                 // ercWallet
-                        "",                 // splWallet
-                        0,                  // supporterCount
-                        0,                  // supportingCount
-                        0                   // totalAudioBalance
-                )
+        // Không cần tạo Playlist và lưu local nữa
+        // Tạo và lưu Library vào Firestore
+        SavedLibrariesAudius.Library newLibrary = new SavedLibrariesAudius.Library(
+            playlistId,
+            false,
+            false,
+            name,
+            "",  // No artwork initially
+            "Created on: " + formatMillis(currentTime),
+            new ArrayList<>()  // Empty tracks list
         );
-
-        SharedPreferenceManager.getInstance(this).addPlaylistToSavedPlaylists(newPlaylist);
+        SharedPreferenceManager.getInstance(this).addLibraryToSavedLibraries(newLibrary);
         dialog.dismiss();
-        
         // Show select library dialog again
         handleAddToLibrary();
     }
@@ -559,39 +552,22 @@ public class ListActivity extends AppCompatActivity {
                 .setTitle("Delete Playlist")
                 .setMessage("Are you sure you want to delete this playlist?")
                 .setPositiveButton("Delete", (dialog, which) -> {
-                    // Get saved libraries and playlists
-                    SharedPreferenceManager sharedPreferenceManager = SharedPreferenceManager.getInstance(this);
-                    sharedPreferenceManager.getSavedLibrariesData().addOnSuccessListener(savedLibraries -> {
-                        List<Playlist> savedPlaylists = sharedPreferenceManager.getSavedPlaylists();
-                        String playlistId = getIntent().getExtras().getString("id");
-
-                        // Remove from SavedLibrariesAudius
-                        if (savedLibraries != null && savedLibraries.lists() != null) {
-                            List<SavedLibrariesAudius.Library> updatedLibraries = new ArrayList<>();
-                            for (SavedLibrariesAudius.Library library : savedLibraries.lists()) {
-                                if (!library.id().equals(playlistId)) {
-                                    updatedLibraries.add(library);
-                                }
-                            }
-                            SavedLibrariesAudius newSavedLibraries = new SavedLibrariesAudius(updatedLibraries);
-                            sharedPreferenceManager.setSavedLibrariesData(newSavedLibraries);
-                        }
-
-                        // Remove from SavedPlaylists
-                        if (savedPlaylists != null) {
-                            List<Playlist> updatedPlaylists = new ArrayList<>();
-                            for (Playlist playlist : savedPlaylists) {
-                                if (!playlist.id().equals(playlistId)) {
-                                    updatedPlaylists.add(playlist);
-                                }
-                            }
-                            sharedPreferenceManager.setSavedPlaylists(updatedPlaylists);
-                        }
-
-                        // Show success message and finish activity
-                        Snackbar.make(binding.getRoot(), "Playlist deleted", Snackbar.LENGTH_SHORT).show();
-                        finish();
-                    });
+                    // Xóa trực tiếp document thư viện trên Firestore
+                    String playlistId = getIntent().getExtras().getString("id");
+                    String userID = com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser().getUid();
+                    com.google.firebase.firestore.FirebaseFirestore db = com.google.firebase.firestore.FirebaseFirestore.getInstance();
+                    db.collection("users")
+                        .document(userID)
+                        .collection("libraries")
+                        .document(playlistId)
+                        .delete()
+                        .addOnSuccessListener(aVoid -> {
+                            Snackbar.make(binding.getRoot(), "Playlist deleted", Snackbar.LENGTH_SHORT).show();
+                            finish();
+                        })
+                        .addOnFailureListener(e -> {
+                            Snackbar.make(binding.getRoot(), "Delete failed: " + e.getMessage(), Snackbar.LENGTH_SHORT).show();
+                        });
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
