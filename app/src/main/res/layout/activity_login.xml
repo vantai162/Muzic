@@ -14,7 +14,7 @@
         android:layout_height="wrap_content"
         android:fontFamily="@font/avenir_next_bold"
         android:text="Welcome Back"
-        android:textColor="?android:textColorPrimary"
+        android:textColor="@color/textMain"
         android:textSize="34sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
