@@ -25,18 +25,13 @@ import androidx.media3.common.util.UnstableApi;
 
 import com.example.muzic.R;
 import com.example.muzic.databinding.ActivityUserBinding;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.OnFailureListener;
+import com.example.muzic.utils.SupabaseManager;
 import com.example.muzic.utils.SettingsSharedPrefManager;
 import com.example.muzic.utils.ThemeManager;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.Picasso;
 
@@ -263,32 +258,20 @@ public class UserActivity extends AppCompatActivity {
     private void uploadImageToFirebase(Uri uri) {
         if (uri == null) return;
 
-        StorageReference storageRef = FirebaseStorage.getInstance()
-                .getReference("profile_pictures/" + mAuth.getUid() + "_" + UUID.randomUUID());
+        SupabaseManager.uploadImageToSupabase(this, uri, new SupabaseManager.OnUploadSuccessListener() {
+            @Override
+            public void onSuccess(String imageUrl) {
+                db.collection("users").document(mAuth.getUid())
+                        .update("profilePicture", imageUrl)
+                        .addOnSuccessListener(aVoid -> Toast.makeText(UserActivity.this, "Saved!", Toast.LENGTH_SHORT).show())
+                        .addOnFailureListener(e -> Toast.makeText(UserActivity.this, "Firestore failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+            }
 
-        storageRef.putFile(uri)
-                .addOnSuccessListener(taskSnapshot -> {
-                    taskSnapshot.getStorage().getDownloadUrl()
-                            .addOnSuccessListener(downloadUri -> {
-                                String url = downloadUri.toString();
-
-                                Map<String, Object> img = new HashMap<>();
-                                img.put("profilePicture", url);
-
-                                db.collection("users").document(mAuth.getUid())
-                                        .update("profilePicture", url)
-                                        .addOnSuccessListener(aVoid -> {
-                                            Toast.makeText(this, "Saved to users!", Toast.LENGTH_SHORT).show();
-                                        })
-                                        .addOnFailureListener(e -> {
-                                            Toast.makeText(this, "Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                                        });
-                            })
-                            .addOnFailureListener(e -> {
-                                Toast.makeText(this, "Failed to get download URL: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                            });
-                })
-                .addOnFailureListener(e -> Toast.makeText(this, "Upload failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+            @Override
+            public void onFailure(String error) {
+                Toast.makeText(UserActivity.this, error, Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     private void applyThemeMode() {
