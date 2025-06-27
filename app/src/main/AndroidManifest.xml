@@ -11,6 +11,7 @@
         android:name="android.permission.MEDIA_CONTENT_CONTROL"
         tools:ignore="ProtectedPermissions" /> <!-- Storage permissions -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" /> <!-- Notification permissions -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
@@ -37,14 +38,24 @@
             android:name=".activities.MainActivity"
             android:exported="true"
             android:launchMode="singleTop">
+            <!-- Cho mở app bình thường -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-                <action android:name="android.intent.action.MUSIC_PLAYER" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
                 <category android:name="android.intent.category.APP_MUSIC" />
             </intent-filter>
-        </activity> <!-- List Activity -->
+
+            <!-- Cho xử lý link -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="https"
+                    android:host="uitmuzic.page.link" />
+            </intent-filter>
+        </activity>
+        <!-- List Activity -->
         <activity
             android:name=".activities.ListActivity"
             android:exported="false"

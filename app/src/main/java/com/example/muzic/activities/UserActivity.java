@@ -1,5 +1,7 @@
 package com.example.muzic.activities;
 
+import static androidx.core.app.ActivityCompat.startActivityForResult;
+
 import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.content.Intent;
@@ -8,6 +10,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
+import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -15,15 +18,18 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.OptIn;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.media3.common.util.UnstableApi;
 
 import com.example.muzic.R;
 import com.example.muzic.databinding.ActivityUserBinding;
-import com.example.muzic.model.Library;
-import com.example.muzic.records.sharedpref.SavedLibrariesAudius;
-import com.example.muzic.utils.FirebaseConverters;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.example.muzic.utils.SettingsSharedPrefManager;
 import com.example.muzic.utils.ThemeManager;
 import com.google.firebase.auth.AuthCredential;
@@ -39,6 +45,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class UserActivity extends AppCompatActivity {
@@ -47,6 +54,8 @@ public class UserActivity extends AppCompatActivity {
     private Button update;
     private Spinner genderSpinner;
     private TextView tvDob;
+    private static final int PICK_IMAGE_REQUEST = 1;
+    private Uri imageUri;
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
 
@@ -58,28 +67,30 @@ public class UserActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         applyThemeMode();
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_register);
+        
+        binding = ActivityUserBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         mAuth = FirebaseAuth.getInstance();
         FirebaseUser user = mAuth.getCurrentUser();
         db = FirebaseFirestore.getInstance();
         String userID = mAuth.getUid();
 
-        name = findViewById(R.id.et_name);
-        password = findViewById(R.id.et_password);
-        update = findViewById(R.id.btn_sign_up);
-        newpassword = findViewById(R.id.et_new_password);
-        confirmnewpassword = findViewById(R.id.et_confirm_new_password);
+        name = binding.etName;
+        password = binding.etPassword;
+        update = binding.btnUpdate;
+        newpassword = binding.etNewPassword;
+        confirmnewpassword = binding.etConfirmNewPassword;
 
         // Setup spinner
-        genderSpinner = findViewById(R.id.spinner_gender);
+        genderSpinner = binding.spinnerGender;
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
                 R.array.gender_array, R.layout.spinner_selected_item);
         adapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
         genderSpinner.setAdapter(adapter);
 
         // Setup datepicker
-        tvDob = findViewById(R.id.tv_dob);
+        tvDob = binding.tvDob;
         tvDob.setOnClickListener(v -> {
             Calendar calendar = Calendar.getInstance();
             int year = calendar.get(Calendar.YEAR);
@@ -221,6 +232,56 @@ public class UserActivity extends AppCompatActivity {
                 Toast.makeText(this, "All password fields are required", Toast.LENGTH_SHORT).show();
             }
         });
+
+        // Setup button add image
+        binding.btnPickImage.setOnClickListener(v -> openFileChooser());
+    }
+
+    private void openFileChooser() {
+        Intent intent = new Intent(Intent.ACTION_PICK);
+        intent.setType("image/*");
+        startActivityForResult(intent, PICK_IMAGE_REQUEST);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
+            imageUri = data.getData();
+            binding.userImg .setImageURI(imageUri);
+            uploadImageToFirebase(imageUri);
+        }
+    }
+
+    private void uploadImageToFirebase(Uri uri) {
+        if (uri == null) return;
+
+        StorageReference storageRef = FirebaseStorage.getInstance()
+                .getReference("profile_pictures/" + mAuth.getUid() + "_" + UUID.randomUUID());
+
+        storageRef.putFile(uri)
+                .addOnSuccessListener(taskSnapshot -> {
+                    taskSnapshot.getStorage().getDownloadUrl()
+                            .addOnSuccessListener(downloadUri -> {
+                                String url = downloadUri.toString();
+
+                                Map<String, Object> img = new HashMap<>();
+                                img.put("profilePicture", url);
+
+                                db.collection("users").document(mAuth.getUid())
+                                        .update("profilePicture", url)
+                                        .addOnSuccessListener(aVoid -> {
+                                            Toast.makeText(this, "Saved to users!", Toast.LENGTH_SHORT).show();
+                                        })
+                                        .addOnFailureListener(e -> {
+                                            Toast.makeText(this, "Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                        });
+                            })
+                            .addOnFailureListener(e -> {
+                                Toast.makeText(this, "Failed to get download URL: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            });
+                })
+                .addOnFailureListener(e -> Toast.makeText(this, "Upload failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
     private void applyThemeMode() {
@@ -233,5 +294,14 @@ public class UserActivity extends AppCompatActivity {
         } else {
             ThemeManager.applySystemDefaultMode();
         }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            finish();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

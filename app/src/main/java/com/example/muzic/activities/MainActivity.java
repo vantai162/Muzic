@@ -4,11 +4,14 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.OptIn;
@@ -47,6 +50,8 @@ import com.example.muzic.utils.SettingsSharedPrefManager;
 import com.example.muzic.utils.SharedPreferenceManager;
 import com.example.muzic.utils.ThemeManager;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
 import com.yarolegovich.slidingrootnav.SlidingRootNav;
@@ -179,6 +184,31 @@ public class MainActivity extends AppCompatActivity implements Player.Listener {
         
         // Restore play bar state if needed
         restorePlayBarState();
+
+        // Link xac thuc email
+        Intent intent = getIntent();
+        Uri deepLink = intent.getData();
+
+        if (deepLink != null && FirebaseAuth.getInstance().isSignInWithEmailLink(deepLink.toString())) {
+            SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+            String email = prefs.getString("emailForSignIn", null);
+
+            if (email != null) {
+                FirebaseAuth.getInstance().signInWithEmailLink(email, deepLink.toString())
+                        .addOnSuccessListener(authResult -> {
+                            Toast.makeText(this, "Login successful!", Toast.LENGTH_SHORT).show();
+                            Intent newintent = new Intent(this, MainActivity.class);
+                            newintent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(newintent);
+                            finish();
+                        })
+                        .addOnFailureListener(e -> {
+                            Toast.makeText(this, "Login failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        });
+            } else {
+                Toast.makeText(this, "No email found", Toast.LENGTH_LONG).show();
+            }
+        }
     }
 
     private void setupRecyclerViews() {
@@ -458,6 +488,9 @@ public class MainActivity extends AppCompatActivity implements Player.Listener {
         
         // Update play bar colors based on theme
         updatePlayBarThemeColors();
+
+        // Setup slidingRootNav
+        onDrawerItemsClicked();
         
         // Reload saved libraries as they might have changed
         loadSavedLibraries();
@@ -541,11 +574,56 @@ public class MainActivity extends AppCompatActivity implements Player.Listener {
             slidingRootNavBuilder.closeMenu();
         });
 
+        View userView = slidingRootNavBuilder.getLayout().findViewById(R.id.user);
+        View loginView = slidingRootNavBuilder.getLayout().findViewById(R.id.login);
+
+        TextView loginText = loginView.findViewById(R.id.text);
+        TextView welcome = slidingRootNavBuilder.getLayout().findViewById(R.id.tv_welcome);
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (user == null) {
+            userView.setVisibility(View.GONE);
+        } else {
+            userView.setVisibility(View.VISIBLE);
+            userView.setOnClickListener(v -> {
+                startActivity(new Intent(this, UserActivity.class));
+                slidingRootNavBuilder.closeMenu();
+            });
+            loginText.setText("Log out");
+
+            FirebaseFirestore db = FirebaseFirestore.getInstance();
+            String userID = user.getUid();
+
+            db.collection("users")
+                    .document(userID)
+                    .get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists()) {
+                            String welcomeName = documentSnapshot.getString("name");
+                            if (welcomeName != null) {
+                                welcome.setText("Welcome back " + welcomeName);
+                            } else {
+                                welcome.setText("Welcome back");
+                            }
+                        } else {
+                            welcome.setText("Welcome back");
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        welcome.setText("Welcome back");
+                    });
+        }
+
         slidingRootNavBuilder.getLayout().findViewById(R.id.logo).setOnClickListener(view -> slidingRootNavBuilder.closeMenu());
 
         slidingRootNavBuilder.getLayout().findViewById(R.id.library).setOnClickListener(view -> {
-            startActivity(new Intent(MainActivity.this, SavedLibrariesActivity.class));
-            slidingRootNavBuilder.closeMenu();
+            if (user == null) {
+                Toast.makeText(MainActivity.this, "You need to log in!", Toast.LENGTH_SHORT).show();
+            } else {
+                startActivity(new Intent(MainActivity.this, SavedLibrariesActivity.class));
+                slidingRootNavBuilder.closeMenu();
+            }
         });
 
         slidingRootNavBuilder.getLayout().findViewById(R.id.login).setOnClickListener(view -> {

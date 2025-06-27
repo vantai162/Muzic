@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.media3.common.util.UnstableApi;
 
 import com.example.muzic.R;
+import com.google.firebase.auth.ActionCodeSettings;
 import com.google.firebase.auth.FirebaseAuth;
 import com.example.muzic.utils.SettingsSharedPrefManager;
 import com.example.muzic.utils.ThemeManager;
@@ -20,8 +21,8 @@ import com.example.muzic.utils.ThemeManager;
 public class LoginActivity extends AppCompatActivity {
     private EditText email;
     private EditText password;
-    private Button login;
-    private TextView registerPrompt;
+    private Button login, loginemail;
+    private TextView registerPrompt, forgotPassword;
     private FirebaseAuth mAuth;
 
     @OptIn(markerClass = UnstableApi.class)
@@ -31,12 +32,34 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
+        mAuth = FirebaseAuth.getInstance();
+        if (mAuth.getCurrentUser() != null) {
+            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+            finish();
+        }
+
         email = findViewById(R.id.et_email);
         password = findViewById(R.id.et_password);
         login = findViewById(R.id.btn_login);
+        loginemail = findViewById(R.id.btn_email_link_login);
         registerPrompt = findViewById(R.id.tv_register_prompt);
+        forgotPassword = findViewById(R.id.tv_forgot_password);
 
-        mAuth = FirebaseAuth.getInstance();
+        forgotPassword.setOnClickListener(v -> {
+            String userEmail = email.getText().toString();
+            if (TextUtils.isEmpty(userEmail)) {
+                Toast.makeText(this, "Please enter your email", Toast.LENGTH_SHORT).show();
+            } else {
+                mAuth.sendPasswordResetEmail(userEmail)
+                        .addOnCompleteListener(task -> {
+                            if (task.isSuccessful()) {
+                                Toast.makeText(this, "Please check your email", Toast.LENGTH_LONG).show();
+                            } else {
+                                Toast.makeText(this, "Error: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
+                            }
+                        });
+            }
+        });
 
         registerPrompt.setOnClickListener(v -> {
             startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
@@ -53,13 +76,38 @@ public class LoginActivity extends AppCompatActivity {
                 mAuth.signInWithEmailAndPassword(txtEmail, txtPassword)
                         .addOnCompleteListener(task -> {
                             if (task.isSuccessful()) {
-                                Toast.makeText(this, "Login succesful!", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(this, "Login successful!", Toast.LENGTH_SHORT).show();
                                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                                 startActivity(intent);
                             } else {
                                 Toast.makeText(this, "Login failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
                             }
+                        });
+            }
+        });
+
+        loginemail.setOnClickListener(v -> {
+            String userEmail = email.getText().toString();
+            if (TextUtils.isEmpty(userEmail)) {
+                Toast.makeText(this, "Please enter your email", Toast.LENGTH_SHORT).show();
+            } else {
+                ActionCodeSettings settings = ActionCodeSettings.newBuilder()
+                        .setHandleCodeInApp(true)
+                        .setUrl("https://uitmuzic.page.link/emailSignIn")
+                        .setAndroidPackageName("com.example.muzic", true, null)
+                        .build();
+
+                mAuth.sendSignInLinkToEmail(userEmail, settings)
+                        .addOnSuccessListener(unused -> {
+                            Toast.makeText(this, "Please check your email", Toast.LENGTH_LONG).show();
+                            getSharedPreferences("AppPrefs", MODE_PRIVATE)
+                                    .edit()
+                                    .putString("emailForSignIn", userEmail)
+                                    .apply();
+                        })
+                        .addOnFailureListener(e -> {
+                            Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
                         });
             }
         });

@@ -35,19 +35,32 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
                 android:background="#4D121212"
-                android:orientation="vertical">
+                android:orientation="horizontal"
+                android:paddingVertical="@dimen/_6sdp">
 
                 <TextView
                     android:id="@+id/user_name"
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
                     android:fontFamily="@font/avenir_next_regular"
-                    android:paddingHorizontal="@dimen/_25sdp"
-                    android:paddingVertical="@dimen/_6sdp"
+                    android:paddingStart="@dimen/_25sdp"
+                    android:paddingEnd="8dp"
                     android:text="@string/app_name"
                     android:textSize="@dimen/_30ssp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
 
+                <Button
+                    android:id="@+id/btn_pick_image"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="24dp"
+                    android:fontFamily="@font/avenir_next_regular"
+                    android:layout_gravity="center_vertical"
+                    android:text="add"
+                    android:textStyle="bold" />
             </LinearLayout>
 
             <androidx.appcompat.widget.Toolbar
@@ -185,7 +198,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                android:text="Password"
+                android:text="New password"
                 android:textColor="@color/register_text_label"
                 android:textSize="16sp"
                 app:layout_constraintStart_toStartOf="parent"
@@ -197,7 +210,7 @@
                 android:layout_height="56dp"
                 android:layout_marginTop="8dp"
                 android:background="@drawable/bg_edit_text_register"
-                android:hint="Enter your Password"
+                android:hint="Enter your new Password"
                 android:textColorHint="@color/register_hint_text"
                 android:textColor="@color/white"
                 android:inputType="textPassword"
