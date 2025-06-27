@@ -40,8 +40,15 @@ public class LoginActivity extends AppCompatActivity {
 
         email = findViewById(R.id.et_email);
         password = findViewById(R.id.et_password);
+
         login = findViewById(R.id.btn_login);
+        login.setBackgroundResource(R.drawable.bg_gradient_orange);
+        login.setBackgroundTintList(null);
+
         loginemail = findViewById(R.id.btn_email_link_login);
+        loginemail.setBackgroundResource(R.drawable.bg_gradient_orange);
+        loginemail.setBackgroundTintList(null);
+
         registerPrompt = findViewById(R.id.tv_register_prompt);
         forgotPassword = findViewById(R.id.tv_forgot_password);
 

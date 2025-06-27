@@ -50,7 +50,11 @@ public class RegisterActivity extends AppCompatActivity {
         name = findViewById(R.id.et_name);
         email = findViewById(R.id.et_email);
         password = findViewById(R.id.et_password);
+
         signUp = findViewById(R.id.btn_sign_up);
+        signUp.setBackgroundResource(R.drawable.bg_gradient_orange);
+        signUp.setBackgroundTintList(null);
+
         loginPrompt = findViewById(R.id.tv_login_prompt);
 
         genderSpinner = findViewById(R.id.spinner_gender);

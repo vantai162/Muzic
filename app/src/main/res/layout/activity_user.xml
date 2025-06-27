@@ -54,7 +54,7 @@
 
                 <Button
                     android:id="@+id/btn_pick_image"
-                    android:layout_width="wrap_content"
+                    android:layout_width="@dimen/_60sdp"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="24dp"
                     android:fontFamily="@font/avenir_next_regular"

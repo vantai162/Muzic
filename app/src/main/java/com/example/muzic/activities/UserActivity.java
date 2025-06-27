@@ -78,9 +78,16 @@ public class UserActivity extends AppCompatActivity {
 
         name = binding.etName;
         password = binding.etPassword;
+
         update = binding.btnUpdate;
+        update.setBackgroundResource(R.drawable.bg_gradient_orange);
+        update.setBackgroundTintList(null);
+
         newpassword = binding.etNewPassword;
         confirmnewpassword = binding.etConfirmNewPassword;
+
+        binding.btnPickImage.setBackgroundResource(R.drawable.bg_gradient_orange);
+        binding.btnPickImage.setBackgroundTintList(null);
 
         // Setup spinner
         genderSpinner = binding.spinnerGender;
