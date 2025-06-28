@@ -8,6 +8,7 @@ import android.app.Application;
 import android.graphics.Color;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.content.res.ColorStateList;
+import android.content.Intent;
 
 import androidx.media3.common.Player;
 import androidx.media3.common.util.UnstableApi;
@@ -200,6 +201,9 @@ public class ApplicationClass extends Application {
     
     public void playCurrentTrack() {
         if (currentTrack != null && player != null) {
+            // Start MusicService for notification
+            startMusicService();
+            
             // Get streaming URL using the correct format
             String streamUrl = "https://discoveryprovider2.audius.co/v1/tracks/" + currentTrack.id + "/stream";
             SONG_URL = streamUrl;
@@ -208,6 +212,15 @@ public class ApplicationClass extends Application {
             player.setMediaItem(androidx.media3.common.MediaItem.fromUri(streamUrl));
             player.prepare();
             player.play();
+        }
+    }
+    
+    private void startMusicService() {
+        Intent serviceIntent = new Intent(this, com.example.muzic.services.MusicService.class);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            startForegroundService(serviceIntent);
+        } else {
+            startService(serviceIntent);
         }
     }
     
