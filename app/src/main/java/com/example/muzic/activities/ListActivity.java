@@ -112,6 +112,12 @@ public class ListActivity extends AppCompatActivity {
 
         binding.addToLibrary.setOnClickListener(view -> handleAddToLibrary());
         binding.moreIcon.setOnClickListener(view -> onMoreIconClicked());
+        
+        // Add click listener for add_more_songs to open SearchActivity
+        binding.addMoreSongs.setOnClickListener(view -> {
+            Intent searchIntent = new Intent(ListActivity.this, SearchActivity.class);
+            startActivity(searchIntent);
+        });
     }
 
     private TrackData convertToTrackData(Track track) {

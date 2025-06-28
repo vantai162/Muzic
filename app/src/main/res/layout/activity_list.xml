@@ -191,7 +191,11 @@
                     android:layout_height="wrap_content"
                     android:text="add songs"
                     android:textSize="@dimen/_11ssp"
-                    android:textColor="@color/green" />
+                    android:textColor="@color/green"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:padding="@dimen/_4sdp" />
 
             </LinearLayout>
 

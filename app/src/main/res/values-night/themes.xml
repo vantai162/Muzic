@@ -24,6 +24,8 @@
         <!-- Text colors -->
         <item name="android:textColor">@color/text_light</item>
         <item name="android:textColorSecondary">@color/text_secondary_dark</item>
+        <item name="textColorPrimary">@color/text_light</item>
+        <item name="textColorHint">@color/register_hint_text</item>
 
         <!-- Divider -->
         <item name="android:divider">@color/divider_dark</item>
