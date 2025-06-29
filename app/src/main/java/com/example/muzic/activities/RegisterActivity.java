@@ -21,6 +21,7 @@ import androidx.media3.common.util.UnstableApi;
 import com.example.muzic.R;
 import com.google.firebase.Firebase;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -100,32 +101,50 @@ public class RegisterActivity extends AppCompatActivity {
             } else {
                 mAuth.createUserWithEmailAndPassword(txtEmail, txtPassword)
                         .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        String userId = mAuth.getCurrentUser().getUid();
+                            if (task.isSuccessful()) {
+                                FirebaseUser firebaseUser = mAuth.getCurrentUser();
+                                if (firebaseUser != null) {
+                                    // Gửi email xác minh
+                                    firebaseUser.sendEmailVerification()
+                                            .addOnCompleteListener(verifyTask -> {
+                                                if (verifyTask.isSuccessful()) {
+                                                    String userId = firebaseUser.getUid();
 
-                        HashMap<String, Object> map = new HashMap<>();
-                        map.put("name", txtName);
-                        map.put("id", userId);
-                        map.put("email", txtEmail);
-                        map.put("gender", gender);
-                        map.put("birthday", birth);
+                                                    HashMap<String, Object> map = new HashMap<>();
+                                                    map.put("name", txtName);
+                                                    map.put("id", userId);
+                                                    map.put("email", txtEmail);
+                                                    map.put("gender", gender);
+                                                    map.put("birthday", birth);
 
-                        db.collection("users").document(userId).set(map)
-                                .addOnCompleteListener(task1 -> {
-                                    if (task1.isSuccessful()) {
-                                        Toast.makeText(RegisterActivity.this, "Registration successful!", Toast.LENGTH_SHORT).show();
+                                                    db.collection("users").document(userId).set(map)
+                                                            .addOnCompleteListener(task1 -> {
+                                                                if (task1.isSuccessful()) {
+                                                                    Toast.makeText(RegisterActivity.this,
+                                                                            "Registration successful!\nPlease check your email to verify your account.",
+                                                                            Toast.LENGTH_LONG).show();
 
-                                        Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
-                                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                        startActivity(intent);
-                                        finish();
-                                    } else {
-                                        Toast.makeText(RegisterActivity.this, "Firestore failed: " + task1.getException(), Toast.LENGTH_LONG).show();
-                                    }
-                                });
-                    } else {
-                        Toast.makeText(RegisterActivity.this, "Registration failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
-                    }});
+                                                                    // Đăng xuất để chờ xác minh email
+                                                                    FirebaseAuth.getInstance().signOut();
+
+                                                                    // Quay về màn hình đăng nhập
+                                                                    Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+                                                                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                                                    startActivity(intent);
+                                                                    finish();
+                                                                } else {
+                                                                    Toast.makeText(RegisterActivity.this, "Firestore failed: " + task1.getException(), Toast.LENGTH_LONG).show();
+                                                                }
+                                                            });
+                                                } else {
+                                                    Toast.makeText(RegisterActivity.this, "Failed to send verification email.", Toast.LENGTH_LONG).show();
+                                                }
+                                            });
+                                }
+                            } else {
+                                Toast.makeText(RegisterActivity.this, "Registration failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
+                            }
+                        });
             }
         });
     }

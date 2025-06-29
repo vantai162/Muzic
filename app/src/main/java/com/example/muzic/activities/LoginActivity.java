@@ -17,6 +17,7 @@ import com.google.firebase.auth.ActionCodeSettings;
 import com.google.firebase.auth.FirebaseAuth;
 import com.example.muzic.utils.SettingsSharedPrefManager;
 import com.example.muzic.utils.ThemeManager;
+import com.google.firebase.auth.FirebaseUser;
 
 public class LoginActivity extends AppCompatActivity {
     private EditText email;
@@ -83,10 +84,19 @@ public class LoginActivity extends AppCompatActivity {
                 mAuth.signInWithEmailAndPassword(txtEmail, txtPassword)
                         .addOnCompleteListener(task -> {
                             if (task.isSuccessful()) {
-                                Toast.makeText(this, "Login successful!", Toast.LENGTH_SHORT).show();
-                                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                startActivity(intent);
+                                FirebaseUser user = mAuth.getCurrentUser();
+                                if (user != null && user.isEmailVerified()) {
+                                    // Email đã xác minh → vào app
+                                    Toast.makeText(LoginActivity.this, "Login successful", Toast.LENGTH_SHORT).show();
+                                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                    startActivity(intent);
+                                    finish();
+                                } else {
+                                    // Email chưa xác minh
+                                    FirebaseAuth.getInstance().signOut(); // Đăng xuất luôn
+                                    Toast.makeText(LoginActivity.this, "Please verify your email before logging in.", Toast.LENGTH_LONG).show();
+                                }
                             } else {
                                 Toast.makeText(this, "Login failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
                             }
@@ -101,7 +111,7 @@ public class LoginActivity extends AppCompatActivity {
             } else {
                 ActionCodeSettings settings = ActionCodeSettings.newBuilder()
                         .setHandleCodeInApp(true)
-                        .setUrl("https://uitmuzic.page.link/emailSignIn")
+                        .setUrl("https://uitmuzic.page.link/loginemail")
                         .setAndroidPackageName("com.example.muzic", true, null)
                         .build();
 

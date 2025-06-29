@@ -52,7 +52,8 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data
                     android:scheme="https"
-                    android:host="uitmuzic.page.link" />
+                    android:host="com.example.muzic"
+                    android:pathPrefix="/login" />
             </intent-filter>
         </activity>
         <!-- List Activity -->
