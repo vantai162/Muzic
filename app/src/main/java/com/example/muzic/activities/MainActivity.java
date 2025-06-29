@@ -159,6 +159,26 @@ public class MainActivity extends AppCompatActivity implements Player.Listener {
         
         // Setup SwipeRefreshLayout
         binding.refreshLayout.setOnRefreshListener(() -> {
+            // Reset shimmer state
+            if (binding.songsShimmerContainer != null) {
+                binding.songsShimmerContainer.setVisibility(View.VISIBLE);
+            }
+            if (binding.artistsShimmerContainer != null) {
+                binding.artistsShimmerContainer.setVisibility(View.VISIBLE);
+            }
+            if (binding.playlistsShimmerContainer != null) {
+                binding.playlistsShimmerContainer.setVisibility(View.VISIBLE);
+            }
+            if (binding.popularSongsRecyclerView != null) {
+                binding.popularSongsRecyclerView.setVisibility(View.GONE);
+            }
+            if (binding.popularArtistsRecyclerView != null) {
+                binding.popularArtistsRecyclerView.setVisibility(View.GONE);
+            }
+            if (binding.popularPlaylistRecyclerView != null) {
+                binding.popularPlaylistRecyclerView.setVisibility(View.GONE);
+            }
+            
             // Reload all data
             loadTrendingTracks();
             loadSavedLibraries();
@@ -255,6 +275,26 @@ public class MainActivity extends AppCompatActivity implements Player.Listener {
         );
         moodPlaylistAdapter = new MoodPlaylistAdapter(this, new ArrayList<>());
         binding.moodPlaylistRecyclerView.setAdapter(moodPlaylistAdapter);
+
+        // Initialize shimmer containers
+        if (binding.songsShimmerContainer != null) {
+            binding.songsShimmerContainer.setVisibility(View.VISIBLE);
+        }
+        if (binding.artistsShimmerContainer != null) {
+            binding.artistsShimmerContainer.setVisibility(View.VISIBLE);
+        }
+        if (binding.playlistsShimmerContainer != null) {
+            binding.playlistsShimmerContainer.setVisibility(View.VISIBLE);
+        }
+        if (binding.popularSongsRecyclerView != null) {
+            binding.popularSongsRecyclerView.setVisibility(View.GONE);
+        }
+        if (binding.popularArtistsRecyclerView != null) {
+            binding.popularArtistsRecyclerView.setVisibility(View.GONE);
+        }
+        if (binding.popularPlaylistRecyclerView != null) {
+            binding.popularPlaylistRecyclerView.setVisibility(View.GONE);
+        }
     }
 
     private void loadSavedLibraries() {
@@ -362,18 +402,22 @@ public class MainActivity extends AppCompatActivity implements Player.Listener {
     }
 
     private void loadTrendingTracks() {
-        // Show shimmer and hide recycler views
-        binding.songsShimmerContainer.startShimmer();
-        binding.artistsShimmerContainer.startShimmer();
-        binding.songsShimmerContainer.setVisibility(View.VISIBLE);
-        binding.artistsShimmerContainer.setVisibility(View.VISIBLE);
-        binding.popularSongsRecyclerView.setVisibility(View.GONE);
-        binding.popularArtistsRecyclerView.setVisibility(View.GONE);
+        // Start shimmer animations
+        if (binding.songsShimmerContainer != null) {
+            binding.songsShimmerContainer.startShimmer();
+        }
+        if (binding.artistsShimmerContainer != null) {
+            binding.artistsShimmerContainer.startShimmer();
+        }
+        if (binding.playlistsShimmerContainer != null) {
+            binding.playlistsShimmerContainer.startShimmer();
+        }
 
+        // Load trending tracks
         audiusRepository.getTrendingTracks(15, new Callback<AudiusTrackResponse>() {
             @Override
             public void onResponse(Call<AudiusTrackResponse> call, Response<AudiusTrackResponse> response) {
-                if (response.isSuccessful() && response.body() != null) {
+                if (response.isSuccessful() && response.body() != null && response.body().data() != null && !response.body().data().isEmpty()) {
                     List<Track> tracks = response.body().data();
                     trendingTracksAdapter.setTracks(tracks);
 
@@ -389,12 +433,20 @@ public class MainActivity extends AppCompatActivity implements Player.Listener {
                     popularUserAdapter.setUsers(uniqueUsers);
 
                     // Hide shimmer and show recycler views
-                    binding.songsShimmerContainer.stopShimmer();
-                    binding.artistsShimmerContainer.stopShimmer();
-                    binding.songsShimmerContainer.setVisibility(View.GONE);
-                    binding.artistsShimmerContainer.setVisibility(View.GONE);
-                    binding.popularSongsRecyclerView.setVisibility(View.VISIBLE);
-                    binding.popularArtistsRecyclerView.setVisibility(View.VISIBLE);
+                    if (binding.songsShimmerContainer != null) {
+                        binding.songsShimmerContainer.stopShimmer();
+                        binding.songsShimmerContainer.setVisibility(View.GONE);
+                    }
+                    if (binding.artistsShimmerContainer != null) {
+                        binding.artistsShimmerContainer.stopShimmer();
+                        binding.artistsShimmerContainer.setVisibility(View.GONE);
+                    }
+                    if (binding.popularSongsRecyclerView != null) {
+                        binding.popularSongsRecyclerView.setVisibility(View.VISIBLE);
+                    }
+                    if (binding.popularArtistsRecyclerView != null) {
+                        binding.popularArtistsRecyclerView.setVisibility(View.VISIBLE);
+                    }
 
                     // === Tạo danh sách mood playlists ===
                     Map<String, List<Track>> moodMap = new HashMap<>();
@@ -432,6 +484,19 @@ public class MainActivity extends AppCompatActivity implements Player.Listener {
                     //}
                     // Cập nhật adapter
                     moodPlaylistAdapter.setMoodPlaylists(moodPlaylists);
+                } else {
+                    // No data available
+                    if (binding.songsShimmerContainer != null) {
+                        binding.songsShimmerContainer.stopShimmer();
+                        binding.songsShimmerContainer.setVisibility(View.GONE);
+                    }
+                    if (binding.artistsShimmerContainer != null) {
+                        binding.artistsShimmerContainer.stopShimmer();
+                        binding.artistsShimmerContainer.setVisibility(View.GONE);
+                    }
+                    // Optionally hide sections if no data
+                    // binding.popularSongsSection.setVisibility(View.GONE);
+                    // binding.popularArtistsSection.setVisibility(View.GONE);
                 }
             }
 
@@ -439,10 +504,22 @@ public class MainActivity extends AppCompatActivity implements Player.Listener {
             public void onFailure(Call<AudiusTrackResponse> call, Throwable t) {
                 Log.e(TAG, "API Call Failed: " + t.getMessage());
                 // Hide shimmer and show error state if needed
-                binding.songsShimmerContainer.stopShimmer();
-                binding.artistsShimmerContainer.stopShimmer();
-                binding.songsShimmerContainer.setVisibility(View.GONE);
-                binding.artistsShimmerContainer.setVisibility(View.GONE);
+                if (binding.songsShimmerContainer != null) {
+                    binding.songsShimmerContainer.stopShimmer();
+                    binding.songsShimmerContainer.setVisibility(View.GONE);
+                }
+                if (binding.artistsShimmerContainer != null) {
+                    binding.artistsShimmerContainer.stopShimmer();
+                    binding.artistsShimmerContainer.setVisibility(View.GONE);
+                }
+                if (binding.playlistsShimmerContainer != null) {
+                    binding.playlistsShimmerContainer.stopShimmer();
+                    binding.playlistsShimmerContainer.setVisibility(View.GONE);
+                }
+                // Optionally hide sections on failure
+                // binding.popularSongsSection.setVisibility(View.GONE);
+                // binding.popularArtistsSection.setVisibility(View.GONE);
+                // binding.popularPlaylistsSection.setVisibility(View.GONE);
             }
         });
 
@@ -450,14 +527,37 @@ public class MainActivity extends AppCompatActivity implements Player.Listener {
         audiusRepository.getTrendingPlaylists(10, new Callback<PlaylistResponse>() {
             @Override
             public void onResponse(Call<PlaylistResponse> call, Response<PlaylistResponse> response) {
-                if (response.isSuccessful() && response.body() != null) {
+                if (response.isSuccessful() && response.body() != null && response.body().data() != null && !response.body().data().isEmpty()) {
                     trendingPlaylistAdapter.setPlaylists(response.body().data());
+                    // Hide shimmer and show RecyclerView
+                    if (binding.playlistsShimmerContainer != null) {
+                        binding.playlistsShimmerContainer.stopShimmer();
+                        binding.playlistsShimmerContainer.setVisibility(View.GONE);
+                    }
+                    if (binding.popularPlaylistRecyclerView != null) {
+                        binding.popularPlaylistRecyclerView.setVisibility(View.VISIBLE);
+                    }
+                } else {
+                    // No data available
+                    if (binding.playlistsShimmerContainer != null) {
+                        binding.playlistsShimmerContainer.stopShimmer();
+                        binding.playlistsShimmerContainer.setVisibility(View.GONE);
+                    }
+                    // Optionally hide the entire section if no playlists
+                    // binding.popularPlaylistsSection.setVisibility(View.GONE);
                 }
             }
 
             @Override
             public void onFailure(Call<PlaylistResponse> call, Throwable t) {
                 Log.e(TAG, "Playlist API Call Failed: " + t.getMessage());
+                // Hide shimmer on failure
+                if (binding.playlistsShimmerContainer != null) {
+                    binding.playlistsShimmerContainer.stopShimmer();
+                    binding.playlistsShimmerContainer.setVisibility(View.GONE);
+                }
+                // Optionally show error state or hide section
+                // binding.popularPlaylistsSection.setVisibility(View.GONE);
             }
         });
     }

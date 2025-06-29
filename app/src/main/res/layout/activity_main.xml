@@ -212,12 +212,32 @@
                         android:textColor="@color/textMain"
                         android:textSize="@dimen/_16ssp" />
 
+                    <com.facebook.shimmer.ShimmerFrameLayout
+                        android:id="@+id/playlists_shimmer_container"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/_8sdp"
+                        android:orientation="horizontal">
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+                            <include layout="@layout/skeleton_item" />
+                            <include layout="@layout/skeleton_item" />
+                            <include layout="@layout/skeleton_item" />
+                        </LinearLayout>
+
+                    </com.facebook.shimmer.ShimmerFrameLayout>
+
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/popular_playlist_recycler_view"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/_8sdp"
                         android:orientation="horizontal"
                         android:scrollbars="none"
+                        android:visibility="gone"
                         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                         tools:itemCount="10"
                         tools:listitem="@layout/activity_main_songs_item" />
