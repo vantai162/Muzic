@@ -15,4 +15,7 @@
     <color name="crimson_love">#C2185B</color>
     <color name="blue_depths">#1565C0</color>
 
+    <color name="register_background">#212121</color>
+    <color name="register_text_label">#EEEEEE</color>
+
 </resources>
