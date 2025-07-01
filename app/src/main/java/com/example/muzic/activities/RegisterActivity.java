@@ -45,6 +45,7 @@ public class RegisterActivity extends AppCompatActivity {
     @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        applyThemeMode();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
@@ -147,5 +148,17 @@ public class RegisterActivity extends AppCompatActivity {
                         });
             }
         });
+    }
+
+    private void applyThemeMode() {
+        com.example.muzic.utils.SettingsSharedPrefManager settings = new com.example.muzic.utils.SettingsSharedPrefManager(this);
+        String mode = settings.getDarkMode();
+        if (mode.equals("on")) {
+            com.example.muzic.utils.ThemeManager.applyNightMode(true);
+        } else if (mode.equals("off")) {
+            com.example.muzic.utils.ThemeManager.applyNightMode(false);
+        } else {
+            com.example.muzic.utils.ThemeManager.applySystemDefaultMode();
+        }
     }
 } 
